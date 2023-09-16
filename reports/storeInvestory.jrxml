@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="openPalance" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="2fce573c-5263-48f0-b7a2-7d8442c8b143">
+	<property name="ireport.zoom" value="1.2100000000000002"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<queryString>
+		<![CDATA[SELECT
+     main_settings.`name_en` AS main_settings_name_en,
+     main_settings.`name_ar` AS main_settings_name_ar,
+     main_settings.`address` AS main_settings_address,
+     report_inventory.`id` AS report_inventory_id,
+     report_inventory.`store` AS report_inventory_store,
+     report_inventory.`barcode` AS report_inventory_barcode,
+     report_inventory.`item` AS report_inventory_item,
+     report_inventory.`unit` AS report_inventory_unit,
+     report_inventory.`count` AS report_inventory_count,
+     report_inventory.`quantity` AS report_inventory_quantity,
+     report_inventory.`cost` AS report_inventory_cost,
+     report_inventory.`discount` AS report_inventory_discount,
+     report_inventory.`total` AS report_inventory_total,
+     report_inventory_sam.`id` AS report_inventory_sam_id,
+     report_inventory_sam.`pranch` AS report_inventory_sam_pranch,
+     report_inventory_sam.`store` AS report_inventory_sam_store,
+     report_inventory_sam.`category` AS report_inventory_sam_category,
+     report_inventory_sam.`date` AS report_inventory_sam_date,
+     report_inventory_sam.`totals` AS report_inventory_sam_totals
+FROM
+     `main_settings` main_settings,
+     `report_inventory` report_inventory,
+     `report_inventory_sam` report_inventory_sam]]>
+	</queryString>
+	<field name="main_settings_name_en" class="java.lang.String"/>
+	<field name="main_settings_name_ar" class="java.lang.String"/>
+	<field name="main_settings_address" class="java.lang.String"/>
+	<field name="report_inventory_id" class="java.lang.Integer"/>
+	<field name="report_inventory_store" class="java.lang.String"/>
+	<field name="report_inventory_barcode" class="java.lang.String"/>
+	<field name="report_inventory_item" class="java.lang.String"/>
+	<field name="report_inventory_unit" class="java.lang.String"/>
+	<field name="report_inventory_count" class="java.lang.Float"/>
+	<field name="report_inventory_quantity" class="java.lang.Float"/>
+	<field name="report_inventory_cost" class="java.lang.Float"/>
+	<field name="report_inventory_discount" class="java.lang.Float"/>
+	<field name="report_inventory_total" class="java.lang.Float"/>
+	<field name="report_inventory_sam_id" class="java.lang.Integer"/>
+	<field name="report_inventory_sam_pranch" class="java.lang.String"/>
+	<field name="report_inventory_sam_store" class="java.lang.String"/>
+	<field name="report_inventory_sam_category" class="java.lang.String"/>
+	<field name="report_inventory_sam_date" class="java.sql.Timestamp"/>
+	<field name="report_inventory_sam_totals" class="java.lang.Float"/>
+	<title>
+		<band height="79" splitType="Stretch">
+			<textField>
+				<reportElement x="326" y="11" width="215" height="56" uuid="8a3cb012-116b-4f31-9aaa-083ee09c7b31"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{main_settings_name_ar}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="111" splitType="Stretch">
+			<textField>
+				<reportElement x="30" y="43" width="100" height="20" uuid="fd10af58-da05-4bcc-9ce0-cdd19ca76cc0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_sam_store}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement x="326" y="43" width="100" height="20" uuid="40601269-7dd6-42de-be48-05dcfc66700d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_sam_date}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="169" y="43" width="100" height="20" uuid="a5fbe35f-1cab-4ba3-ae5b-7f42a4755ab8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[المخزن]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="432" y="43" width="100" height="20" uuid="89bbfc29-a3b1-46a0-a6af-737572e389f3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[التاريخ]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="326" y="77" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="1eb37847-8b3e-435d-87bf-a75770b8a950"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Simplified Arabic" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_sam_pranch}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="30" y="77" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="24310856-2223-4068-8390-c23d3ceefc78"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Simplified Arabic" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_sam_category}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="433" y="78" width="100" height="20" uuid="6fa14d8e-60bd-43f8-8036-6ec98cb70e6a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الفرع]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="169" y="77" width="100" height="20" uuid="8d76e458-23fc-44c6-a3ac-12d300121abb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الفئة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="197" y="9" width="157" height="28" uuid="e08c7356-2d4e-48da-908d-b717c297cbaa"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="14"/>
+				</textElement>
+				<text><![CDATA[جرد المخازن]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="29" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="29" uuid="9bb61a1b-8414-4d11-8d95-5bafd3d44bb0"/>
+			</rectangle>
+			<textField>
+				<reportElement x="532" y="4" width="20" height="20" uuid="1eaaddb7-1c8a-44e7-abce-2d4a9af7829c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[م]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="5" y="3" width="55" height="20" uuid="1c2135c8-3467-4023-ae49-29b8f8bad2d0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[الاجمالى]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="224" y="5" width="55" height="20" uuid="161d2a51-f19b-41b2-b6c3-6821aedd6d31"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[الوحدة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="279" y="5" width="169" height="20" uuid="38fabd7d-249b-4904-a8e1-6304ee74add7"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[الصنف]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="448" y="6" width="84" height="20" uuid="1791f879-c994-493a-a2d3-a0c4c8bfb6fa"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[باركود]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="116" y="4" width="55" height="20" uuid="4599b4d8-1e05-4b01-96b7-e25dbb885bb3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[الكمية]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="169" y="4" width="55" height="20" uuid="b59a9a9a-8dee-414a-b114-9b7b0814379f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[التعبئة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="63" y="3" width="55" height="20" uuid="6563ba9b-1b2e-4f1e-b9ea-0d8b5542ff4a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[السعر]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="30" uuid="7d9bf832-edf2-4fee-8de7-1c4d65d2d854"/>
+			</rectangle>
+			<textField>
+				<reportElement x="279" y="4" width="169" height="20" uuid="d1dc0e4c-3a23-46c3-be2b-13f9d1393be6"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_item}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="226" y="4" width="53" height="20" uuid="0d370980-0800-40c7-bf35-bf8504d00801"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_unit}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="63" y="3" width="53" height="20" uuid="c99f3f15-ff71-4c97-ba86-4a9e82d2c35e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_cost}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="3" width="63" height="20" uuid="d9ff711b-6e03-47a9-83e8-95fde3108640"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_total}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="532" y="3" width="18" height="20" uuid="192f386b-2c78-4eb4-ab2f-07ffbb6970c5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="448" y="4" width="84" height="20" uuid="e8dfe830-dfdf-45b4-aa1f-39dc9972e8ed"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_barcode}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="171" y="4" width="55" height="20" uuid="9161879e-9267-4515-950c-7b2efd39ca0b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_count}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="118" y="3" width="54" height="20" uuid="6f833b1f-e4fb-4a2b-afc6-5c8d5200c7b2"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_quantity}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="61" y="-29" width="1" height="59" uuid="64e776c4-4f41-40a7-bf14-6d8bfd8d5a34"/>
+			</line>
+			<line>
+				<reportElement x="532" y="-29" width="1" height="59" uuid="10bfdc80-d54f-4e70-acaa-273cfd9cfab8"/>
+			</line>
+			<line>
+				<reportElement x="448" y="-29" width="1" height="59" uuid="1683e351-41ee-4086-916b-597518ea3e5f"/>
+			</line>
+			<line>
+				<reportElement x="226" y="-29" width="1" height="59" uuid="0236304a-8ff7-4d2a-a969-bfb9e7856aac"/>
+			</line>
+			<line>
+				<reportElement x="279" y="-29" width="1" height="59" uuid="b99150b7-822c-4ea6-814d-45d10dab9549"/>
+			</line>
+			<line>
+				<reportElement x="171" y="-29" width="1" height="59" uuid="b7a67a4d-091d-411f-b8fc-4f337501bec8"/>
+			</line>
+			<line>
+				<reportElement x="116" y="-29" width="1" height="59" uuid="2a9be87e-b72d-449d-8420-aa978b595e0a"/>
+			</line>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="27" splitType="Stretch">
+			<textField evaluationTime="Report">
+				<reportElement x="80" y="0" width="40" height="20" uuid="83d64ab6-4a6e-4fb0-bd8a-e1b96db70d89"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="80" height="20" uuid="99e3b381-c741-4600-a791-f28d8bfa558d"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="187" y="0" width="344" height="20" uuid="b96435b0-48df-4cc1-b735-6b1ba9627aef"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{main_settings_address}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="20">
+			<staticText>
+				<reportElement x="395" y="0" width="100" height="20" uuid="e3f483ff-ef18-4bc0-aeec-925e85d7682d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الإجمالى]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="495" y="0" width="60" height="20" uuid="e2564fc1-1b71-45e2-945d-5fd6128ba1a2"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_inventory_sam_totals}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

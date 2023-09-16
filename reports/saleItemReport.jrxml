@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="openPalance" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="2fce573c-5263-48f0-b7a2-7d8442c8b143">
+	<property name="ireport.zoom" value="1.2100000000000002"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="125"/>
+	<queryString>
+		<![CDATA[SELECT
+     main_settings.`name_en` AS main_settings_name_en,
+     main_settings.`name_ar` AS main_settings_name_ar,
+     main_settings.`address` AS main_settings_address,
+     report_saleitem.`id` AS report_saleitem_id,
+     report_saleitem.`barcode` AS report_saleitem_barcode,
+     report_saleitem.`item` AS report_saleitem_item,
+     report_saleitem.`unit` AS report_saleitem_unit,
+     report_saleitem.`quantity` AS report_saleitem_quantity,
+     report_saleitem.`price` AS report_saleitem_price,
+     report_saleitem.`discount` AS report_saleitem_discount,
+     report_saleitem.`vat` AS report_saleitem_vat,
+     report_saleitem.`total` AS report_saleitem_total,
+     report_saleitem.`cost` AS report_saleitem_cost,
+     report_saleitem.`profit` AS report_saleitem_profit,
+     report_saleitem.`retQuantity` AS report_saleitem_retQuantity,
+     report_saleitem.`retTotal` AS report_saleitem_retTotal,
+     report_saleitem_all.`id` AS report_saleitem_all_id,
+     report_saleitem_all.`from` AS report_saleitem_all_from,
+     report_saleitem_all.`to` AS report_saleitem_all_to,
+     report_saleitem_all.`branch` AS report_saleitem_all_branch,
+     report_saleitem_all.`customer` AS report_saleitem_all_customer,
+     report_saleitem_all.`category` AS report_saleitem_all_category,
+     report_saleitem_all.`item` AS report_saleitem_all_item,
+     report_saleitem_all.`grossTotal` AS report_saleitem_all_grossTotal,
+     report_saleitem_all.`discTotal` AS report_saleitem_all_discTotal,
+     report_saleitem_all.`vatTotal` AS report_saleitem_all_vatTotal,
+     report_saleitem_all.`salesTotal` AS report_saleitem_all_salesTotal,
+     report_saleitem_all.`reSalesTotal` AS report_saleitem_all_reSalesTotal,
+     report_saleitem_all.`netTotal` AS report_saleitem_all_netTotal
+FROM
+     `main_settings` main_settings,
+     `report_saleitem` report_saleitem,
+     `report_saleitem_all` report_saleitem_all]]>
+	</queryString>
+	<field name="main_settings_name_en" class="java.lang.String"/>
+	<field name="main_settings_name_ar" class="java.lang.String"/>
+	<field name="main_settings_address" class="java.lang.String"/>
+	<field name="report_saleitem_id" class="java.lang.Integer"/>
+	<field name="report_saleitem_barcode" class="java.lang.String"/>
+	<field name="report_saleitem_item" class="java.lang.String"/>
+	<field name="report_saleitem_unit" class="java.lang.String"/>
+	<field name="report_saleitem_quantity" class="java.lang.Float"/>
+	<field name="report_saleitem_price" class="java.lang.Integer"/>
+	<field name="report_saleitem_discount" class="java.lang.Float"/>
+	<field name="report_saleitem_vat" class="java.lang.Float"/>
+	<field name="report_saleitem_total" class="java.lang.Float"/>
+	<field name="report_saleitem_cost" class="java.lang.Float"/>
+	<field name="report_saleitem_profit" class="java.lang.Integer"/>
+	<field name="report_saleitem_retQuantity" class="java.lang.Float"/>
+	<field name="report_saleitem_retTotal" class="java.lang.Float"/>
+	<field name="report_saleitem_all_id" class="java.lang.Integer"/>
+	<field name="report_saleitem_all_from" class="java.lang.String"/>
+	<field name="report_saleitem_all_to" class="java.lang.String"/>
+	<field name="report_saleitem_all_branch" class="java.lang.String"/>
+	<field name="report_saleitem_all_customer" class="java.lang.String"/>
+	<field name="report_saleitem_all_category" class="java.lang.String"/>
+	<field name="report_saleitem_all_item" class="java.lang.String"/>
+	<field name="report_saleitem_all_grossTotal" class="java.lang.Float"/>
+	<field name="report_saleitem_all_discTotal" class="java.lang.Float"/>
+	<field name="report_saleitem_all_vatTotal" class="java.lang.Float"/>
+	<field name="report_saleitem_all_salesTotal" class="java.lang.Float"/>
+	<field name="report_saleitem_all_reSalesTotal" class="java.lang.Float"/>
+	<field name="report_saleitem_all_netTotal" class="java.lang.Float"/>
+	<title>
+		<band height="64" splitType="Stretch">
+			<textField>
+				<reportElement x="382" y="29" width="159" height="20" uuid="8a3cb012-116b-4f31-9aaa-083ee09c7b31"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{main_settings_name_ar}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="198" splitType="Stretch">
+			<staticText>
+				<reportElement x="226" y="0" width="100" height="20" uuid="0d475f85-0e6b-4906-9fdd-c7a2ee84ab09"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[تقرير مبيعات - أصناف]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="394" y="58" width="88" height="20" uuid="1179da24-69db-4f82-ae2e-e8765bbfcbc1"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_from}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="58" width="100" height="20" uuid="06237157-58ef-4080-bb24-a19e9c252abd"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_to}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="396" y="32" width="88" height="20" uuid="4f4deaa2-39a1-4222-ad88-52ca8429aa84"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_branch}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="32" width="100" height="20" uuid="cf9a607e-2ef5-4be3-a7a4-9c153550cebc"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+			</textField>
+			<textField>
+				<reportElement x="10" y="32" width="92" height="20" uuid="cffad07d-8286-4652-a330-7fcd57791ede"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_customer}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="491" y="58" width="62" height="20" uuid="1f1f9a19-c0ec-4962-89eb-d50155f8d04d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[من تاريخ ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="303" y="58" width="62" height="20" uuid="ebb2651d-4bfb-4eee-8490-c052131664ed"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[إلى تاريخ ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="491" y="32" width="62" height="20" uuid="bac441f6-ddd7-4173-999b-ba399606f66b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الفرع]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="303" y="32" width="62" height="20" uuid="0fdaa581-1db6-488e-8695-4ab646dc0b76"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[مندوب بيع]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="112" y="32" width="62" height="20" uuid="6d20454c-9582-4522-b89f-1728c6dd47cc"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[العميل]]></text>
+			</staticText>
+			<textField pattern="#,##0.00">
+				<reportElement x="396" y="111" width="86" height="20" uuid="b2d3278b-b1f8-455f-9744-c7532f1daf74"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_grossTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="396" y="131" width="86" height="20" uuid="d69614f4-e51f-4799-aeaf-92114514776f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_discTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="396" y="151" width="86" height="20" uuid="0a8b0229-c921-42b5-a42c-189b35e0ceca"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_vatTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Opaque" x="398" y="171" width="86" height="20" backcolor="#CCCCCC" uuid="b86f2048-9446-4321-8d14-77cd2c4045fb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_salesTotal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="491" y="111" width="62" height="20" uuid="a5bd4cbf-0704-4186-b379-0884c9c0f870"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[اجمالى المبيعات]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="491" y="151" width="62" height="20" uuid="48f05447-2897-4191-92f8-3823a9688c6b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[ضريبة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="491" y="131" width="62" height="20" uuid="f81e3e4f-b2aa-498c-9a31-237be9e47ee7"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الخصم]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="493" y="171" width="62" height="20" backcolor="#CCCCCC" uuid="70ebbb18-33b3-4c0f-9e67-a5b654083d64"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[المجموع]]></text>
+			</staticText>
+			<textField pattern="#,##0.00">
+				<reportElement x="188" y="111" width="100" height="20" uuid="61742266-09fb-469d-9eb9-478e61fccc38"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_reSalesTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Opaque" x="188" y="131" width="100" height="20" backcolor="#CCCCCC" uuid="e74e3fc0-e711-43c7-b0c7-c0d24c4195f9"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_netTotal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="303" y="111" width="62" height="20" uuid="c97a08d0-2f85-4ba4-8865-3c92bab27852"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[مرتجع مبيعات]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="303" y="131" width="62" height="20" backcolor="#CCCCCC" uuid="d558059f-f7b6-44fe-b19f-b4dc81b913eb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[صافى المبيعات ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="394" y="84" width="88" height="20" uuid="96045ed7-cb7f-40ea-8150-32810a586b9a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_category}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="84" width="100" height="20" uuid="ec6ba960-ff46-4365-b836-198bdc764c2f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_all_item}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="303" y="84" width="62" height="20" uuid="728f6612-d53c-4c56-827e-f0aac0a69a22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الصنف]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="491" y="84" width="62" height="20" uuid="3bacec2a-ba83-4929-85f2-8434ddcdfccf"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الفئة]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="26" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="bcca8886-0c3c-485f-a750-1d73043d6977"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[م]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="42" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="8f94296e-3c87-452d-b0be-ee7c2f83c4fa"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[باركود ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="84" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="8fbfd9bf-6859-4c22-8d07-7c14e3be6635"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الصنف ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="126" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="64c06a9c-fdd5-4a61-993c-484ffdbbf98f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الوحدة ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="168" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="328930dd-80d6-448e-98af-301765530ac3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[العدد ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="210" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="8a552daa-50ca-4214-a67d-94f19c6e771a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[السعر ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="252" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="c5a4b308-b6b0-4fdb-a3b5-7abb8c57317f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[خصم  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="294" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="fe050f07-21f1-4814-bc1e-a5ab4d78c653"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[ضريبة  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="336" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="30f6d491-9d73-40b8-afd4-d6d5723631ad"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[المجموع ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="378" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="33162b0b-5d7e-430e-a05e-05217c5691f5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[التكلفة ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="420" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="4ac9665b-42cc-4f9a-8352-8f892476e043"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[اجمالى الربح ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="462" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="1e359c8d-f65d-4bbd-93c2-300d52d6b00b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[كمية المرتجع ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="504" y="0" width="42" height="26" backcolor="#CCCCCC" uuid="1e174316-0e6f-4606-bf59-acd9d8b2009f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[اجمالى المرتجع]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="42" height="20" uuid="04bb9a29-1b8c-466e-8f14-dff214fc43ab"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="42" y="0" width="42" height="20" uuid="9ee24458-ab80-4014-963d-d83cd087979c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_barcode}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="84" y="0" width="42" height="20" uuid="fdc6f101-434c-4c95-a91e-5e4e26680c70"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_item}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="126" y="0" width="42" height="20" uuid="545d419e-6fbc-43ba-a4e6-abe658b3309c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_unit}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="168" y="0" width="42" height="20" uuid="8ad03f18-0cbe-4969-9d3a-a89077808baa"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_quantity}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="210" y="0" width="42" height="20" uuid="ff4fe2b6-2f78-49a5-90a3-d132c0cbf40e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_price}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="252" y="0" width="42" height="20" uuid="80d2ed6e-bba5-4da5-9598-477a267bf905"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_discount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="294" y="0" width="42" height="20" uuid="90b19988-694f-491b-a721-5275c008c6c3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_vat}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="336" y="0" width="42" height="20" uuid="181233d9-6a3f-4df7-82e1-7e3795aa4b17"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="378" y="0" width="42" height="20" uuid="461b5ee3-4b9b-4bcb-9d07-78dd26cab7de"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_cost}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="420" y="0" width="42" height="20" uuid="943461cb-d18b-468b-84cc-3e8dec4d3f59"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_profit}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="462" y="0" width="42" height="20" uuid="8df3ea93-7473-4c57-a27e-8ac37965d04f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_retQuantity}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="504" y="0" width="42" height="20" uuid="df49d3b8-2e90-455f-bab6-07a6dc80063c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_saleitem_retTotal}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="21" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="20">
+			<textField>
+				<reportElement x="197" y="0" width="344" height="20" uuid="b96435b0-48df-4cc1-b735-6b1ba9627aef"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{main_settings_address}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="0" width="80" height="20" uuid="99e3b381-c741-4600-a791-f28d8bfa558d"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="90" y="0" width="40" height="20" uuid="83d64ab6-4a6e-4fb0-bd8a-e1b96db70d89"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="20"/>
+	</summary>
+</jasperReport>

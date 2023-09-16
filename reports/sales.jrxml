@@ -1,0 +1,953 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sales" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="83eee996-16f0-4389-8fb9-0c18500022ad">
+	<property name="ireport.zoom" value="1.331000000000001"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="337"/>
+	<style name="style1">
+		<conditionalStyle>
+			<style/>
+		</conditionalStyle>
+	</style>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#00B2A8">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#E6FFFE">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="Table Dataset 1" uuid="598f7c6e-9c1b-4a5a-8f51-aabc507f4560"/>
+	<subDataset name="Table Dataset 2" uuid="f56bc481-b74c-42ef-b2b3-e5431697f857"/>
+	<parameter name="sale_no" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$F{sales_invoicenumber}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+     sales.`id` AS sales_id,
+     sales.`customer` AS sales_customer,
+     sales.`branch` AS sales_branch,
+     sales.`storeid` AS sales_storeid,
+     sales.`document` AS sales_document,
+     sales.`transaction_No` AS sales_transaction_No,
+     sales.`invoicenumber` AS sales_invoicenumber,
+     sales.`invoice_date` AS sales_invoice_date,
+     sales.`dated` AS sales_dated,
+     sales.`user` AS sales_user,
+     sales.`orderType` AS sales_orderType,
+     sales.`gross_total` AS sales_gross_total,
+     sales.`vat_all` AS sales_vat_all,
+     sales.`dis_added` AS sales_dis_added,
+     sales.`delver` AS sales_delver,
+     sales.`all_total` AS sales_all_total,
+     sales.`paymentType` AS sales_paymentType,
+     sales.`cash` AS sales_cash,
+     sales.`visa` AS sales_visa,
+     sales.`mada` AS sales_mada,
+     sales.`left` AS sales_left,
+     sales.`state` AS sales_state,
+     sales_items.`id` AS sales_items_id,
+     sales_items.`itemid` AS sales_items_itemid,
+     sales_items.`quantity` AS sales_items_quantity,
+     sales_items.`cost` AS sales_items_cost,
+     sales_items.`discount` AS sales_items_discount,
+     sales_items.`tax` AS sales_items_tax,
+     sales_items.`store` AS sales_items_store,
+     sales_items.`invoice_No` AS sales_items_invoice_No,
+     sales_items.`storeid` AS sales_items_storeid,
+     sales_items.`state` AS sales_items_state,
+     branches.`id` AS branches_id,
+     branches.`name_en` AS branches_name_en,
+     branches.`storeid` AS branches_storeid,
+     branches.`city` AS branches_city,
+     branches.`state` AS branches_state,
+     branches.`street_en` AS branches_street_en,
+     branches.`street_ar` AS branches_street_ar,
+     branches.`country` AS branches_country,
+     branches.`phone` AS branches_phone,
+     branches.`name_ar` AS branches_name_ar,
+     branches.`crnum` AS branches_crnum,
+     branches.`munum` AS branches_munum,
+     branches.`crapp` AS branches_crapp,
+     branches.`crexp` AS branches_crexp,
+     branches.`muapp` AS branches_muapp,
+     branches.`muexp` AS branches_muexp,
+     branches.`dated` AS branches_dated,
+     branches.`vatnumber` AS branches_vatnumber,
+     customers.`id` AS customers_id,
+     customers.`name_en` AS customers_name_en,
+     customers.`name_ar` AS customers_name_ar,
+     customers.`tax_no` AS customers_tax_no,
+     customers.`address` AS customers_address,
+     customers.`phone` AS customers_phone,
+     customers.`email` AS customers_email,
+     customers.`dated` AS customers_dated,
+     customers.`storeid` AS customers_storeid,
+     customers.`cardnumber` AS customers_cardnumber,
+     customers.`accCode` AS customers_accCode,
+     customers.`default` AS customers_default,
+     units.`id` AS units_id,
+     units.`name_en` AS units_name_en,
+     units.`name_ar` AS units_name_ar,
+     units.`storeid` AS units_storeid,
+     units.`default` AS units_default,
+     items.`id` AS items_id,
+     items.`name_en` AS items_name_en,
+     items.`name_ar` AS items_name_ar,
+     items.`catid` AS items_catid,
+     items.`barcode` AS items_barcode,
+     items.`image` AS items_image,
+     items.`disc` AS items_disc,
+     items.`location_en` AS items_location_en,
+     items.`unit` AS items_unit,
+     items.`expiry_notification` AS items_expiry_notification,
+     items.`is_service` AS items_is_service,
+     items.`price` AS items_price,
+     items.`discount` AS items_discount,
+     items.`commission` AS items_commission,
+     items.`intimate_stock` AS items_intimate_stock,
+     items.`entry_date` AS items_entry_date,
+     items.`storeid` AS items_storeid,
+     items.`location_ar` AS items_location_ar,
+     items.`expiry_date` AS items_expiry_date,
+     items.`store_branch` AS items_store_branch,
+     items.`enabled` AS items_enabled,
+     items.`show_to_cashier` AS items_show_to_cashier,
+     items.`measurement` AS items_measurement,
+     items.`qty_en` AS items_qty_en,
+     items.`qty_ar` AS items_qty_ar,
+     items.`item_type` AS items_item_type,
+     items.`item_thread` AS items_item_thread,
+     items.`allbranches` AS items_allbranches,
+     items.`services` AS items_services,
+     items.`vat` AS items_vat,
+     items.`selt` AS items_selt,
+     items.`taxInPrice` AS items_taxInPrice,
+     branches.`fax` AS branches_fax,
+     units.`id` AS units_id,
+     units.`name_en` AS units_name_en,
+     units.`name_ar` AS units_name_ar,
+     units.`storeid` AS units_storeid,
+     units.`default` AS units_default,
+     units.`id` AS units_id,
+     units.`name_en` AS units_name_en,
+     units.`name_ar` AS units_name_ar,
+     units.`storeid` AS units_storeid,
+     units.`default` AS units_default
+FROM
+     `sales` sales INNER JOIN `branches` branches ON sales.`branch` = branches.`id`
+     INNER JOIN `sales_items` sales_items ON sales.`invoicenumber` = sales_items.`invoice_No`
+     INNER JOIN `customers` customers ON sales.`customer` = customers.`id`
+     INNER JOIN `items` items ON sales_items.`itemid` = items.`id`
+     left JOIN `units` units ON items.`unit` = units.`id`
+WHERE sales.`invoicenumber` =$P{sale_no}]]>
+	</queryString>
+	<field name="sales_id" class="java.lang.Integer"/>
+	<field name="sales_customer" class="java.lang.Integer"/>
+	<field name="sales_branch" class="java.lang.Integer"/>
+	<field name="sales_document" class="java.lang.String"/>
+	<field name="sales_invoicenumber" class="java.lang.String"/>
+	<field name="sales_invoice_date" class="java.sql.Timestamp"/>
+	<field name="sales_user" class="java.lang.Integer"/>
+	<field name="sales_gross_total" class="java.lang.Float"/>
+	<field name="sales_vat_all" class="java.lang.Float"/>
+	<field name="sales_dis_added" class="java.lang.Float"/>
+	<field name="sales_delver" class="java.lang.Float"/>
+	<field name="sales_all_total" class="java.lang.Float"/>
+	<field name="sales_paymentType" class="java.lang.Integer"/>
+	<field name="sales_cash" class="java.lang.Float"/>
+	<field name="sales_visa" class="java.lang.Float"/>
+	<field name="sales_mada" class="java.lang.Float"/>
+	<field name="sales_left" class="java.lang.Float"/>
+	<field name="sales_items_id" class="java.lang.Integer"/>
+	<field name="sales_items_itemid" class="java.lang.Integer"/>
+	<field name="sales_items_quantity" class="java.lang.Float"/>
+	<field name="sales_items_cost" class="java.lang.Float"/>
+	<field name="sales_items_discount" class="java.lang.Float"/>
+	<field name="sales_items_tax" class="java.lang.Float"/>
+	<field name="sales_items_invoice_No" class="java.lang.String"/>
+	<field name="branches_id" class="java.lang.Integer"/>
+	<field name="branches_name_en" class="java.lang.String"/>
+	<field name="branches_street_en" class="java.lang.String"/>
+	<field name="branches_street_ar" class="java.lang.String"/>
+	<field name="branches_name_ar" class="java.lang.String"/>
+	<field name="customers_id" class="java.lang.Integer"/>
+	<field name="customers_name_en" class="java.lang.String"/>
+	<field name="customers_name_ar" class="java.lang.String"/>
+	<field name="customers_tax_no" class="java.lang.String"/>
+	<field name="customers_address" class="java.lang.String"/>
+	<field name="customers_phone" class="java.lang.String"/>
+	<field name="customers_email" class="java.lang.String"/>
+	<field name="units_id" class="java.lang.Integer"/>
+	<field name="units_name_en" class="java.lang.String"/>
+	<field name="units_name_ar" class="java.lang.String"/>
+	<field name="items_id" class="java.lang.Integer"/>
+	<field name="items_name_en" class="java.lang.String"/>
+	<field name="items_name_ar" class="java.lang.String"/>
+	<field name="items_barcode" class="java.lang.String"/>
+	<field name="items_unit" class="java.lang.String"/>
+	<variable name="disVal" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[2*3]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="totalAfterDis" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[2*3]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="varVal" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[2*3]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="allTotal" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[2*3]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="count" class="java.math.BigDecimal" resetType="Column" calculation="Count">
+		<variableExpression><![CDATA[$F{sales_items_id}]]></variableExpression>
+	</variable>
+	<variable name="allprice" class="java.math.BigDecimal" resetType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_items_cost}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="test" class="java.math.BigDecimal" resetType="None">
+		<variableExpression><![CDATA[$F{sales_gross_total}]]></variableExpression>
+	</variable>
+	<variable name="total with vat" class="java.lang.String"/>
+	<variable name="variable2" class="java.lang.String"/>
+	<variable name="total pre total" class="java.lang.String" calculation="Sum"/>
+	<variable name="total vat" class="java.lang.String" calculation="Sum"/>
+	<variable name="Delivry" class="java.lang.String"/>
+	<variable name="Cash" class="java.lang.String"/>
+	<variable name="Payment Type" class="java.lang.String"/>
+	<variable name="variable1" class="java.lang.String"/>
+	<variable name="all total with vat" class="java.lang.String"/>
+	<variable name="sales_gross_total_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_gross_total}]]></variableExpression>
+	</variable>
+	<variable name="sales_vat_all_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_vat_all}]]></variableExpression>
+	</variable>
+	<variable name="sales_all_total_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_all_total}]]></variableExpression>
+	</variable>
+	<variable name="sales_delver_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_delver}]]></variableExpression>
+	</variable>
+	<variable name="sales_dis_added_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_dis_added}]]></variableExpression>
+	</variable>
+	<variable name="sales_all_total_2" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_all_total}]]></variableExpression>
+	</variable>
+	<variable name="sales_cash_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_cash}]]></variableExpression>
+	</variable>
+	<variable name="sales_visa_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_visa}]]></variableExpression>
+	</variable>
+	<variable name="sales_mada_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_mada}]]></variableExpression>
+	</variable>
+	<variable name="sales_left_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{sales_left}]]></variableExpression>
+	</variable>
+	<title>
+		<band height="114" splitType="Stretch">
+			<image>
+				<reportElement x="11" y="15" width="255" height="99" uuid="02360213-d6a5-4922-8c75-42606729e7da"/>
+				<imageExpression><![CDATA["C:\\Users\\Mostafa\\Desktop\\app_logo.jpg"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="201" splitType="Stretch">
+			<staticText>
+				<reportElement x="222" y="15" width="110" height="20" uuid="507ef05f-6f20-461d-bfc5-42b37359c62e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[فاتورة بيع رقم]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="200" y="50" width="149" height="20" uuid="dbea1665-fae2-44aa-bf3f-7f5295734493"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{sale_no}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="150" y="90" width="87" height="20" uuid="a6573a85-f465-422d-99b5-a09dd493020f"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[تاريخ الفاتورة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="127" width="87" height="20" uuid="315c9588-2728-426e-b163-11a57ba30754"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الفرع]]></text>
+			</staticText>
+			<textField pattern="">
+				<reportElement x="29" y="127" width="111" height="20" uuid="d2e5ded7-3c01-4943-b541-b8c4521d4b28"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{branches_name_en}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="481" y="90" width="60" height="20" uuid="e459977d-5c48-4721-b03e-7bb3bbbe6417"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[اسم العميل]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="349" y="90" width="121" height="20" uuid="92e3c052-9f7f-4555-a86a-d29fa82a8aef"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customers_name_en}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="150" y="167" width="87" height="20" uuid="74a546fa-36e7-479a-98cc-fc78eb82018a"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[مستند]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="17" y="167" width="123" height="20" uuid="d61fbe34-dd7b-438b-9dd7-047322b65bfb"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sales_document}]]></textFieldExpression>
+			</textField>
+			<textField pattern="yyyy/MM/dd">
+				<reportElement x="40" y="90" width="100" height="20" uuid="e6148dd8-7c79-4d7c-bed4-dd06da0858d9"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{sales_invoice_date}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="481" y="127" width="60" height="20" uuid="e6c4f4cf-0b22-4608-8d83-eeebde736d74"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[طريقة السداد]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="349" y="127" width="121" height="20" uuid="69caa2b9-b6be-4138-9e31-8916a5bd4b04"/>
+				<textElement textAlignment="Right">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sales_left} == 0 ? "نقدي" : "آجل"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="28" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="324" y="0" width="46" height="28" backcolor="#CCCCCC" uuid="e60f45e0-9de3-4a7a-86b1-db318eaea4c0"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[الوحدة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="286" y="0" width="38" height="28" backcolor="#CCCCCC" uuid="2205c312-c40e-4ad6-9cad-7342bcdd51db"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[العدد]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="246" y="0" width="40" height="28" backcolor="#CCCCCC" uuid="787e69f0-d96d-4127-9381-76504b75689a"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[السعر]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="197" y="0" width="49" height="28" backcolor="#CCCCCC" uuid="75fb356b-b268-42ba-93f0-b5b6252c4e5b"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[خصم %]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="146" y="0" width="51" height="28" backcolor="#CCCCCC" uuid="611b728e-901f-4849-87b3-7f197cf7f30f"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[الاجمالى]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="48" y="0" width="43" height="28" backcolor="#CCCCCC" uuid="0a499eb9-2a92-4a65-b947-5cb38756daf9"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[ضريبة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="48" height="28" backcolor="#CCCCCC" uuid="42e15072-fb3b-40b5-9334-18cd032d2a52"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[المجموع]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="370" y="0" width="98" height="28" backcolor="#CCCCCC" uuid="1a4f7b04-209d-42c3-9cce-d48fc5895f3a"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[الصنف]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="91" y="0" width="55" height="28" backcolor="#CCCCCC" uuid="eba1f3fb-5360-40a3-b552-0bf0cddf6f14"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[% ضريبة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="468" y="0" width="62" height="28" backcolor="#CCCCCC" uuid="02c3fc3d-064c-4d7d-9a1d-ba43b0d532c9"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+				</textElement>
+				<text><![CDATA[باركود]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="531" y="0" width="24" height="28" forecolor="#000000" backcolor="#CCCCCC" uuid="a23846c0-6bf5-4af8-9cdd-eff26710882b"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Simplified Arabic" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[م]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="28" splitType="Stretch">
+			<textField>
+				<reportElement mode="Transparent" x="324" y="0" width="46" height="28" backcolor="#CCCCCC" uuid="3d430042-9969-48a5-bc3b-ed1b6b335bff"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{units_name_en}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="286" y="0" width="38" height="28" backcolor="#CCCCCC" uuid="7647dc4b-4d04-49f3-9d41-1cb153a353fc"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sales_items_quantity}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="197" y="0" width="49" height="28" forecolor="#000000" backcolor="#CCCCCC" uuid="522ae1ee-d3b1-43e0-9877-676b81f793dd"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Simplified Arabic" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sales_items_discount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="470" y="0" width="60" height="28" forecolor="#000000" backcolor="#CCCCCC" uuid="eec434d0-44ed-4fe8-b7cb-352793c05f28"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="Simplified Arabic" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{items_barcode}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Transparent" x="246" y="0" width="40" height="28" backcolor="#CCCCCC" uuid="dc8351dd-7f4c-4a96-9b6e-8b81dce3e4f2"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sales_items_cost}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Transparent" x="146" y="0" width="51" height="28" backcolor="#CCCCCC" uuid="596c6d44-b45a-40a9-8144-75042f968a53"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sales_items_cost}*$F{sales_items_quantity}-$F{sales_items_discount}*$F{sales_items_cost}*$F{sales_items_quantity}/100]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Transparent" x="48" y="0" width="43" height="28" backcolor="#CCCCCC" uuid="89976cbc-bfe2-40d7-95c0-ae153f277df4"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sales_items_tax}/100*($F{sales_items_cost}*$F{sales_items_quantity}-$F{sales_items_discount}*$F{sales_items_cost}*$F{sales_items_quantity}/100)]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Transparent" x="0" y="0" width="48" height="28" backcolor="#CCCCCC" uuid="eaa3e195-9ae9-46a8-939f-c4f67427c4da"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{sales_items_tax}/100*($F{sales_items_cost}*$F{sales_items_quantity}-$F{sales_items_discount}*$F{sales_items_cost}*$F{sales_items_quantity}/100)) + ($F{sales_items_cost}*$F{sales_items_quantity}-$F{sales_items_discount}*$F{sales_items_cost}*$F{sales_items_quantity}/100)]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="370" y="0" width="98" height="28" backcolor="#CCCCCC" uuid="9b314c5f-8f2d-424e-9c9c-1d7ccdd7e309"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{items_name_en}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Transparent" x="91" y="0" width="55" height="28" backcolor="#CCCCCC" uuid="3c160b78-34a2-4693-a964-2612106ee8aa"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sales_items_tax}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="531" y="0" width="24" height="28" uuid="44467143-e71f-4928-aeb6-cc52441e8d57"/>
+				<box leftPadding="7">
+					<pen lineWidth="1.0" lineStyle="Double"/>
+					<topPen lineWidth="1.0" lineStyle="Double"/>
+					<leftPen lineWidth="1.0" lineStyle="Double"/>
+					<bottomPen lineWidth="1.0" lineStyle="Double"/>
+					<rightPen lineWidth="1.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{count}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="39"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="47">
+			<staticText>
+				<reportElement mode="Opaque" x="24" y="0" width="512" height="27" uuid="861c45aa-a32b-42da-b24f-ff174c8b5a8d"/>
+				<box>
+					<topPen lineColor="#FFFFFF"/>
+					<leftPen lineColor="#FFFFFF"/>
+					<bottomPen lineColor="#FFFFFF"/>
+					<rightPen lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[العنوان : المملكه العربية السعودية - الرياض - حى العليا - حراج الكمبيوتر - عمارة الصالون الأخضر - الدور الرابع]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="130" y="27" width="39" height="20" uuid="8a16ad4b-d599-4ca7-a5d4-dde1e6db96c5"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="42" y="27" width="80" height="20" uuid="a6170e45-bf92-4582-9644-35eab543ccaa"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="212">
+			<rectangle>
+				<reportElement x="39" y="39" width="111" height="102" uuid="ee3a9aa5-f916-4fd4-9444-3ecaf1eac3ba"/>
+			</rectangle>
+			<rectangle>
+				<reportElement x="166" y="38" width="165" height="103" uuid="25511c75-969e-438a-b309-0e9b8d200992"/>
+			</rectangle>
+			<rectangle>
+				<reportElement x="349" y="38" width="173" height="103" uuid="1038865b-e54c-4f35-944a-dbb9a9c090c5"/>
+			</rectangle>
+			<staticText>
+				<reportElement mode="Opaque" x="442" y="42" width="75" height="20" uuid="b64ebf30-1879-4e3e-85be-a27f62d726cb"/>
+				<box>
+					<topPen lineColor="#FFFFFF"/>
+					<leftPen lineColor="#FFFFFF"/>
+					<bottomPen lineColor="#FFFFFF"/>
+					<rightPen lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[الاجمالى ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="437" y="70" width="75" height="20" uuid="48383c87-332a-4a33-b244-f1ca3bf36a7c"/>
+				<box>
+					<topPen lineColor="#FFFFFF"/>
+					<leftPen lineColor="#FFFFFF"/>
+					<bottomPen lineColor="#FFFFFF"/>
+					<rightPen lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[ضريبة القيمة المضافة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="431" y="101" width="81" height="20" uuid="23c80c68-e530-4084-a1f0-0dffbc6c8656"/>
+				<box>
+					<topPen lineColor="#FFFFFF"/>
+					<leftPen lineColor="#FFFFFF"/>
+					<bottomPen lineColor="#FFFFFF"/>
+					<rightPen lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[الاجمالى شامل الضريبة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="269" y="43" width="56" height="20" uuid="03550d3a-ba94-4387-a74a-78323a989dc0"/>
+				<box>
+					<topPen lineColor="#FFFFFF"/>
+					<leftPen lineColor="#FFFFFF"/>
+					<bottomPen lineColor="#FFFFFF"/>
+					<rightPen lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[التوصيل]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="266" y="71" width="58" height="20" uuid="479879fd-8a81-4cb0-9a71-b2532cf08907"/>
+				<box>
+					<topPen lineColor="#FFFFFF"/>
+					<leftPen lineColor="#FFFFFF"/>
+					<bottomPen lineColor="#FFFFFF"/>
+					<rightPen lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[خصم اضافى]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="266" y="106" width="56" height="20" uuid="e485e864-3112-49e1-a61a-53bf4ca05de1"/>
+				<box>
+					<topPen lineColor="#FFFFFF"/>
+					<leftPen lineColor="#FFFFFF"/>
+					<bottomPen lineColor="#FFFFFF"/>
+					<rightPen lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[المجموع النهائى]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="110" y="40" width="35" height="20" uuid="ee5f9d0c-7640-46a1-baa6-7217f16272ca"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Double"/>
+					<topPen lineWidth="0.0" lineStyle="Double"/>
+					<leftPen lineWidth="0.0" lineStyle="Double"/>
+					<bottomPen lineWidth="0.0" lineStyle="Double"/>
+					<rightPen lineWidth="0.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[نقدي]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="109" y="65" width="35" height="20" uuid="687c0f93-ab8d-4b91-acaf-da70fe2793d7"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Double"/>
+					<topPen lineWidth="0.0" lineStyle="Double"/>
+					<leftPen lineWidth="0.0" lineStyle="Double"/>
+					<bottomPen lineWidth="0.0" lineStyle="Double"/>
+					<rightPen lineWidth="0.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[فييزا]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="109" y="91" width="35" height="20" uuid="5f6f4b52-39c4-471c-a5e8-e8f949950a6f"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Double"/>
+					<topPen lineWidth="0.0" lineStyle="Double"/>
+					<leftPen lineWidth="0.0" lineStyle="Double"/>
+					<bottomPen lineWidth="0.0" lineStyle="Double"/>
+					<rightPen lineWidth="0.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[مدى]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="108" y="117" width="35" height="20" uuid="3347b385-0f32-4e6d-85cb-2299ffaf39dc"/>
+				<box>
+					<pen lineWidth="0.0" lineStyle="Double"/>
+					<topPen lineWidth="0.0" lineStyle="Double"/>
+					<leftPen lineWidth="0.0" lineStyle="Double"/>
+					<bottomPen lineWidth="0.0" lineStyle="Double"/>
+					<rightPen lineWidth="0.0" lineStyle="Double"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[الباقي]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="349" y="43" width="82" height="20" uuid="bd86121c-c600-4f30-99f9-fea097e52d04"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_gross_total_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="349" y="72" width="82" height="20" uuid="f7c94865-31af-4042-b913-10b211369aea"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_vat_all_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="349" y="102" width="83" height="20" uuid="c908ea11-8c28-4acb-8032-6db40ddacd27"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_all_total_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="174" y="43" width="77" height="20" uuid="4feb492d-0182-4ed4-8521-c0f225a59ffd"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_delver_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="174" y="74" width="77" height="20" uuid="ec4bf50e-fb56-46e4-b515-4b10c285eb60"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_dis_added_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="174" y="108" width="77" height="20" uuid="7fb028ae-ff65-4d5f-8d30-57ce388521fc"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_all_total_2}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="43" y="40" width="52" height="20" uuid="5d788140-dda0-44af-aec6-0a80305a3216"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_cash_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="42" y="65" width="52" height="20" uuid="cd2258d2-4d1a-4330-97c8-959243f7239b"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_visa_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="42" y="90" width="51" height="20" uuid="dc1b324f-6d87-4593-89fb-084e326f7297"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_mada_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="40" y="116" width="52" height="20" uuid="d646d6a5-b238-42d6-bf33-d78b7680007f"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sales_left_1}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

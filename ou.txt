@@ -1,0 +1,1 @@
+SELECT o.vat,o.id,o.specific_date,o.payment_type,o.itemid , o.qty  , o.cost , o.discount ,i.name_en , i.unit FROM orders o left join items i ON i.id = o.itemid WHERE o.itemid = 16763  AND  o.storeid='51'  AND o.specific_date >= '2016-08-29 13:00:00' AND o.specific_date <='2019-08-29 23:00:00' AND  o.branch   ='46'  AND  o.transaction_closed ='1'   ORDER BY i.name_en asc

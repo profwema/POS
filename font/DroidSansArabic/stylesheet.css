@@ -1,0 +1,6 @@
+@font-face {
+	font-family: 'DroidSansArabic';
+	src: url('DroidSansArabic.eot');
+	src: url('DroidSansArabic.eot?#iefix') format('embedded-opentype'),
+		url('DroidSansArabic.ttf') format('truetype');
+}

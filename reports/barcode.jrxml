@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="barcode" language="groovy" pageWidth="207" pageHeight="118" orientation="Landscape" columnWidth="207" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="06185bf3-c1fb-4603-b748-506be3802b53">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<queryString>
+		<![CDATA[SELECT
+     report_barcode.`id` AS report_barcode_id,
+     report_barcode.`name_en` AS report_barcode_name_en,
+     report_barcode.`name_ar` AS report_barcode_name_ar,
+     report_barcode.`unit_en` AS report_barcode_unit_en,
+     report_barcode.`unit_ar` AS report_barcode_unit_ar,
+     report_barcode.`barcode` AS report_barcode_barcode,
+     report_barcode.`price` AS report_barcode_price
+FROM
+     `report_barcode` report_barcode]]>
+	</queryString>
+	<field name="report_barcode_id" class="java.lang.Integer"/>
+	<field name="report_barcode_name_en" class="java.lang.String"/>
+	<field name="report_barcode_name_ar" class="java.lang.String"/>
+	<field name="report_barcode_unit_en" class="java.lang.String"/>
+	<field name="report_barcode_unit_ar" class="java.lang.String"/>
+	<field name="report_barcode_barcode" class="java.lang.String"/>
+	<field name="report_barcode_price" class="java.lang.Float"/>
+	<title>
+		<band height="5"/>
+	</title>
+	<detail>
+		<band height="109" splitType="Stretch">
+			<textField>
+				<reportElement x="11" y="10" width="132" height="20" uuid="43e4579e-e196-46ef-9c99-f6a85a4f2ee1"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_barcode_name_ar}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="85" y="59" width="56" height="20" uuid="e7b69608-667e-4cb6-abba-3047e10f952a"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_barcode_price}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="0" y="30" width="207" height="29" uuid="a3f6e296-e848-4c33-81e3-b8a5ce82266d"/>
+				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" moduleWidth="1.0" textPosition="bottom">
+					<jr:codeExpression><![CDATA[$F{report_barcode_barcode}]]></jr:codeExpression>
+				</jr:Code128>
+			</componentElement>
+			<staticText>
+				<reportElement x="11" y="59" width="74" height="20" uuid="e574f7e5-ff87-4b4e-b36e-63424e600f1e"/>
+				<textElement textAlignment="Center">
+					<font fontName="Simplified Arabic" size="12"/>
+				</textElement>
+				<text><![CDATA[فول الغامدي]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>
