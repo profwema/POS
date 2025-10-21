@@ -1,0 +1,535 @@
+/* =====================================================
+   Dark Mode - الوضع الداكن
+   نظام POS - WAM Tech Soft
+   ===================================================== */
+
+/* Dark Mode Variables */
+:root[data-theme="dark"] {
+    /* Primary Colors - Dark */
+    --primary-color: #818cf8;
+    --primary-dark: #6366f1;
+    --primary-light: #a5b4fc;
+    
+    /* Background Colors */
+    --dark-bg: #0f172a;
+    --darker-bg: #020617;
+    --sidebar-bg: #1e293b;
+    --sidebar-hover: #334155;
+    --content-bg: #1e293b;
+    --card-bg: #1e293b;
+    
+    /* Text Colors */
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-on-dark: #e2e8f0;
+    
+    /* Border Colors */
+    --border-color: #334155;
+    --border-light: #475569;
+    
+    /* Shadows - Dark */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.8);
+}
+
+/* =====================================================
+   Body & Background
+   ===================================================== */
+
+[data-theme="dark"] body {
+    background: #1e293b;
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .container-fluid-full {
+    background: var(--dark-bg);
+}
+
+/* =====================================================
+   Navbar Dark Mode
+   ===================================================== */
+
+[data-theme="dark"] .navbar {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* =====================================================
+   Sidebar Dark Mode - محسّن
+   ===================================================== */
+
+[data-theme="dark"] #sidebar-left {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+}
+
+/* Scrollbar في Dark Mode */
+[data-theme="dark"] #sidebar-left::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] #sidebar-left::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] #sidebar-left::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] #sidebar-left {
+    scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .nav.side-menu > li > a {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .nav.side-menu > li > a:hover {
+    background: var(--sidebar-hover) !important;
+    color: var(--text-primary) !important;
+}
+
+/* فاصل بصري في Dark Mode */
+[data-theme="dark"] .nav.side-menu > li::after {
+    background: rgba(255, 255, 255, 0.08); /* أوضح قليلاً في الوضع الداكن */
+}
+
+[data-theme="dark"] .nav.side-menu > li.active,
+[data-theme="dark"] .nav.side-menu > li.current-page {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+}
+
+[data-theme="dark"] .nav.side-menu > li.active > a,
+[data-theme="dark"] .nav.side-menu > li.current-page > a {
+    color: white !important;
+}
+
+[data-theme="dark"] .nav.child_menu {
+    background: rgba(0, 0, 0, 0.5); /* أغمق قليلاً */
+}
+
+[data-theme="dark"] .nav.child_menu li a {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .nav.child_menu li a:hover {
+    color: var(--text-primary) !important;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* فواصل القوائم الفرعية في Dark Mode */
+[data-theme="dark"] .nav.child_menu li::after {
+    background: rgba(255, 255, 255, 0.05); /* أوضح في الوضع الداكن */
+}
+
+[data-theme="dark"] .nav.child_menu li a::before {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .nav.child_menu li a:hover::before {
+    color: var(--primary-light);
+}
+
+/* =====================================================
+   Content Area
+   ===================================================== */
+
+[data-theme="dark"] #content {
+    background: var(--dark-bg);
+}
+
+/* =====================================================
+   Boxes & Cards
+   ===================================================== */
+
+[data-theme="dark"] .box {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .box-header {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .box-header h2 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .box-content {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+/* =====================================================
+   Dashboard Stats Cards
+   ===================================================== */
+
+[data-theme="dark"] .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .stat-card::before {
+    background: linear-gradient(90deg, var(--card-color) 0%, var(--card-color-light) 100%);
+}
+
+[data-theme="dark"] .stat-card-body h3 {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .stat-card-value {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .stat-period {
+    color: var(--text-muted);
+}
+
+/* =====================================================
+   Tables
+   ===================================================== */
+
+[data-theme="dark"] .modern-table-wrapper {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .modern-table thead {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] .modern-table th {
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+[data-theme="dark"] .modern-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .modern-table td {
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* =====================================================
+   Forms
+   ===================================================== */
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select,
+[data-theme="dark"] .form-control {
+    background: #334155;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+    background: #475569;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* =====================================================
+   Buttons
+   ===================================================== */
+
+[data-theme="dark"] .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border: none;
+}
+
+[data-theme="dark"] .btn-secondary {
+    background: #475569;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+    background: #64748b;
+}
+
+/* =====================================================
+   Activity List
+   ===================================================== */
+
+[data-theme="dark"] .activity-item {
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .activity-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .activity-title {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .activity-description {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .activity-time {
+    color: var(--text-muted);
+}
+
+/* =====================================================
+   Chart Cards
+   ===================================================== */
+
+[data-theme="dark"] .chart-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .chart-card-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .chart-card-title {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .chart-filter-btn {
+    background: #334155;
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .chart-filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+[data-theme="dark"] .chart-filter-btn.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+}
+
+/* =====================================================
+   Quick Actions
+   ===================================================== */
+
+[data-theme="dark"] .quick-action-btn {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .quick-action-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(129, 140, 248, 0.1);
+}
+
+[data-theme="dark"] .quick-action-btn i {
+    color: var(--primary-color);
+}
+
+/* =====================================================
+   Dropdown Menu
+   ===================================================== */
+
+[data-theme="dark"] .dropdown-menu {
+    background: #1e293b;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-xl);
+}
+
+[data-theme="dark"] .dropdown-menu li:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .dropdown-menu li a,
+[data-theme="dark"] .dropdown-menu li span {
+    color: var(--text-primary);
+}
+
+/* =====================================================
+   Footer
+   ===================================================== */
+
+[data-theme="dark"] footer {
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] footer span {
+    color: var(--text-secondary);
+}
+
+/* =====================================================
+   Notifications
+   ===================================================== */
+
+[data-theme="dark"] .modern-notification {
+    background: #1e293b;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .modern-notification span {
+    color: var(--text-primary);
+}
+
+/* =====================================================
+   Status Badges
+   ===================================================== */
+
+[data-theme="dark"] .status-badge.success {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="dark"] .status-badge.warning {
+    background: rgba(245, 158, 11, 0.2);
+}
+
+[data-theme="dark"] .status-badge.danger {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+[data-theme="dark"] .status-badge.info {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+/* =====================================================
+   Empty State
+   ===================================================== */
+
+[data-theme="dark"] .empty-state {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .empty-state-icon {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .empty-state-title {
+    color: var(--text-primary);
+}
+
+/* =====================================================
+   Scrollbar Dark
+   ===================================================== */
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--darker-bg);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* =====================================================
+   Loading Overlay
+   ===================================================== */
+
+[data-theme="dark"] .overlay {
+    background: rgba(2, 6, 23, 0.95) !important;
+}
+
+/* =====================================================
+   Login Page Dark
+   ===================================================== */
+
+[data-theme="dark"] .login-wrap {
+    background: #1e293b;
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .login-subtitle {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .form-group input {
+    background: #334155;
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* =====================================================
+   Transitions
+   ===================================================== */
+
+[data-theme="dark"] * {
+    transition: background-color 0.3s ease, 
+                border-color 0.3s ease, 
+                color 0.3s ease;
+}
+
+/* =====================================================
+   Dark Mode Toggle Button
+   ===================================================== */
+
+.theme-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
+
+.theme-toggle i {
+    font-size: 1.125rem;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover i {
+    transform: rotate(180deg);
+}
+
+[data-theme="dark"] .theme-toggle {
+    background: rgba(129, 140, 248, 0.2);
+    border-color: rgba(129, 140, 248, 0.4);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    background: rgba(129, 140, 248, 0.3);
+}
+
+/* =====================================================
+   Animation for Theme Switch
+   ===================================================== */
+
+@keyframes themeFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+[data-theme="dark"] {
+    animation: themeFadeIn 0.3s ease;
+}
+

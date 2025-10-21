@@ -42,6 +42,14 @@
 <script type="text/javascript" src="js/jquery-ui-sliderAccess.js"></script>
 <script src="fastclick/lib/fastclick.js"></script>
 <script src="js/custom.js"></script>
+<!-- Modern UI Enhancement Script -->
+<script src="js/modern-ui.js"></script>
+<!-- Dark Mode Script -->
+<script src="js/dark-mode.js"></script>
+<!-- Keyboard Shortcuts -->
+<script src="js/keyboard-shortcuts.js"></script>
+<!-- Auto-save Forms -->
+<script src="js/auto-save.js"></script>
 
 	<!-- end: JavaScript-->
 	

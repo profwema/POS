@@ -21,6 +21,12 @@
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.4.2/chosen.css" />-->
 <link rel="stylesheet" href="css/style-forms.css" />
 <link href="css/custom.css" rel="stylesheet">
+<!-- Modern Theme CSS -->
+<link href="css/modern-theme.css" rel="stylesheet">
+<!-- RTL Support CSS -->
+<link href="css/rtl-support.css" rel="stylesheet">
+<!-- Dark Mode CSS -->
+<link href="css/dark-mode.css" rel="stylesheet">
 <script src="js/jquery-1.9.1.min.js"></script>
 <!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
 <!--[if lt IE 9]>
