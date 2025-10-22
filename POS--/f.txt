@@ -1,0 +1,1 @@
+DELETE FROM sales_ret_items WHERE itemid='16753' AND invoice_No='51-1567533119-0002' AND storeid='51'

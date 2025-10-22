@@ -5,72 +5,116 @@ require_once("controller.php");
 $language 	= $_SESSION['lang'];
 $storeid	= $_SESSION['storeid'];
 
-$idval		= $adController->encrypt_decrypt(2,urldecode($_REQUEST['d']),0);
+$idval		= $adController->encrypt_decrypt(2, urldecode($_REQUEST['d']), 0);
 
 $query	 	= "SELECT * FROM delivery WHERE storeid='$storeid'";
-$res		= mysqli_query($adController->MySQL,$query);
+$res		= mysqli_query($adController->MySQL, $query);
 $dataDiscount	= mysqli_fetch_assoc($res);
 $discount	= $dataCat['amount'];
-
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl" data-theme="light">
+
 <head>
 	<meta charset="utf-8">
-	<title>WAM Tech Soft</title>
-	<?php require_once("script_php_variables.php");?>
-	<?php require_once("header.php");?>	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>WAM Tech POS - <?= DELIVERY_COST ?></title>
+
+	<?php require_once("header.php"); ?>
+	<link href="css/admin-pro.css" rel="stylesheet">
 </head>
 
 <body>
-		<?php require_once("header_top.php");?>
-		<div class="container-fluid-full">
-		<div class="row-fluid">
-			<?php require_once("left_menu.php");?>
-			<div id="content" class="span10">
-			<div>
-				<div class="box span12">
-					<div class="box-header" data-original-title>
-                                            <h2><i class="halflings-icon money"></i><span class="break"></span>&nbsp;</h2>
+
+	<div class="admin-wrapper">
+
+		<!-- Professional Sidebar -->
+		<?php require_once("components/sidebar_pro.php"); ?>
+
+		<!-- Main Content Wrapper -->
+		<div style="flex: 1; display: flex; flex-direction: column;">
+
+			<!-- Professional Navbar -->
+			<?php require_once("components/header_pro.php"); ?>
+
+			<!-- Main Content -->
+			<main class="admin-content">
+
+				<!-- Page Header -->
+				<div class="page-header">
+					<h1 class="page-title">
+						<i class="fas fa-truck text-primary me-2"></i>
+						<?= DELIVERY_COST ?>
+					</h1>
+					<div class="page-breadcrumb">
+						<div class="breadcrumb-item">
+							<i class="fas fa-home"></i>
+							<span>الرئيسية</span>
+						</div>
+						<span class="breadcrumb-separator">/</span>
+						<div class="breadcrumb-item">
+							<span><?= FILES ?></span>
+						</div>
+						<span class="breadcrumb-separator">/</span>
+						<div class="breadcrumb-item">
+							<span class="text-primary"><?= DELIVERY_COST ?></span>
+						</div>
 					</div>
-					<div class="box-content">
-						<form class="form-horizontal" id="update-discount">
-						  <input type="hidden" value="discountAdd" name="f">
-						  <fieldset>
-							<div class="control-group">
-							  <label class="control-label" for="typeahead"><?=DELIVERY_COST?> : </label>
-							  <div class="controls">
-								<input type="text" class="float-val span4 typeahead" maxlength="4"  name='amount' id='amount' value="<?=$dataDiscount['amount']?>"> &nbsp; *
-								 <span class="help-inline">&nbsp;</span>
-							  </div>
+				</div>
+
+				<!-- Delivery Cost Card -->
+				<div class="card-pro" style="max-width: 600px;">
+					<div class="card-header-pro">
+						<h2 class="card-title-pro">
+							<i class="fas fa-dollar-sign"></i>
+							تحديث تكلفة التوصيل
+						</h2>
+					</div>
+					<div class="card-body-pro">
+						<form id="update-discount">
+							<input type="hidden" value="discountAdd" name="f">
+
+							<div class="form-group-pro">
+								<label class="form-label-pro">
+									<i class="fas fa-money-bill-wave me-1"></i>
+									<?= DELIVERY_COST ?>
+									<span class="text-danger">*</span>
+								</label>
+								<input type="text" class="form-input-pro float-val" maxlength="4" name='amount' id='amount' value="<?= $dataDiscount['amount'] ?>" placeholder="أدخل تكلفة التوصيل">
+								<small class="text-muted">* حقل مطلوب</small>
 							</div>
-							
-							<p>&nbsp;</p>
-							<p class='error-red'>
-								&nbsp;
-								
-							</p>
-							<div class="form-actions">
-							  <button type="button" id='submit-delivery' class="btn btn-primary"><?=SAVE?></button>
-							  <button type="reset" class="btn"><?=CANCEL?></button>
+
+							<div class="d-flex gap-2 mt-4">
+								<button type="button" id='submit-delivery' class="btn-pro btn-pro-primary">
+									<i class="fas fa-save me-1"></i>
+									<?= SAVE ?>
+								</button>
+								<button type="reset" class="btn-pro btn-pro-outline">
+									<i class="fas fa-times me-1"></i>
+									<?= CANCEL ?>
+								</button>
 							</div>
-						  </fieldset>
-						</form>   
+
+							<p class='error-red mt-3'>&nbsp;</p>
+
+						</form>
 
 					</div>
 				</div>
 
-			</div>
+				<!-- Professional Footer -->
+				<?php require_once("components/footer_pro.php"); ?>
 
-			
+			</main>
 
 		</div>
-		</div>
-		</div>
-		
-	
-	<div class="clearfix"></div>
-	
-	<?php require_once("footer.php");?>
+
+	</div>
+
+	<!-- Scripts -->
+	<?php require_once("include.php"); ?>
+	<script src="js/admin-pro.js"></script>
+
 </body>
+
 </html>

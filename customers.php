@@ -5,94 +5,136 @@ require_once("redirection.php");
 require_once("controller.php");
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl" data-theme="light">
+
 <head>
 	<meta charset="utf-8">
-	<title>WAM Tech Soft</title>
-	<?php require_once("header.php");?>	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>WAM Tech POS - <?= CUSTOMERS ?></title>
+
+	<?php require_once("header.php"); ?>
+	<link href="css/admin-pro.css" rel="stylesheet">
 </head>
 
 <body>
-		<?php require_once("header_top.php");?>
-	
-		<div class="container-fluid-full">
-		<div class="row-fluid">
-			<?php require_once("left_menu.php");?>
-			<div id="content" class="span10">
-			<div>
-				<div class="box span12">
-					<div class="box-header" data-original-title>
-						<h2><i class="halflings-icon edit"></i><span class="break"></span><?=CUSTOMERS?></h2>
-					</div>
-					<div class="box-content">
-						<p align="right">
-                                                    <a class="btn btn-success" href="add_customer.php">
-								<i class="icon-plus"></i>
-							</a>
-						</p>
-						<table class="table table-striped table-bordered bootstrap-datatable datatable">
-						  	<thead>
-							  <tr>
-								  <th><?=CUSTOMER_NAME?></th>
-								  <th><?=TAX_NO?></th>
-								  <th><?=EMAIL?></th>
-								  <th><?=MOBILE?></th>
-								  <th><?=EDITING?></th>
-							  </tr>
-						  	</thead>   
-						  	<tbody>
-								<?php
-									$language 	= LANG;
-									$storeid	= $_SESSION['storeid'];
-									$query	 	= "SELECT * FROM customers  WHERE storeid='$storeid'";
-									
-					$res 	 	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-									while($data 	= mysqli_fetch_assoc($res))
-									{
-										
-										$name	 	= $data["name_$language"];
-										$email		= $data["email"];
-										$phone	        = $data['phone'];
-                                                                                $tax_no	        = $data['tax_no'];
-                                                                                
-										$idval		= urlencode($adController->encrypt_decrypt(1,$data['id'],0));
-										$tableName	= urlencode($adController->encrypt_decrypt(1,'customers',0));
-										$secondIdval	= urlencode($adController->encrypt_decrypt(1,$idval,0));
 
-								
+	<div class="admin-wrapper">
 
-										echo "<tr>";
-											echo "<td>$name</td>";
-                                                                                        echo "<td>$tax_no</td>";
-                                                                                        echo "<td>$email</td>";
-											echo "<td>$phone</td>";
-											echo "<td class='center'>
-													<a class='btn btn-info' href='edit_customer.php?sd=$secondIdval'>
-														<i class='halflings-icon white edit'></i>  
-													</a>
-													<a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteData(\"$tableName\",\"$idval\",1);'>
-														<i class='halflings-icon white trash'></i> 
-													</a>
-												</td>";
-										echo "</tr>";
-									}
-								?>
-							</tbody>
-					  </table>            
+		<!-- Professional Sidebar -->
+		<?php require_once("components/sidebar_pro.php"); ?>
+
+		<!-- Main Content Wrapper -->
+		<div style="flex: 1; display: flex; flex-direction: column;">
+
+			<!-- Professional Navbar -->
+			<?php require_once("components/header_pro.php"); ?>
+
+			<!-- Main Content -->
+			<main class="admin-content">
+
+				<!-- Page Header -->
+				<div class="page-header">
+					<h1 class="page-title">
+						<i class="fas fa-users text-primary me-2"></i>
+						<?= CUSTOMERS ?>
+					</h1>
+					<div class="page-breadcrumb">
+						<div class="breadcrumb-item">
+							<i class="fas fa-home"></i>
+							<span>الرئيسية</span>
+						</div>
+						<span class="breadcrumb-separator">/</span>
+						<div class="breadcrumb-item">
+							<span><?= FILES ?></span>
+						</div>
+						<span class="breadcrumb-separator">/</span>
+						<div class="breadcrumb-item">
+							<span class="text-primary"><?= CUSTOMERS ?></span>
+						</div>
 					</div>
 				</div>
 
-			</div>
+				<!-- Customers Card -->
+				<div class="card-pro">
+					<div class="card-header-pro">
+						<div class="d-flex justify-content-between align-items-center">
+							<h2 class="card-title-pro">
+								<i class="fas fa-list"></i>
+								قائمة العملاء
+							</h2>
+							<a class="btn-pro btn-pro-success" href="add_customer.php">
+								<i class="fas fa-plus me-1"></i>
+								إضافة عميل جديد
+							</a>
+						</div>
+					</div>
+					<div class="card-body-pro">
+						<div class="table-responsive">
+							<table class="table-pro datatable">
+								<thead>
+									<tr>
+										<th><i class="fas fa-user me-2"></i><?= CUSTOMER_NAME ?></th>
+										<th><i class="fas fa-file-invoice me-2"></i><?= TAX_NO ?></th>
+										<th><i class="fas fa-envelope me-2"></i><?= EMAIL ?></th>
+										<th><i class="fas fa-phone me-2"></i><?= MOBILE ?></th>
+										<th class="text-center"><i class="fas fa-cog me-2"></i><?= EDITING ?></th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php
+									$language 	= LANG;
+									$storeid	= $_SESSION['storeid'];
+									$query	 	= "SELECT * FROM customers WHERE storeid='$storeid'";
 
-			
+									$res 	 	= mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
+									while ($data = mysqli_fetch_assoc($res)) {
+
+										$name	 	= $data["name_$language"];
+										$email		= $data["email"];
+										$phone	    = $data['phone'];
+										$tax_no	    = $data['tax_no'];
+
+										$idval		= urlencode($adController->encrypt_decrypt(1, $data['id'], 0));
+										$tableName	= urlencode($adController->encrypt_decrypt(1, 'customers', 0));
+										$secondIdval = urlencode($adController->encrypt_decrypt(1, $idval, 0));
+
+										echo "<tr>";
+										echo "<td><strong>$name</strong></td>";
+										echo "<td>$tax_no</td>";
+										echo "<td>$email</td>";
+										echo "<td>$phone</td>";
+										echo "<td class='text-center'>
+											<div class='d-flex gap-1 justify-content-center'>
+												<a class='btn-pro btn-pro-outline btn-pro-sm' href='edit_customer.php?sd=$secondIdval' title='تعديل'>
+													<i class='fas fa-edit'></i>  
+												</a>
+												<button class='btn-pro btn-pro-danger btn-pro-sm' onclick='javascript:deleteData(\"$tableName\",\"$idval\",1);' title='حذف'>
+													<i class='fas fa-trash'></i> 
+												</button>
+											</div>
+										</td>";
+										echo "</tr>";
+									}
+									?>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<!-- Professional Footer -->
+				<?php require_once("components/footer_pro.php"); ?>
+
+			</main>
 
 		</div>
-		</div>
-		</div>
-		
-	
-	<div class="clearfix"></div>
-	
-	<?php require_once("footer.php");?>
+
+	</div>
+
+	<!-- Scripts -->
+	<?php require_once("include.php"); ?>
+	<script src="js/admin-pro.js"></script>
+
 </body>
+
 </html>

@@ -1,0 +1,171 @@
+-- Minimal initial schema for the new POS (Arabic-only labels kept in app layer)
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  username VARCHAR(80) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('cashier','manager','admin') NOT NULL DEFAULT 'cashier',
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS branches (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  phone VARCHAR(30) NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS stores (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  branch_id INT NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  is_default TINYINT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_stores_branch FOREIGN KEY (branch_id) REFERENCES branches(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS units (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  category_id INT NOT NULL,
+  unit_id INT NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  barcode VARCHAR(64) UNIQUE,
+  price DECIMAL(12,2) NOT NULL DEFAULT 0,
+  cost DECIMAL(12,2) NOT NULL DEFAULT 0,
+  min_qty DECIMAL(12,3) NOT NULL DEFAULT 0,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  CONSTRAINT fk_items_category FOREIGN KEY (category_id) REFERENCES categories(id),
+  CONSTRAINT fk_items_unit FOREIGN KEY (unit_id) REFERENCES units(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS customers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  phone VARCHAR(30),
+  tax_no VARCHAR(50),
+  address VARCHAR(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS suppliers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  phone VARCHAR(30),
+  tax_no VARCHAR(50),
+  address VARCHAR(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS purchases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  supplier_id INT NOT NULL,
+  branch_id INT NOT NULL,
+  store_id INT NOT NULL,
+  date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  total DECIMAL(12,2) NOT NULL DEFAULT 0,
+  tax DECIMAL(12,2) NOT NULL DEFAULT 0,
+  discount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_purch_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
+  CONSTRAINT fk_purch_branch FOREIGN KEY (branch_id) REFERENCES branches(id),
+  CONSTRAINT fk_purch_store FOREIGN KEY (store_id) REFERENCES stores(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS purchase_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  purchase_id INT NOT NULL,
+  item_id INT NOT NULL,
+  qty DECIMAL(12,3) NOT NULL,
+  price DECIMAL(12,2) NOT NULL,
+  cost DECIMAL(12,2) NOT NULL,
+  CONSTRAINT fk_pi_purchase FOREIGN KEY (purchase_id) REFERENCES purchases(id),
+  CONSTRAINT fk_pi_item FOREIGN KEY (item_id) REFERENCES items(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sales (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT,
+  branch_id INT NOT NULL,
+  store_id INT NOT NULL,
+  user_id INT NOT NULL,
+  date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  total DECIMAL(12,2) NOT NULL DEFAULT 0,
+  discount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  tax DECIMAL(12,2) NOT NULL DEFAULT 0,
+  cash DECIMAL(12,2) NOT NULL DEFAULT 0,
+  card DECIMAL(12,2) NOT NULL DEFAULT 0,
+  status ENUM('open','closed','void') NOT NULL DEFAULT 'closed',
+  CONSTRAINT fk_sales_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
+  CONSTRAINT fk_sales_branch FOREIGN KEY (branch_id) REFERENCES branches(id),
+  CONSTRAINT fk_sales_store FOREIGN KEY (store_id) REFERENCES stores(id),
+  CONSTRAINT fk_sales_user FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sale_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sale_id INT NOT NULL,
+  item_id INT NOT NULL,
+  qty DECIMAL(12,3) NOT NULL,
+  price DECIMAL(12,2) NOT NULL,
+  discount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_si_sale FOREIGN KEY (sale_id) REFERENCES sales(id),
+  CONSTRAINT fk_si_item FOREIGN KEY (item_id) REFERENCES items(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS returns (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  type ENUM('sale','purchase') NOT NULL,
+  ref_id INT NOT NULL,
+  date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  total DECIMAL(12,2) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS return_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  return_id INT NOT NULL,
+  item_id INT NOT NULL,
+  qty DECIMAL(12,3) NOT NULL,
+  price DECIMAL(12,2) NOT NULL,
+  CONSTRAINT fk_ri_return FOREIGN KEY (return_id) REFERENCES returns(id),
+  CONSTRAINT fk_ri_item FOREIGN KEY (item_id) REFERENCES items(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS stock_moves (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  item_id INT NOT NULL,
+  from_store_id INT NULL,
+  to_store_id INT NULL,
+  qty DECIMAL(12,3) NOT NULL,
+  type ENUM('in','out','transfer','adjust') NOT NULL,
+  ref_table VARCHAR(30),
+  ref_id INT,
+  date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_sm_item FOREIGN KEY (item_id) REFERENCES items(id),
+  CONSTRAINT fk_sm_from_store FOREIGN KEY (from_store_id) REFERENCES stores(id),
+  CONSTRAINT fk_sm_to_store FOREIGN KEY (to_store_id) REFERENCES stores(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS settings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  k VARCHAR(60) NOT NULL UNIQUE,
+  v TEXT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  action VARCHAR(60),
+  entity VARCHAR(60),
+  entity_id INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_audit_user FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+

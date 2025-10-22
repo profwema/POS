@@ -1,0 +1,43 @@
+
+body 
+{
+    margin: 0cm;
+        text-align:  center;
+    font-size:14px;
+
+}
+
+    .table
+{
+
+    width:5cm;
+/*    //margin-bottom: 0.1cm;*/
+   height:  2.5cm;
+/*    margin-top: -0.2cm ;
+    margin-bottom: 0.4cm;*/
+/*    border:   chartreuse solid 1px;*/
+} 
+
+
+.head
+{
+    min-height:  25%;
+    padding-top: 5px;
+}
+.barcode
+{
+    min-height: 100%;
+}
+.price
+{
+    min-height: 25%
+}
+.price span
+{
+    margin-left: 20px
+}
+@page
+{
+size:   auto ;
+margin: 0cm;
+}

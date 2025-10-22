@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="openPalance" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="2fce573c-5263-48f0-b7a2-7d8442c8b143">
+	<property name="ireport.zoom" value="1.2100000000000002"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="96"/>
+	<queryString>
+		<![CDATA[SELECT
+     main_settings.`name_en` AS main_settings_name_en,
+     main_settings.`name_ar` AS main_settings_name_ar,
+     main_settings.`address` AS main_settings_address,
+     report_purchinvoice.`id` AS report_purchinvoice_id,
+     report_purchinvoice.`invoice_date` AS report_purchinvoice_invoice_date,
+     report_purchinvoice.`invoicenumber` AS report_purchinvoice_invoicenumber,
+     report_purchinvoice.`supplier` AS report_purchinvoice_supplier,
+     report_purchinvoice.`gross_total` AS report_purchinvoice_gross_total,
+     report_purchinvoice.`dis_added` AS report_purchinvoice_dis_added,
+     report_purchinvoice.`vat_all` AS report_purchinvoice_vat_all,
+     report_purchinvoice.`all_total` AS report_purchinvoice_all_total,
+     report_purchinvoice.`paid` AS report_purchinvoice_paid,
+     report_purchinvoice.`left` AS report_purchinvoice_left,
+     report_purchinvoice.`cost` AS report_purchinvoice_cost,
+     report_purchinvoice.`profit` AS report_purchinvoice_profit,
+     report_purchinvoice_all.`id` AS report_purchinvoice_all_id,
+     report_purchinvoice_all.`from` AS report_purchinvoice_all_from,
+     report_purchinvoice_all.`to` AS report_purchinvoice_all_to,
+     report_purchinvoice_all.`branch` AS report_purchinvoice_all_branch,
+     report_purchinvoice_all.`supplier` AS report_purchinvoice_all_supplier,
+     report_purchinvoice_all.`grossTotal` AS report_purchinvoice_all_grossTotal,
+     report_purchinvoice_all.`discTotal` AS report_purchinvoice_all_discTotal,
+     report_purchinvoice_all.`vatTotal` AS report_purchinvoice_all_vatTotal,
+     report_purchinvoice_all.`purchTotal` AS report_purchinvoice_all_purchTotal,
+     report_purchinvoice_all.`rePurchTotal` AS report_purchinvoice_all_rePurchTotal,
+     report_purchinvoice_all.`netTotal` AS report_purchinvoice_all_netTotal,
+     report_purchinvoice_all.`payTotal` AS report_purchinvoice_all_payTotal,
+     report_purchinvoice_all.`leftTotal` AS report_purchinvoice_all_leftTotal
+FROM
+     `main_settings` main_settings,
+     `report_purchinvoice` report_purchinvoice,
+     `report_purchinvoice_all` report_purchinvoice_all]]>
+	</queryString>
+	<field name="main_settings_name_en" class="java.lang.String"/>
+	<field name="main_settings_name_ar" class="java.lang.String"/>
+	<field name="main_settings_address" class="java.lang.String"/>
+	<field name="report_purchinvoice_id" class="java.lang.Integer"/>
+	<field name="report_purchinvoice_invoice_date" class="java.sql.Timestamp"/>
+	<field name="report_purchinvoice_invoicenumber" class="java.lang.String"/>
+	<field name="report_purchinvoice_supplier" class="java.lang.String"/>
+	<field name="report_purchinvoice_gross_total" class="java.lang.Float"/>
+	<field name="report_purchinvoice_dis_added" class="java.lang.Float"/>
+	<field name="report_purchinvoice_vat_all" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_total" class="java.lang.Float"/>
+	<field name="report_purchinvoice_paid" class="java.lang.Float"/>
+	<field name="report_purchinvoice_left" class="java.lang.Float"/>
+	<field name="report_purchinvoice_cost" class="java.lang.Float"/>
+	<field name="report_purchinvoice_profit" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_id" class="java.lang.Integer"/>
+	<field name="report_purchinvoice_all_from" class="java.lang.String"/>
+	<field name="report_purchinvoice_all_to" class="java.lang.String"/>
+	<field name="report_purchinvoice_all_branch" class="java.lang.String"/>
+	<field name="report_purchinvoice_all_supplier" class="java.lang.String"/>
+	<field name="report_purchinvoice_all_grossTotal" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_discTotal" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_vatTotal" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_purchTotal" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_rePurchTotal" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_netTotal" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_payTotal" class="java.lang.Float"/>
+	<field name="report_purchinvoice_all_leftTotal" class="java.lang.Float"/>
+	<title>
+		<band height="64" splitType="Stretch">
+			<textField>
+				<reportElement x="382" y="29" width="159" height="20" uuid="8a3cb012-116b-4f31-9aaa-083ee09c7b31"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{main_settings_name_ar}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="173" splitType="Stretch">
+			<staticText>
+				<reportElement x="226" y="0" width="100" height="20" uuid="0d475f85-0e6b-4906-9fdd-c7a2ee84ab09"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[تقرير مشتريات - فواتير]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="394" y="58" width="88" height="20" uuid="1179da24-69db-4f82-ae2e-e8765bbfcbc1"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_from}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="58" width="100" height="20" uuid="06237157-58ef-4080-bb24-a19e9c252abd"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_to}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="396" y="32" width="88" height="20" uuid="4f4deaa2-39a1-4222-ad88-52ca8429aa84"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_branch}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="32" width="99" height="20" uuid="cffad07d-8286-4652-a330-7fcd57791ede"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_supplier}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="491" y="58" width="62" height="20" uuid="1f1f9a19-c0ec-4962-89eb-d50155f8d04d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[من تاريخ ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="303" y="58" width="62" height="20" uuid="ebb2651d-4bfb-4eee-8490-c052131664ed"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[إلى تاريخ ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="491" y="32" width="62" height="20" uuid="bac441f6-ddd7-4173-999b-ba399606f66b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الفرع]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="303" y="32" width="62" height="20" uuid="6d20454c-9582-4522-b89f-1728c6dd47cc"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[المورد]]></text>
+			</staticText>
+			<textField pattern="#,##0.00">
+				<reportElement x="396" y="89" width="86" height="20" uuid="b2d3278b-b1f8-455f-9744-c7532f1daf74"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_grossTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="396" y="109" width="86" height="20" uuid="d69614f4-e51f-4799-aeaf-92114514776f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_discTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="396" y="129" width="86" height="20" uuid="0a8b0229-c921-42b5-a42c-189b35e0ceca"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_vatTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Opaque" x="396" y="149" width="86" height="20" backcolor="#CCCCCC" uuid="b86f2048-9446-4321-8d14-77cd2c4045fb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_purchTotal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="491" y="89" width="62" height="20" uuid="a5bd4cbf-0704-4186-b379-0884c9c0f870"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[اجمالى المشتريات]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="112" y="89" width="62" height="20" backcolor="#CCCCCC" uuid="e7fa6a9a-c82a-43c8-a33d-e6468cd9ae0d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[آجل ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="491" y="129" width="62" height="20" uuid="48f05447-2897-4191-92f8-3823a9688c6b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[ضريبة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="491" y="109" width="62" height="20" uuid="f81e3e4f-b2aa-498c-9a31-237be9e47ee7"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[الخصم]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="491" y="149" width="62" height="20" backcolor="#CCCCCC" uuid="70ebbb18-33b3-4c0f-9e67-a5b654083d64"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[المجموع]]></text>
+			</staticText>
+			<textField pattern="#,##0.00">
+				<reportElement x="188" y="89" width="100" height="20" uuid="61742266-09fb-469d-9eb9-478e61fccc38"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_rePurchTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Opaque" x="188" y="109" width="100" height="20" backcolor="#CCCCCC" uuid="e74e3fc0-e711-43c7-b0c7-c0d24c4195f9"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_netTotal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="303" y="89" width="62" height="20" uuid="c97a08d0-2f85-4ba4-8865-3c92bab27852"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[مرتجع مشتريات]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="303" y="109" width="62" height="20" backcolor="#CCCCCC" uuid="d558059f-f7b6-44fe-b19f-b4dc81b913eb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[صافى المشتريات ]]></text>
+			</staticText>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Opaque" x="10" y="89" width="92" height="20" backcolor="#CCCCCC" uuid="7ce9f5af-d35a-4b6c-9fa2-913d1c0d5ca1"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_leftTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement mode="Opaque" x="10" y="109" width="92" height="20" backcolor="#CCCCCC" uuid="3b912e8c-56c1-4fe1-a1b5-e6bc8872b8df"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_payTotal}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="112" y="109" width="62" height="20" backcolor="#CCCCCC" uuid="d79e4e4a-35a3-4a51-9de9-8ae26c9872aa"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[نقدا ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="69" width="154" height="20" uuid="1b30b1d4-c9dc-476c-8123-1d8a1efaaf88"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[طريقة الدفع  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="112" y="89" width="62" height="20" backcolor="#CCCCCC" uuid="7411a387-476a-4305-b792-7364b162b8dc"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<text><![CDATA[آجل ]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="26" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="39" y="0" width="39" height="26" backcolor="#CCCCCC" uuid="6f169e4d-a20b-4a4a-ac72-90e2b04ee5bb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[التاريخ  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="78" y="0" width="60" height="26" backcolor="#CCCCCC" uuid="1e2e4a8f-0d85-4c36-879b-5afded6bf002"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[رقم الفاتورة ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="138" y="0" width="57" height="26" backcolor="#CCCCCC" uuid="147edfce-0aa5-4f73-b822-dc250ba35561"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[المورد ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="195" y="0" width="39" height="26" backcolor="#CCCCCC" uuid="8f687314-5075-4429-878c-771c2f2fc036"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[الاجمالى  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="234" y="0" width="39" height="26" backcolor="#CCCCCC" uuid="68a5d354-68fc-44a2-bba4-e4cf889ddb2f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[الخصم  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="273" y="0" width="39" height="26" backcolor="#CCCCCC" uuid="30e3747d-ec6c-4d46-a641-1b61df947913"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[ضريبة  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="312" y="0" width="47" height="26" backcolor="#CCCCCC" uuid="2a5eef6f-4cde-4bf4-978e-0a5ba54906ab"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[المجموع  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="359" y="0" width="47" height="26" backcolor="#CCCCCC" uuid="ab8ef690-8d3a-4c9c-a38d-2fe9493dd9b9"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[مدفوع ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="406" y="0" width="47" height="26" backcolor="#CCCCCC" uuid="8293d3fb-9bfa-405a-ae32-f0f0caf74e36"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[باقى ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="453" y="0" width="46" height="26" backcolor="#CCCCCC" uuid="b665f1e8-4b2a-4a84-974b-f7fa4064575e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[التكلفة  ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="499" y="0" width="47" height="26" backcolor="#CCCCCC" uuid="c23e23cc-e5fe-4cd7-a863-860f17b45fd7"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[الربح ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="39" height="26" backcolor="#CCCCCC" uuid="cdae633d-d771-4198-b8be-1a7e111c41bc"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<text><![CDATA[م]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="39" height="20" uuid="4dc89abd-c5be-4056-91e5-4932ca881861"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="39" y="0" width="39" height="20" uuid="9d2f1d0f-c3fc-4ec9-a33a-7433596a7c3b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_invoice_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="78" y="0" width="60" height="20" uuid="8a9968cf-e49f-47bb-98b6-5981fdbf6245"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_invoicenumber}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="138" y="0" width="57" height="20" uuid="a00145b2-d40a-4c42-b1c1-77fe5c19853e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_supplier}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="195" y="0" width="39" height="20" uuid="7abff4e7-59fd-403a-8e11-b68c1eaca0a7"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_gross_total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="234" y="0" width="39" height="20" uuid="710f7155-fe3c-42ee-be26-b5191c2bd1bb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_dis_added}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="273" y="0" width="39" height="20" uuid="4ac6b7fa-5ca8-40bb-9b3b-7f3c02a6bedb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_vat_all}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="312" y="0" width="47" height="20" uuid="85f87156-13f9-4017-b894-a4dc6c291dd6"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_all_total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="359" y="0" width="47" height="20" uuid="864cf0f8-893b-4922-82c5-bf837ab29772"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_paid}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="406" y="0" width="47" height="20" uuid="7c05675b-f875-4da3-bc75-2e39f3ae992a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_left}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="453" y="0" width="46" height="20" uuid="8138e38f-6e6c-4aa2-bc10-c6372db7f4ce"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_cost}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="499" y="0" width="47" height="20" uuid="aa3d40cd-d5b7-4663-9870-f597128dcd0e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{report_purchinvoice_profit}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="21" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="20">
+			<textField>
+				<reportElement x="197" y="0" width="344" height="20" uuid="b96435b0-48df-4cc1-b735-6b1ba9627aef"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Simplified Arabic"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{main_settings_address}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="0" width="80" height="20" uuid="99e3b381-c741-4600-a791-f28d8bfa558d"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="90" y="0" width="40" height="20" uuid="83d64ab6-4a6e-4fb0-bd8a-e1b96db70d89"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="20"/>
+	</summary>
+</jasperReport>
