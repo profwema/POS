@@ -1,7 +1,7 @@
 <?php
-	/**
-Aes encryption
-*/
+/**
+ * AES Encryption - PHP 8.2 Compatible using OpenSSL
+ */
 class AES {
   
   const M_CBC = 'cbc';
@@ -16,14 +16,8 @@ class AES {
   protected $data;
   protected $mode;
   protected $IV;
-/**
-* 
-* @param type $data
-* @param type $key
-* @param type $blockSize
-* @param type $mode
-*/
-  function __construct($data = null, $key = null, $blockSize = null, $mode = null) {
+
+  public function __construct($data = null, $key = null, $blockSize = null, $mode = null) {
     $this->setData($data);
     $this->setKey($key);
     $this->setBlockSize($blockSize);
@@ -31,124 +25,75 @@ class AES {
     $this->setIV("");
   }
   
-/**
-* 
-* @param type $data
-*/
   public function setData($data) {
     $this->data = $data;
   }
   
-/**
-* 
-* @param type $key
-*/
   public function setKey($key) {
-    $this->key = $key;
+    $this->key = (string)($key ?? '');
   }
   
-/**
-* 
-* @param type $blockSize
-*/
   public function setBlockSize($blockSize) {
     switch ($blockSize) {
       case 128:
-      $this->cipher = MCRYPT_RIJNDAEL_128;
-      break;
-      
+        $this->cipher = 'AES-128-CBC';
+        break;
       case 192:
-      $this->cipher = MCRYPT_RIJNDAEL_192;
-      break;
-      
+        $this->cipher = 'AES-192-CBC';
+        break;
       case 256:
-      $this->cipher = MCRYPT_RIJNDAEL_256;
-      break;
-    }
-  }
-  
-/**
-* 
-* @param type $mode
-*/
-  public function setMode($mode) {
-    switch ($mode) {
-      case AES::M_CBC:
-      $this->mode = MCRYPT_MODE_CBC;
-      break;
-      case AES::M_CFB:
-      $this->mode = MCRYPT_MODE_CFB;
-      break;
-      case AES::M_ECB:
-      $this->mode = MCRYPT_MODE_ECB;
-      break;
-      case AES::M_NOFB:
-      $this->mode = MCRYPT_MODE_NOFB;
-      break;
-      case AES::M_OFB:
-      $this->mode = MCRYPT_MODE_OFB;
-      break;
-      case AES::M_STREAM:
-      $this->mode = MCRYPT_MODE_STREAM;
-      break;
       default:
-      $this->mode = MCRYPT_MODE_ECB;
-      break;
+        $this->cipher = 'AES-256-CBC';
+        break;
     }
   }
   
-/**
-* 
-* @return boolean
-*/
+  public function setMode($mode) {
+    $this->mode = $mode ?: 'cbc';
+  }
+  
   public function validateParams() {
-    if ($this->data != null &&
-        $this->key != null &&
-        $this->cipher != null) {
-      return true;
-    } else {
-      return FALSE;
-    }
+    return ($this->data !== null && $this->key !== null && $this->key !== '');
   }
   
   public function setIV($IV) {
-        $this->IV = $IV;
-    }
+    $this->IV = (string)($IV ?? '');
+  }
+
   protected function getIV() {
-      if ($this->IV == "") {
-        $this->IV = mcrypt_create_iv(mcrypt_get_iv_size($this->cipher, $this->mode), MCRYPT_RAND);
-      }
-      return $this->IV;
+    if (empty($this->IV)) {
+      $this->IV = substr(hash('md5', (string)$this->key), 0, 16);
+    }
+    return substr(str_pad((string)$this->IV, 16, "\0"), 0, 16);
+  }
+
+  protected function getNormalizedKey() {
+    return substr(hash('sha256', (string)$this->key, true), 0, 32);
   }
   
-/**
-* @return type
-* @throws Exception
-*/
   public function encrypt() {
-    
     if ($this->validateParams()) {
-      return trim(base64_encode(
-        mcrypt_encrypt(
-          $this->cipher, $this->key, $this->data, $this->mode, $this->getIV())));
+      $cipher = $this->cipher ?: 'AES-256-CBC';
+      $key = $this->getNormalizedKey();
+      $iv = $this->getIV();
+      $encrypted = openssl_encrypt((string)$this->data, $cipher, $key, OPENSSL_RAW_DATA, $iv);
+      return trim(base64_encode($encrypted));
     } else {
-      throw new Exception('Invlid params!');
+      throw new Exception('Invalid params!');
     }
   }
-/**
-* 
-* @return type
-* @throws Exception
-*/
+
   public function decrypt() {
     if ($this->validateParams()) {
-      return trim(mcrypt_decrypt(
-        $this->cipher, $this->key, base64_decode($this->data), $this->mode, $this->getIV()));
+      $cipher = $this->cipher ?: 'AES-256-CBC';
+      $key = $this->getNormalizedKey();
+      $iv = $this->getIV();
+      $raw = base64_decode((string)$this->data);
+      $decrypted = openssl_decrypt($raw, $cipher, $key, OPENSSL_RAW_DATA, $iv);
+      return trim((string)$decrypted);
     } else {
-      throw new Exception('Invlid params!');
+      throw new Exception('Invalid params!');
     }
   }
-  
 }
-
 ?>

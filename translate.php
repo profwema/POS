@@ -1,8 +1,12 @@
 <?php
 define("DEFAULT_LANGUAGE","ar");
 
-if($_SESSION['lang'] == "")
-	$_SESSION['lang'] = DEFAULT_LANGUAGE;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['lang'])) {
+    $_SESSION['lang'] = DEFAULT_LANGUAGE;
+}
 
 
 
@@ -565,7 +569,10 @@ define("REFERENE","Reference");
 define("ACCOUNT_NAME","Account Name");
 define("JOURNAL_NUMBER","Juornal No");
 define("COPIES_NO","Number of Copies");
-
+define("ADD_QUOTATION","Add Quotation");
+define("EDIT_QUOTATION","Edit Quotation");
+define("Master Card","Master Card");
+define("PURCHASES_REPORT","Purchases Report");
 }
 else
 {
@@ -1092,6 +1099,45 @@ define("REFERENE","مرجع");
 define("ACCOUNT_NAME","اسم الحساب");
 define("JOURNAL_NUMBER","رقم القيد");
 define("COPIES_NO","عدد النسخ");
+
+define("NO_ITEM_ENTERED","لم يتم إدخال أي صنف");
+define("SUPPLIER_NAME_COMPULSORY","اسم المورد إلزامي");
+define("INVOICE_NUMBER_COMPULSORY","رقم الفاتورة إلزامي");
+define("SUCCESS","تمت العملية بنجاح...");
+define("ERROR_IN_CREATING_NEW_CATEGORY","خطأ في إنشاء التصنيف الجديد. يرجى المحاولة مرة أخرى");
+define("ADMIN_PASSWORD","كلمة المرور");
+define("PASSWORD_CANNOT_B_BLANK","لا يمكن ترك كلمة المرور فارغة");
+define("CANNOT_CONNECT_TO_SERVER","تعذر الاتصال بالخادم");
+define("WORK_IN_PROGRESSS","العمل جاري");
+define("SAVE_DETAILS","بيانات العميل");
+define("WHO","الجهة");
+define("ADD_SERVICE","إضافة خدمة");
+define("SERVICE_EN","الخدمة (إنجليزي)");
+define("SERVICE_AR","الخدمة (عربي)");
+define("SERVICE_NAME_EN","اسم الخدمة (إنجليزي)");
+define("SERVICE_NAME_AR","اسم الخدمة (عربي)");
+define("EDIT_SERVICE","تعديل الخدمة");
+define("SERVICE_BLANK","لا يمكن ترك اسم الخدمة فارغاً");
+define("SERVICE_UPDATED_SUCCESSFULLY","تم تعديل الخدمة بنجاح");
+define("SERVICE_ADDED_SUCCESSFULLY","تم إضافة الخدمة بنجاح");
+define("ERROR_ADDING_SERVICES","خطأ في إضافة الخدمة");
+define("ERROR_IN_UPDATING_SERVICE","خطأ في تعديل الخدمة");
+define("ALL_SERVICES","كافة الخدمات");
+define("SERVICE_IS","هل هي خدمة");
+define("IT","الصنف");
+define("QTY","الكمية");
+define("PR","السعر<br>بعد<br>الخصم");
+define("DIS","الخصم");
+define("TOT","الإجمالي");
+define("GET_DEVICES","جلب الأجهزة");
+define("PLEASE_PROVIDE_ID","يرجى تحديد المعرف");
+define("SHIFT","الوردية");
+define("ACCOUNTS","الحسابات");
+define("ELIGIBLE_FOR_GIFT","مستحق للهدية");
+define("GIFT_QTY","كمية الهدية");
+define("CREATED_ON","تاريخ الإدخال");
+define("PURCHASED_ITEMS","الأصناف المشتراة");
+define("DEVICE_ID","معرف الجهاز");
 }
 
 

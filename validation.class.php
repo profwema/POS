@@ -12,8 +12,16 @@
 
 Class validation {
 
-	function validation() {
+	public $id = 0;
+	public $check_vars = [];
+
+	public function __construct() {
 		$this->id = 0;
+		$this->check_vars = [];
+	}
+
+	public function validation() {
+		$this->__construct();
 	}
 
 	function add_fields($postVar, $authType, $error) {
@@ -27,9 +35,9 @@ Class validation {
 		$errorMsg = "";
 
 		for($i = 0; $i < $this->id; $i++) {
-			$postVar  = $this->check_vars[$i]['data'];
-			$authType = $this->check_vars[$i]['authtype'];
-			$error    = $this->check_vars[$i]['error'];
+			$postVar  = $this->check_vars[$i]['data'] ?? null;
+			$authType = (string)($this->check_vars[$i]['authtype'] ?? '');
+			$error    = (string)($this->check_vars[$i]['error'] ?? '');
 
 			$pos = strpos($authType, '=');
 			if($pos !== false) {

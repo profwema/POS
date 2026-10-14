@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير التدقيق المعماري والبرمجي الشامل - WAM Tech POS & ERP</title>
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --secondary: #475569;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-sidebar: #0f172a;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --critical: #ef4444;
+            --critical-bg: #fef2f2;
+            --critical-border: #fecaca;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --warning-border: #fde68a;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --info: #06b6d4;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-md: 10px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.65;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ---------------- Sidebar Navigation ---------------- */
+        .sidebar {
+            width: 290px;
+            background-color: var(--bg-sidebar);
+            color: #f1f5f9;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            overflow-y: auto;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(255,255,255,0.08);
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: linear-gradient(180deg, rgba(37,99,235,0.15) 0%, transparent 100%);
+        }
+
+        .system-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(37,99,235,0.25);
+            color: #93c5fd;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            border: 1px solid rgba(147,197,253,0.3);
+        }
+
+        .sidebar-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .sidebar-menu {
+            padding: 16px 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .menu-heading {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 12px 12px 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            transform: translateX(-4px);
+        }
+
+        .nav-item:hover i {
+            color: #60a5fa;
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.2);
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .btn-print {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-print:hover {
+            background: #1d4ed8;
+        }
+
+        /* ---------------- Main Content ---------------- */
+        .main-wrapper {
+            margin-right: 290px;
+            flex: 1;
+            min-width: 0;
+            padding: 36px 40px;
+        }
+
+        /* Top Hero Header */
+        .hero-banner {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: var(--radius-lg);
+            padding: 32px 36px;
+            color: white;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 32px;
+        }
+
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            left: -80px;
+            bottom: -80px;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #e2e8f0;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .hero-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+            color: #94a3b8;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+
+        /* Metric Score Cards */
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 36px;
+        }
+
+        .score-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 4px;
+        }
+
+        .score-card.danger::before { background: var(--critical); }
+        .score-card.warning::before { background: var(--warning); }
+        .score-card.success::before { background: var(--success); }
+
+        .score-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .score-value.danger { color: var(--critical); }
+        .score-value.warning { color: var(--warning); }
+
+        .score-status {
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .score-status.danger { color: var(--critical); }
+        .score-status.warning { color: var(--warning); }
+
+        /* Report Sections */
+        .audit-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 32px 36px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 18px;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+
+        .section-tag {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* Subsections & Cards */
+        .sub-block {
+            margin-bottom: 24px;
+        }
+
+        .sub-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Callout Boxes (Alerts) */
+        .callout {
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin: 16px 0;
+            border-right: 4px solid;
+            font-size: 0.92rem;
+        }
+
+        .callout.danger {
+            background-color: var(--critical-bg);
+            border-color: var(--critical);
+            color: #991b1b;
+        }
+
+        .callout.warning {
+            background-color: var(--warning-bg);
+            border-color: var(--warning);
+            color: #92400e;
+        }
+
+        .callout.info {
+            background-color: #f0fdfa;
+            border-color: var(--info);
+            color: #115e59;
+        }
+
+        .callout-title {
+            font-weight: 800;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.98rem;
+        }
+
+        /* Code Snippet Box */
+        .code-box {
+            direction: ltr;
+            text-align: left;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.86rem;
+            overflow-x: auto;
+            margin: 14px 0;
+            border: 1px solid #1e293b;
+            line-height: 1.5;
+        }
+
+        .code-path {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        /* Detailed Tables */
+        .data-table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            font-size: 0.88rem;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            color: #334155;
+            padding: 14px 16px;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge.critical {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .badge.high {
+            background: #ffedd5;
+            color: #ea580c;
+            border: 1px solid #fdba74;
+        }
+
+        .badge.medium {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+
+        .badge.category {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Timeline / Roadmap */
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .phase-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .phase-number {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .phase-duration {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .phase-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .phase-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+
+        .phase-list li {
+            position: relative;
+            padding-right: 18px;
+        }
+
+        .phase-list li::before {
+            content: '✔';
+            position: absolute;
+            right: 0;
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        /* Search input for table */
+        .table-search-box {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(100%);
+            }
+            .main-wrapper {
+                margin-right: 0;
+                padding: 20px;
+            }
+        }
+
+        /* Print Stylesheet */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .sidebar, .btn-print, .table-search-box {
+                display: none !important;
+            }
+            .main-wrapper {
+                margin-right: 0;
+                padding: 0;
+            }
+            .audit-section {
+                border: 1px solid #ccc;
+                box-shadow: none;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+                padding: 20px;
+            }
+            .hero-banner {
+                background: #1e293b !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ---------------- Left / Right Sidebar ---------------- -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="system-badge"><i class="fas fa-shield-halved"></i> مراجعة معمارية 2026</div>
+            <h2 class="sidebar-title">نظام WAM Tech</h2>
+            <div class="sidebar-subtitle">تقرير التدقيق الشامل (ERP + POS)</div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <span class="menu-heading">فهرس المحتويات</span>
+            <a href="#summary" class="nav-item"><i class="fas fa-chart-pie"></i> الملخص التنفيذي</a>
+            <a href="#axis1" class="nav-item"><i class="fas fa-cubes"></i> 1. البنية والمعمارية</a>
+            <a href="#axis2" class="nav-item"><i class="fas fa-database"></i> 2. قاعدة البيانات</a>
+            <a href="#axis3" class="nav-item"><i class="fas fa-cash-register"></i> 3. مسار المبيعات والـ ERP</a>
+            <a href="#axis4" class="nav-item"><i class="fas fa-bug"></i> 4. الديون التقنية والأمان</a>
+            <a href="#axis5" class="nav-item"><i class="fas fa-desktop"></i> 5. شاشة الكاشير والطباعة</a>
+            <a href="#findings-table" class="nav-item"><i class="fas fa-list-check"></i> مصفوفة الملاحظات (20)</a>
+            <a href="#roadmap" class="nav-item"><i class="fas fa-route"></i> خارطة طريق التحديث</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div>إعداد: Lead System Architect</div>
+            <button class="btn-print" onclick="window.print()"><i class="fas fa-print"></i> طباعة التقرير / PDF</button>
+        </div>
+    </aside>
+
+    <!-- ---------------- Main Presentation Wrapper ---------------- -->
+    <main class="main-wrapper">
+
+        <!-- Hero Header -->
+        <header class="hero-banner">
+            <div class="hero-meta">
+                <span class="meta-pill"><i class="fas fa-building"></i> WAM Tech Soft</span>
+                <span class="meta-pill"><i class="fas fa-user-tie"></i> كبير مهندسي النظم ومحلل برمجيات</span>
+                <span class="meta-pill"><i class="fas fa-calendar-check"></i> أكتوبر 2026</span>
+                <span class="meta-pill" style="background: rgba(239,68,68,0.25); color: #fca5a5; border-color: rgba(239,68,68,0.4);"><i class="fas fa-eye"></i> وضع الاستكشاف (Audit Mode)</span>
+            </div>
+            <h1 class="hero-title">تقرير التدقيق المعماري والبرمجي الشامل</h1>
+            <p class="hero-subtitle">
+                فحص وتحليل استراتيجي وتقني كامل لمستودع الكود وقواعد البيانات لمنظومة ERP + POS؛ يشمل تشريح نموذج البيانات، مسارات المبيعات والمخازن، الثغرات الأمنية الحرجة، وتقييم شاشة نقاط البيع.
+            </p>
+        </header>
+
+        <!-- Evaluation Score Cards -->
+        <section class="score-grid" id="summary">
+            <div class="score-card danger">
+                <div class="score-label">المعمارية وهيكلية الكود <i class="fas fa-sitemap"></i></div>
+                <div class="score-value danger">3.0 <span style="font-size: 1rem; color: #94a3b8;">/ 10</span></div>
+                <div class="score-status danger"><i class="fas fa-circle-exclamation"></i> نمط God Controller وتكرار هائل</div>
+            </div>
+
+            <div class="score-card danger">
+                <div class="score-label">قاعدة البيانات والبيانات <i class="fas fa-database"></i></div>
+                <div class="score-value danger">2.5 <span style="font-size: 1rem; color: #94a3b8;">/ 10</span></div>
+                <div class="score-status danger"><i class="fas fa-circle-exclamation"></i> محرك MyISAM وبلا معاملات ACID</div>
+            </div>
+
+            <div class="score-card danger">
+                <div class="score-label">الأمان والصلاحيات <i class="fas fa-shield-virus"></i></div>
+                <div class="score-value danger">2.0 <span style="font-size: 1rem; color: #94a3b8;">/ 10</span></div>
+                <div class="score-status danger"><i class="fas fa-circle-exclamation"></i> SQLi واسع وغياب RBAC و CSRF</div>
+            </div>
+
+            <div class="score-card warning">
+                <div class="score-label">منطق الأعمال والـ ERP <i class="fas fa-gears"></i></div>
+                <div class="score-value warning">4.5 <span style="font-size: 1rem; color: #94a3b8;">/ 10</span></div>
+                <div class="score-status warning"><i class="fas fa-triangle-exclamation"></i> بطء احتساب المخزون وخلل الوردية</div>
+            </div>
+
+            <div class="score-card warning">
+                <div class="score-label">واجهة الكاشير والطباعة <i class="fas fa-receipt"></i></div>
+                <div class="score-value warning">4.0 <span style="font-size: 1rem; color: #94a3b8;">/ 10</span></div>
+                <div class="score-status warning"><i class="fas fa-triangle-exclamation"></i> طباعة معطلة وتأخير 1 ثانية في المسح</div>
+            </div>
+        </section>
+
+        <!-- ================= Axis 1 ================= -->
+        <article class="audit-section" id="axis1">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-cubes"></i> 1. نظرة عامة وتوصيف البنية الحالية (System Architecture)</h2>
+                <span class="section-tag">معمارية الكود والمكتبات</span>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-code text-primary"></i> المكونات التقنية وحالة الحزم البرمجية</h3>
+                <p>
+                    يعتمد النظام في الخلفية على <strong>PHP أصلي (Native Procedural & OOP Hybrid)</strong> غير مستند إلى أي إطار عمل قياسي. الكود مكتوب بأسلوب متوافق مع إصدارات PHP القديمة (PHP 5.4 - 7.4)؛ حيث يستخدم دوالاً أُلغيت نهائياً في إصدارات PHP 7.2 و PHP 8 مثل امتداد <code>mcrypt</code> في تشفير الجلسات، واستدعاءات <code>mysqli_*</code> الإجرائية المباشرة.
+                </p>
+                <div class="callout warning">
+                    <div class="callout-title"><i class="fas fa-exclamation-triangle"></i> كود ميت وملفات دخيلة (Dead Code Artifacts)</div>
+                    الملف <code>Sale.php</code> الموجود في الجذر هو صنف يتبع CodeIgniter مقتبس بالكامل من نظام <em>Open Source Point of Sale (OSPOS)</em>، وهو غير مفعل ولا يعمل إطلاقاً لوجود شرط <code>if (!defined('BASEPATH')) exit;</code> في أول سطر.
+                </div>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-diagram-project text-primary"></i> نمط المعمارية: المتحكم الخارق (The God Controller Anti-pattern)</h3>
+                <p>
+                    يعتمد النظام بالكامل على ملف مركزي متضخم وحيد هو <code>controller.php</code> (4,712 سطر بحجم 193KB)، يقوم بدور الموجه والمنفذ والمدقق في آنٍ واحد. كما وُجد ملف مكرر غير مبرر يحمل اسم <code>controller_1.php</code> (199KB) دون توثيق لاختلافاته.
+                </p>
+                <p>
+                    <strong>انعدام فصل الاهتمامات (Zero Separation of Concerns):</strong> الصفحات التنفيذية (مثل <code>accounts.php</code> و <code>add_purchase.php</code>) تخلط بين كود عرض الواجهة HTML، واستعلامات SQL المباشرة، وتنسيقات CSS، وكود الجافاسكريبت داخل ملف واحد، في غياب تام لطبقات الخدمات (Services) أو مستودعات البيانات (Repositories).
+                </p>
+            </div>
+        </article>
+
+        <!-- ================= Axis 2 ================= -->
+        <article class="audit-section" id="axis2">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-database"></i> 2. تدقيق قاعدة البيانات ونموذج البيانات (Data Model Audit)</h2>
+                <span class="section-tag" style="background:#fee2e2; color:#b91c1c;">مستوى حرج جداً</span>
+            </div>
+
+            <div class="callout danger">
+                <div class="callout-title"><i class="fas fa-skull-crossbones"></i> الكارثة الكبرى: محرك التخزين MyISAM لجميع الجداول</div>
+                تم فحص ملف البنية <code>wamtech_db.sql</code>، وتبيّن أن جميع الجداول تم إنشاؤها بمحرك <strong><code>ENGINE=MyISAM</code></strong>. هذا يعني انعدام المعاملات الذرية (ACID Transactions)، واستحالة تطبيق التراجع (Rollback)، وتطبيق أقفال على مستوى كامل الجدول (Table-level Locking) عند كل عملية بيع وشراء، مما يسبب تجمد النظام بالكامل في فترات الذروة.
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-link-slash text-primary"></i> غياب المفاتيح الأجنبية وسلامة البيانات (Zero Foreign Keys)</h3>
+                <p>
+                    لا يوجد أي مفتاح أجنبي (Foreign Key) واحد في كامل قاعدة البيانات. الاعتماد كله على نصوص وأرقام مجردة (<code>itemid</code>, <code>store</code>, <code>customer</code>). عند حذف فرع أو مستخدم، تظل القيود المحاسبية والفواتير تشير إلى معرفات محذوفة وتصبح بيانات يتيمة (Orphaned Records).
+                </p>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-arrows-split-up-and-left text-primary"></i> تصادم أرقام الفواتير ومسح الجدول بالكامل (Race Conditions)</h3>
+                <p>
+                    في <code>controller.php:2514</code>، يتم استخراج رقم الفاتورة التالي عبر:
+                </p>
+                <div class="code-box">
+                    <div class="code-path">controller.php (Lines 2514 - 2521)</div>
+SELECT $field AS No FROM $table ORDER BY SUBSTRING($field, -5) DESC LIMIT 1;
+                </div>
+                <p>
+                    <strong>النتيجة:</strong> استخدام <code>SUBSTRING</code> في الترتيب يُلغي عمل الفهارس ويجبر MySQL على قراءة الجدول بالكامل (Full Table Scan) عند كل فاتورة. بالإضافة إلى ذلك، في حال وجود كاشيرين يقومان بالحفظ في نفس اللحظة، سيحصل كلاهما على نفس الرقم مسبباً تصادماً وتلفاً في تسلسل الفواتير القانوني.
+                </p>
+            </div>
+        </article>
+
+        <!-- ================= Axis 3 ================= -->
+        <article class="audit-section" id="axis3">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-cash-register"></i> 3. تدقيق منطق الأعمال والوحدات (Business Logic Audit)</h2>
+                <span class="section-tag">مسار البيع والمخزون والمالية</span>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-bolt text-primary"></i> عمليات البيع غير الذرية (Non-Atomic Sales Operations)</h3>
+                <p>
+                    في دالة <code>setSales()</code>، تتكون عملية البيع من سلسلة استعلامات متتالية: إدراج في <code>sales</code>، ثم <code>outgo</code>، ثم حلقة لكل بند في <code>sales_items</code> و <code>outgo_items</code>، ثم إدراج القيود المحاسبية في <code>journal_items</code>. في حال انقطاع الشبكة أو حدوث خطأ في أي استعلام بالمنتصف، لا يتم التراجع؛ فتظل الفاتورة مسجلة بدون بنود أو بدون قيد محاسبي، مما يدمر سلامة القوائم المالية.
+                </p>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-hourglass-half text-primary"></i> استعلام المخزون فائق البطء (The Stock Calculation Loop)</h3>
+                <p>
+                    دالة <code>getBalanceItem()</code> في <code>controller.php:2452</code> تقوم بحساب رصيد الصنف عن طريق قراءة كافة سجلات الأرصدة الافتتاحية والمشتريات والمبيعات من بداية تاريخ المتجر وتجميعها سطراً بسطر عبر كود PHP، مما يتسبب في إطلاق مئات الاستعلامات في الفاتورة الواحدة بدلاً من قراءة رصيد مجمع لحظي.
+                </p>
+            </div>
+
+            <div class="callout danger">
+                <div class="callout-title"><i class="fas fa-bug"></i> خطأ برمجي يمنع بدء ورديات الكاشير الجديدة في pos.php</div>
+                في السطر 237 من ملف <code>pos.php</code>:
+                <div class="code-box">
+$newTrans = $data['id'];+1; // خطأ نحوي قاتل: الفاصلة المنقوطة تمنع زيادة الرقم!
+                </div>
+                بالإضافة إلى فحص متغير قيمته صفر في التفريع، مما يجعل رقم المعاملة دائماً يساوي <code>1</code>، وتفشل شاشة الكاشير فوراً عند محاولة فتح وردية جديدة بخطأ: <code>Duplicate entry '1' for key 'PRIMARY'</code>.
+            </div>
+
+            <div class="callout danger">
+                <div class="callout-title"><i class="fas fa-trash-can"></i> مسح تقارير الجرد والمخازن بمجرد فتح الصفحة</div>
+                في الملفين <code>item-movement.php</code> و <code>store-inventory.php</code> في السطور (9-14)، يتم تنفيذ:
+                <div class="code-box">
+TRUNCATE TABLE report_item_move_sam;
+TRUNCATE TABLE report_item_move_all;
+                </div>
+                مسح الجداول بالكامل عند مجرد استعراض الصفحة يعني أنه إذا فتح مستخدمان التقرير في نفس الوقت، سيقوم أحدهما بمسح بيانات تقرير الآخر فوراً!
+            </div>
+        </article>
+
+        <!-- ================= Axis 4 ================= -->
+        <article class="audit-section" id="axis4">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-shield-halved"></i> 4. تقييم الديون التقنية ومكامن الخلل (Technical Debt & Security)</h2>
+                <span class="section-tag" style="background:#fee2e2; color:#b91c1c;">ثغرات أمنية حرجة</span>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-unlock-keyhole text-danger"></i> 1. ثغرات حقن أوامر SQL واسعة الانتشار (SQL Injection)</h3>
+                <p>
+                    معظم استعلامات النظام تدمج مدخلات المستخدم مباشرة دون Prepared Statements. مثال ذلك تسجيل الدخول في <code>controller.php:150</code>:
+                </p>
+                <div class="code-box">
+$query = "SELECT * FROM employees WHERE user = '$user' AND password='$password'";
+                </div>
+                <p>يمكن لأي مهاجم تجاوز تسجيل الدخول وكتابة: <code>admin' -- </code> للحصول على صلاحيات النظام.</p>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-terminal text-danger"></i> 2. ثغرة استدعاء الدوال العشوائي (Arbitrary Method Execution)</h3>
+                <div class="code-box">
+                    <div class="code-path">controller.php (Lines 9 - 14)</div>
+$function = $_REQUEST['f'];
+$adController = new AdController();
+if($function !="")
+    $adController->$function();
+                </div>
+                <p>
+                    لا توجد قائمة بيضاء ولا تدقيق للجلسة قبل التنفيذ، مما يتيح لأي زائر استدعاء أي دالة في الكنترولر وحذف الفواتير وتعديل البيانات عبر الرابط مباشرة.
+                </p>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-door-open text-danger"></i> 3. ثغرة التنفيذ بعد إعادة التوجيه (Execution After Redirect - EAR)</h3>
+                <p>
+                    في ملف الحماية <code>redirection.php:10</code>، تتم إعادة التوجيه عبر كود جافاسكريبت <code>location.replace('login.php')</code> دون وجود أمر <code>exit()</code> أو <code>die()</code>! المهاجم الذي يستخدم <code>curl</code> أو يعطل الجافاسكريبت يستطيع تصفح جميع الصفحات المحمية دون تسجيل دخول.
+                </p>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-user-lock text-warning"></i> 4. انعدام نظام الصلاحيات والأدوار (No RBAC) وغياب CSRF</h3>
+                <p>
+                    دالة <code>checkAuthorized()</code> تفحص فقط وجود <code>storeid</code> في الجلسة. لا توجد مصفوفة أدوار تفصل الكاشير عن المحاسب أو مدير النظام. كما تخلو كافة النماذج من رموز حماية <strong>CSRF Tokens</strong>.
+                </p>
+            </div>
+        </article>
+
+        <!-- ================= Axis 5 ================= -->
+        <article class="audit-section" id="axis5">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-desktop"></i> 5. تقييم واجهة وتجربة المستخدم (UI/UX Review)</h2>
+                <span class="section-tag">شاشة الكاشير والطباعة</span>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-stopwatch text-warning"></i> استجابة شاشة الكاشير لضغط العمل (POS Latency)</h3>
+                <p>
+                    عند مسح أي باركود في <code>js/pos.js</code>، يتم إطلاق طلب AJAX للبحث عن الصنف يليه تأخير متعمد بمدة <strong>ثانية كاملة (1000ms setTimeout)</strong> لاحتساب الرصيد والإجمالي! هذا التأخير يجعل المسح السريع بالباركود مستحيلاً ويتسبب في تراكم الطوابير.
+                </p>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-keyboard text-warning"></i> غياب اختصارات لوحة المفاتيح (Hotkeys)</h3>
+                <p>
+                    تفتقر شاشة الكاشير تماماً لاختصارات لوحة المفاتيح الوظيفية (F1 - F12, Enter, Esc). الكاشير مجبر على استخدام الفأرة لكل خطوة أو استخدام لوحة أرقام افتراضية على الشاشة، مما يقلل الكفاءة التشغيلية بنسبة 60%.
+                </p>
+            </div>
+
+            <div class="sub-block">
+                <h3 class="sub-title"><i class="fas fa-print text-warning"></i> الطباعة الحرارية المتزامنة والمعطلة للطلب (Blocking Print)</h3>
+                <p>
+                    في <code>escpos/index.php</code>، ترتبط الطابعة بمسار محلي ثابت (<code>//localhost/POS-80</code>). عملية الطباعة تتم بشكل متزامن قبل إرسال استجابة HTTP؛ فإذا كانت الطابعة غير متصلة أو نفد الورق، يعلق المتصفح حتى انتهاء مهلة الاتصال (Timeout). كما أن طباعة النصوص العربية تتم بتحويلها لصور نقطية (GD Bitmaps)، مما يستغرق 4-7 ثوانٍ لكل إيصال.
+                </p>
+            </div>
+        </article>
+
+        <!-- ================= Findings Table ================= -->
+        <article class="audit-section" id="findings-table">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-list-check"></i> مصفوفة الملاحظات ومكامن الخلل (20 ملاحظة مصنفة)</h2>
+                <span class="section-tag">مرتبة حسب الأولوية والخطورة</span>
+            </div>
+
+            <div class="table-search-box">
+                <i class="fas fa-search text-muted"></i>
+                <input type="text" id="filterInput" class="search-input" placeholder="ابحث في الملاحظات، الملفات، أو نوع الخلل...">
+            </div>
+
+            <div class="data-table-wrapper">
+                <table class="data-table" id="auditTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>الملاحظة / الخلل البرمجي</th>
+                            <th>الموقع في الكود</th>
+                            <th>التصنيف</th>
+                            <th>الخطورة</th>
+                            <th>التأثير على النظام</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1</strong></td>
+                            <td>محرك التخزين MyISAM وغياب المعاملات الذرية</td>
+                            <td><code>wamtech_db.sql</code></td>
+                            <td><span class="badge category">بنية البيانات</span></td>
+                            <td><span class="badge critical"><i class="fas fa-circle"></i> حرج جداً</span></td>
+                            <td>انهيار سلامة البيانات المحاسبية وتجمد الجداول بالكامل</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2</strong></td>
+                            <td>ثغرات SQL Injection واسعة النطاق في تسجيل الدخول والفواتير</td>
+                            <td><code>controller.php:150</code>, <code>login.php</code></td>
+                            <td><span class="badge category">أمان</span></td>
+                            <td><span class="badge critical"><i class="fas fa-circle"></i> حرج جداً</span></td>
+                            <td>تسريب كامل لقاعدة البيانات وتجاوز المصادقة بالكامل</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3</strong></td>
+                            <td>استدعاء الدوال العشوائي (Arbitrary Method Execution)</td>
+                            <td><code>controller.php:14</code></td>
+                            <td><span class="badge category">أمان</span></td>
+                            <td><span class="badge critical"><i class="fas fa-circle"></i> حرج جداً</span></td>
+                            <td>تمكين أي زائر من حذف الفواتير وتعديل البيانات</td>
+                        </tr>
+                        <tr>
+                            <td><strong>4</strong></td>
+                            <td>خطأ منطقي يمنع بدء ورديات الكاشير الجديدة</td>
+                            <td><code>pos.php:235-247</code></td>
+                            <td><span class="badge category">منطق أعمال</span></td>
+                            <td><span class="badge critical"><i class="fas fa-circle"></i> حرج جداً</span></td>
+                            <td>تعطل شاشة الكاشير بظهور Duplicate entry</td>
+                        </tr>
+                        <tr>
+                            <td><strong>5</strong></td>
+                            <td>مسح بيانات الجرد وحركة الأصناف عند فتح التقرير (TRUNCATE)</td>
+                            <td><code>item-movement.php:9</code></td>
+                            <td><span class="badge category">منطق أعمال</span></td>
+                            <td><span class="badge critical"><i class="fas fa-circle"></i> حرج جداً</span></td>
+                            <td>مسح متكرر للبيانات وتضارب بين المستخدمين المتزامنين</td>
+                        </tr>
+                        <tr>
+                            <td><strong>6</strong></td>
+                            <td>التخطي الأمني لنظام التحقق (Execution After Redirect)</td>
+                            <td><code>redirection.php:10</code></td>
+                            <td><span class="badge category">أمان</span></td>
+                            <td><span class="badge critical"><i class="fas fa-circle"></i> حرج جداً</span></td>
+                            <td>تخطي المصادقة والوصول لأي صفحة داخلية بدون تسجيل دخول</td>
+                        </tr>
+                        <tr>
+                            <td><strong>7</strong></td>
+                            <td>تصادم أرقام الفواتير ومسح الجدول بالكامل (SUBSTRING)</td>
+                            <td><code>controller.php:2514</code></td>
+                            <td><span class="badge category">أداء / تماسك</span></td>
+                            <td><span class="badge critical"><i class="fas fa-circle"></i> حرج جداً</span></td>
+                            <td>تلف في تسلسل الفواتير وفشل عمليات البيع المتزامنة</td>
+                        </tr>
+                        <tr>
+                            <td><strong>8</strong></td>
+                            <td>انعدام المفاتيح الأجنبية وسلامة العلاقات المرجعية</td>
+                            <td><code>wamtech_db.sql</code></td>
+                            <td><span class="badge category">بنية البيانات</span></td>
+                            <td><span class="badge high"><i class="fas fa-circle"></i> عالية</span></td>
+                            <td>تراكم سجلات يتيمة وضياع الروابط المحاسبية</td>
+                        </tr>
+                        <tr>
+                            <td><strong>9</strong></td>
+                            <td>استعلامات المخزون التكرارية شديدة البطء (N+1 Stock Loop)</td>
+                            <td><code>controller.php:2452</code></td>
+                            <td><span class="badge category">أداء</span></td>
+                            <td><span class="badge high"><i class="fas fa-circle"></i> عالية</span></td>
+                            <td>استهلاك 100% من معالج السيرفر في أوقات الذروة</td>
+                        </tr>
+                        <tr>
+                            <td><strong>10</strong></td>
+                            <td>انعدام نظام الصلاحيات والمجموعات (RBAC)</td>
+                            <td><code>controller.php:1429</code></td>
+                            <td><span class="badge category">أمان</span></td>
+                            <td><span class="badge high"><i class="fas fa-circle"></i> عالية</span></td>
+                            <td>تحكم الكاشير في شاشات الإدارة والمالية الحساسة</td>
+                        </tr>
+                        <tr>
+                            <td><strong>11</strong></td>
+                            <td>تشفير كلمات المرور بـ MD5 الضعيف وبلا Salt</td>
+                            <td><code>controller.php:149</code></td>
+                            <td><span class="badge category">أمان</span></td>
+                            <td><span class="badge high"><i class="fas fa-circle"></i> عالية</span></td>
+                            <td>سهولة كسر كلمات المرور بجداول Rainbow Tables</td>
+                        </tr>
+                        <tr>
+                            <td><strong>12</strong></td>
+                            <td>تسريب أسرار وقواعد بيانات خارجية صريحة في الكود</td>
+                            <td><code>db.conn.php:12</code></td>
+                            <td><span class="badge category">أمان</span></td>
+                            <td><span class="badge high"><i class="fas fa-circle"></i> عالية</span></td>
+                            <td>كشف بيانات خوادم الإنتاج وكلمات المرور في السورس كود</td>
+                        </tr>
+                        <tr>
+                            <td><strong>13</strong></td>
+                            <td>طباعة الفواتير الحرارية متزامنة ومعطلة للطلب (Blocking Print)</td>
+                            <td><code>escpos/index.php:11</code></td>
+                            <td><span class="badge category">كفاءة / UX</span></td>
+                            <td><span class="badge high"><i class="fas fa-circle"></i> عالية</span></td>
+                            <td>تجميد شاشة الكاشير في حال مشاكل الطابعة أو انقطاعها</td>
+                        </tr>
+                        <tr>
+                            <td><strong>14</strong></td>
+                            <td>بطء شاشة الكاشير وتأخير الـ 1 ثانية عند مسح كل صنف</td>
+                            <td><code>js/pos.js:65</code></td>
+                            <td><span class="badge category">تجربة مستخدم</span></td>
+                            <td><span class="badge high"><i class="fas fa-circle"></i> عالية</span></td>
+                            <td>طوابير انتظار طويلة وبطء شديد في إنجاز عمليات البيع</td>
+                        </tr>
+                        <tr>
+                            <td><strong>15</strong></td>
+                            <td>غياب حماية النماذج من هجمات تزوير الطلبات (CSRF)</td>
+                            <td>كافة ملفات النماذج</td>
+                            <td><span class="badge category">أمان</span></td>
+                            <td><span class="badge high"><i class="fas fa-circle"></i> عالية</span></td>
+                            <td>تنفيذ عمليات حساسة باسم المستخدم المسجل دون علمه</td>
+                        </tr>
+                        <tr>
+                            <td><strong>16</strong></td>
+                            <td>غياب اختصارات لوحة المفاتيح لشاشة البيع (Hotkeys)</td>
+                            <td><code>pos.php</code>, <code>js/pos.js</code></td>
+                            <td><span class="badge category">تجربة مستخدم</span></td>
+                            <td><span class="badge medium"><i class="fas fa-circle"></i> متوسطة</span></td>
+                            <td>بطء الكاشير واعتماده الإجباري على الماوس والشاشة اللمسية</td>
+                        </tr>
+                        <tr>
+                            <td><strong>17</strong></td>
+                            <td>معضلة استعلامات N+1 في الجداول المعروضة</td>
+                            <td><code>categories.php:96</code></td>
+                            <td><span class="badge category">أداء</span></td>
+                            <td><span class="badge medium"><i class="fas fa-circle"></i> متوسطة</span></td>
+                            <td>بطء ملحوظ في تحميل صفحات الإدارة ذات البيانات الكبيرة</td>
+                        </tr>
+                        <tr>
+                            <td><strong>18</strong></td>
+                            <td>وجود أكواد ميتة ومكتبات معزولة غير مستخدمة (Sale.php, QZ)</td>
+                            <td><code>Sale.php</code>, <code>src/</code></td>
+                            <td><span class="badge category">ديون تقنية</span></td>
+                            <td><span class="badge medium"><i class="fas fa-circle"></i> متوسطة</span></td>
+                            <td>تشويش على التطوير وزيادة حجم المستودع بلا أي فائدة</td>
+                        </tr>
+                        <tr>
+                            <td><strong>19</strong></td>
+                            <td>طباعة المتغيرات في الواجهة دون تعقيم (XSS Vulnerabilities)</td>
+                            <td><code>categories.php:105</code></td>
+                            <td><span class="badge category">أمان</span></td>
+                            <td><span class="badge medium"><i class="fas fa-circle"></i> متوسطة</span></td>
+                            <td>إمكانية حقن كود خبيث عبر أسماء الأصناف والعملاء</td>
+                        </tr>
+                        <tr>
+                            <td><strong>20</strong></td>
+                            <td>تضخم الكنترولر (God Class) وتكرار ملفه كاملاً</td>
+                            <td><code>controller.php</code>, <code>controller_1.php</code></td>
+                            <td><span class="badge category">معمارية كود</span></td>
+                            <td><span class="badge medium"><i class="fas fa-circle"></i> متوسطة</span></td>
+                            <td>صعوبة بالغة في الصيانة وإضافة ميزات جديدة دون أخطاء جانبية</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <!-- ================= Roadmap ================= -->
+        <article class="audit-section" id="roadmap">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-route"></i> خارطة الطريق الهندسية المقترحة للإنقاذ والتحديث</h2>
+                <span class="section-tag">خطة عمل مرحلية عملية</span>
+            </div>
+
+            <div class="roadmap-grid">
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">1</div>
+                        <span class="phase-duration">الأسبوع الأول</span>
+                    </div>
+                    <h3 class="phase-title">التدخل العاجل وحماية البيانات</h3>
+                    <ul class="phase-list">
+                        <li>تحويل جميع الجداول إلى <code>InnoDB</code> وتفعيل Transactions.</li>
+                        <li>إغلاق ثغرة الـ EAR بوضع <code>exit()</code> في <code>redirection.php</code>.</li>
+                        <li>حظر استدعاء الدوال العشوائي وتطبيق Router Whitelist.</li>
+                        <li>إصلاح خطأ ورديات الكاشير وإزالة <code>TRUNCATE</code> العشوائي.</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">2</div>
+                        <span class="phase-duration">الأسابيع 2 - 4</span>
+                    </div>
+                    <h3 class="phase-title">إعادة هيكلة النواة والمخزون</h3>
+                    <ul class="phase-list">
+                        <li>تفكيك <code>controller.php</code> إلى 5 متحكمات فرعية متخصصة.</li>
+                        <li>إنشاء جدول أرصدة مجمعة لحظية <code>item_stock_balances</code>.</li>
+                        <li>تطبيق نظام ترقيم فواتير ذري وآمن لمنع التصادم.</li>
+                        <li>استبدال استعلامات SQL بـ Prepared Statements مع PDO.</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">3</div>
+                        <span class="phase-duration">الأسابيع 5 - 6</span>
+                    </div>
+                    <h3 class="phase-title">تحديث وتطوير شاشة الـ POS</h3>
+                    <ul class="phase-list">
+                        <li>إلغاء مهلة الـ 1000ms وتمكين المسح الفوري بالباركود.</li>
+                        <li>دعم اختصارات لوحة المفاتيح الكاملة (F1-F12, Enter, Esc).</li>
+                        <li>فصل الطباعة الحرارية لتكون غير متزامنة (Async Print).</li>
+                        <li>كاشينج محلي لكتالوج الأصناف في المتصفح عبر IndexedDB.</li>
+                    </ul>
+                </div>
+
+                <div class="phase-card">
+                    <div class="phase-header">
+                        <div class="phase-number">4</div>
+                        <span class="phase-duration">الأسابيع 7 - 8</span>
+                    </div>
+                    <h3 class="phase-title">الحوكمة وضمان الجودة</h3>
+                    <ul class="phase-list">
+                        <li>تطبيق نظام صلاحيات دقيق (Role-Based Access Control).</li>
+                        <li>كتابة اختبارات تكامل آلية للقيود المحاسبية وتوازن الدائن والمدين.</li>
+                        <li>إكمال توحيد الواجهات على تصميم <code>admin-pro.css</code>.</li>
+                        <li>إنشاء بيئة Docker موحدة وتوثيق المعمارية الجديدة.</li>
+                    </ul>
+                </div>
+            </div>
+        </article>
+
+    </main>
+
+    <script>
+        // Real-time Table Filter Search
+        document.getElementById('filterInput').addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll('#auditTable tbody tr');
+            rows.forEach(function(row) {
+                let text = row.textContent.toLowerCase();
+                row.style.display = text.indexOf(filter) > -1 ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>
