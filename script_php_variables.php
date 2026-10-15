@@ -26,7 +26,7 @@ var categoryUpSuccess	="<?=CATEGORY_UPDATED_SUCCESSFULLY?>";
 var error_updateCat	="<?=ERROR_IN_UPDATING_CATEGORY?>";
 var data_deleted	="<?=DATA_DELETED_SUCCESSFULLY?>";
 
-var currentLanguage	="<?=$_SESSION['lang']?>";
+var currentLanguage	="<?= $_SESSION['lang'] ?? 'ar' ?>";
 
 var catBlank		="<?=CATEGORY_NAME_CANNOT_BE_BLANK?>";
 var priceBlank		="<?=PRICE_CANNOT_BE_BLANK?>";

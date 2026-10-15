@@ -3,29 +3,29 @@ require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
     
-$userId         = $_SESSION['userlogged'];
+$userId         = $_SESSION['userlogged'] ?? 0;
 
 
 
 
-$language 	= $_SESSION['lang'];
-$storeid	= $_SESSION['storeid'];
-$enableNegative	= $_SESSION['enableNegative'];        
+$language 	= $_SESSION['lang'] ?? 'ar';
+$storeid	= $_SESSION['storeid'] ?? 0;
+$enableNegative	= $_SESSION['enableNegative'] ?? 0;        
         
 $query = "SELECT store_branch AS branch FROM employees WHERE id = '$userId' ";
 $res   = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL)); 
 $data = mysqli_fetch_assoc($res);
-$branch = $data['branch'];
+$branch = $data['branch'] ?? '';
 
 $query = "SELECT id FROM stores WHERE storeid= '$storeid' AND `default` = '1' ";
 $res   = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL)); 
 $data = mysqli_fetch_assoc($res);
-$store = $data['id'];
+$store = $data['id'] ?? '';
 
 $query	= "SELECT * FROM delivery  WHERE `storeid` = '$storeid'";
 $res 	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
 $data 	= mysqli_fetch_assoc($res);
-$delcost  = floatval($data['amount']);
+$delcost  = floatval($data['amount'] ?? 0);
 
 ?>
 
@@ -219,11 +219,9 @@ $delcost  = floatval($data['amount']);
 <?php
 $query = "SELECT id FROM `transactions` WHERE `user_id` = '$userId' AND status = '1' ";
 $res   = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL)); 
-$data = mysqli_fetch_assoc($res);
+$data  = mysqli_fetch_assoc($res);
 
-$num		= mysqli_num_rows($res);
-$data		= mysqli_fetch_assoc($res);
-if($num)
+if($data && !empty($data['id']))
 {
     $transaction = $data['id'];
 }
@@ -231,11 +229,11 @@ else
 {
     $query = "SELECT * FROM `transactions` WHERE `user_id` = '$userId' ORDER BY date DESC LIMIT 1 ";
     $res   = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL)); 
-    $data = mysqli_fetch_assoc($res);
-    if($num)
+    $lastTrans = mysqli_fetch_assoc($res);
+    if($lastTrans)
     {
-        $newTrans = $data['id'];+1;
-        $openPalance = $data['close_palance'];
+        $newTrans = intval($lastTrans['id'] ?? 0) + 1;
+        $openPalance = $lastTrans['close_palance'] ?? 0;
     }
     else 
     {

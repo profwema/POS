@@ -114,4 +114,4 @@
 
 <!-- end: JavaScript -->
 
-<?php mysqli_close(); ?>
+<?php if (isset($MySQL) && $MySQL instanceof mysqli) { @mysqli_close($MySQL); } if (isset($mysqli_Handle) && $mysqli_Handle instanceof mysqli) { @mysqli_close($mysqli_Handle); } ?>

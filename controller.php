@@ -6,12 +6,13 @@ require_once("validation.class.php");
 
 
 
-$function = $_REQUEST['f'];
+$function = $_REQUEST['f'] ?? '';
 
 $adController = new AdController();
 
-if($function !="")
+if($function !== "" && method_exists($adController, $function)) {
 	$adController->$function();
+}
 
 
 class AdController
@@ -21,17 +22,6 @@ class AdController
     var $MySQLupdate;
    	public function __construct()
 	{
-//    $this->MySQL =  mysqli_connect("localhost","root","",'wamtech_db') ; 
-//    if(!$this->MySQL)
-//    {
-//	//echo 'error';
-//	    $this->MySQL = mysqli_connect("178.238.228.170","root","R1HeK0D8a7R6CIqo",'wamtech_db') ; 
-//
-//    }
-//    $sSQL= 'SET NAMES utf8'; 
-//    mysqli_query($this->MySQL,$sSQL) ;	    
-	    
-	    
 	       include ("db.conn.php");
 		$this->MySQL	    = $MySQL;
 		$this->MySQLupdate  = $mysqli_Handle;
@@ -39,8 +29,12 @@ class AdController
 	}
 	
 	function __destruct() {
-    	mysqli_close($this->MySQL);
-	mysqli_close($this->MySQLupdate);
+    	if ($this->MySQL instanceof mysqli) {
+    	    @mysqli_close($this->MySQL);
+    	}
+    	if ($this->MySQLupdate instanceof mysqli) {
+    	    @mysqli_close($this->MySQLupdate);
+    	}
   	}       
 
 	function setLang()
@@ -1129,7 +1123,7 @@ function getStates()
                                 $exe = mysqli_query($this->MySQL,$query);
 							if($exe)
 							{
- 								$arrayOfUpdates[count($arrayOfUpdates)]	= mysqli_insert_id();
+ 								$arrayOfUpdates[count($arrayOfUpdates)]	= mysqli_insert_id($this->MySQL);
 								$insertedItem++;
 							}
 
@@ -1271,7 +1265,7 @@ function getStates()
 
 			if($exe)
 			{
-                            $id  = mysqli_insert_id();
+                            $id  = mysqli_insert_id($this->MySQL);
                             $this->insertAccount($name,$name_ar,'','',28,0,$id);	
                             
 //                            $this->mailFunction($email,"Account Created","Your account created with email $email and password $pwdVal");
@@ -1903,7 +1897,7 @@ function getStates()
                             `name_ar` )
                             VALUES ( '$name',  '$name_ar')";
                             $exe = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-                            $id  = mysqli_insert_id();
+                            $id  = mysqli_insert_id($this->MySQL);
                             
                             if($exe)
                             {
@@ -2028,7 +2022,7 @@ function storesUpdate()
 
                             $query  = "INSERT INTO stores(name_en,name_ar, branch ) VALUES('$nameEn','$nameAr','$brch')";
                             mysqli_query($this->MySQL,$query);
-                            $id      = mysqli_insert_id();   
+                            $id      = mysqli_insert_id($this->MySQL);   
                             $this->insertAccount($nameEn,$nameAr,'','',37,0,$id);
                             $this->insertAccount($nameEn,$nameAr,'','',40,0,$id);
                             $this->insertAccount($nameEn,$nameAr,'','',47,0,$id);
@@ -2199,7 +2193,7 @@ function storesUpdate()
                                     . "(name_en ,  name_ar ,  com_reg , tax_no  ,  phone , email  ,address, storeid,accCode) "
                             . "VALUES('$name_en','$name_ar','$com_reg','$tax_no','$phone','$email','$address','$storeid','$code')";
                 $res   = mysqli_query($this->MySQL,$query);
-                $id  = mysqli_insert_id();
+                $id  = mysqli_insert_id($this->MySQL);
                 $this->insertAccount($name_en,$name_ar,'','',5,0,$id);
                 echo $res;
             }
@@ -2276,7 +2270,7 @@ function storesUpdate()
                                     . "(name_en ,  name_ar ,  tax_no , address  ,  phone , email  , storeid) "
                             . "VALUES('$name_en','$name_ar','$tax_no','$address','$phone','$email','$storeid')";
             $res   = mysqli_query($this->MySQL,$query)or die(mysqli_error($this->MySQL));
-            $id  = mysqli_insert_id();
+            $id  = mysqli_insert_id($this->MySQL);
             $this->insertAccount($name_en,$name_ar,'','',1,0,$id);
             echo $res;            
     }
@@ -3315,7 +3309,7 @@ function addStoreTrans()
             $query          = "INSERT INTO store_trans (trans_number, trans_date,    storeFrom, storeTo, note,   storeid) VALUES"
                                                     . "('$invoice',   '$trans_date', '$from',  '$to',   '$note','$storeid')";
             $exe            = mysqli_query($this->MySQL,$query);
-            $insertid       = mysqli_insert_id();  
+            $insertid       = mysqli_insert_id($this->MySQL);  
             
             
             $query   = "SELECT branch FROM stores WHERE id ='$from'";
@@ -3729,7 +3723,7 @@ function addUotgoing()
             $query          = "INSERT INTO outgo (outgo_No, branch,   date, storeid) VALUES"
                                             . "('$invoice','$branch','$date','$storeid')";
             $exe            = mysqli_query($this->MySQL,$query);
-//            $insertid       = mysqli_insert_id();      
+//            $insertid       = mysqli_insert_id($this->MySQL);      
             
             for($i=0; $i<count($itemsArray); $i++)
             {
@@ -3906,7 +3900,7 @@ function addQuote()
             $query          = "INSERT INTO quote (thread,invoicenumber,branch   ,supplier   ,supplier_invoice,purchase_date , dis_added       , all_total ,storeid) VALUES"
                                               . "('$thread','$invoice'  ,'$branch','$customer','$invoiceSup'   ,'$pExpiry'    ,'$final_discount','$totalAll','$storeid')";
             $exe            = mysqli_query($this->MySQL,$query);
-            $insertid       = mysqli_insert_id();      
+            $insertid       = mysqli_insert_id($this->MySQL);      
             
             for($i=0; $i<count($itemsArray); $i++)
             {

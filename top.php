@@ -1,12 +1,16 @@
 <?php
 error_reporting(E_ERROR);
 ini_set('display_errors', 1);
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if(!isset($_SESSION['lang']))
 	$_SESSION['lang']="ar";
 
-define("LANG",$_SESSION['lang']);
+if (!defined("LANG")) {
+	define("LANG",$_SESSION['lang']);
+}
 if(!isset($_SESSION['key']))
 {
 	$time			=md5(md5(time()));
@@ -22,19 +26,21 @@ if(!isset($_SESSION['key_constant']))
 }
 
 
-$store_type_    = $_SESSION['type_of_store'];
+$store_type_    = $_SESSION['type_of_store'] ?? '';
 
 require_once("translate.php");
 require_once("enc.php");
 require_once("email.php");
 require_once("Encryption.php");
 require_once("resize-class.php");
-define("SALOON","2");
+if (!defined("SALOON")) {
+	define("SALOON","2");
+}
 
-        function flout_format($var)
-        {
-        $varSt= number_format($var, 2, '.', ',');
-        return $varSt;
-        }
+function flout_format($var)
+{
+    $varSt = number_format((float)($var ?? 0), 2, '.', ',');
+    return $varSt;
+}
         
 ?>

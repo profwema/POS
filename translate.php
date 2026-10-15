@@ -35,7 +35,6 @@ if($_SESSION['lang']=="en")
     define("REMEMBER_ME","Remember me");
     define("LOGIN","Login");
     define("USERNAME","User Name");
-    define("PASSWORD","Password");    
     define("FORGOT_PASSWORD","Forgot Password ?");
     define("CREATE_ACCOUNT","Create Account");
     define("ACCOUNT_STATEMENT","Account Statement");    
@@ -74,7 +73,6 @@ if($_SESSION['lang']=="en")
     define("FORGOT","Reset");
 
     define("TITLE_WELCOME_ADMIN","Welcome :: Admin");
-    define("DASHBOARD","Dashboard");
     define("BRANCHES","Branches");
     define("CATEGORIES","Category");
     define("ITEMS","Items");
@@ -236,7 +234,6 @@ if($_SESSION['lang']=="en")
 
     define("ERROR_IN_ADDING_EMPLOYEE","Error in adding Employee");
     define("ERROR_IN_UPDATING_EMPLOYEE","Error in updating Employee");
-    define("EMAIL_UNAVAILABLE","Email is unavailable");
 
     define("UPDATE_EMPLOYEE","Update Employee");
     define("ADD_EXPENDITURE","Add Expenditure");
@@ -263,7 +260,7 @@ if($_SESSION['lang']=="en")
     define("TABLE_UPDATED_SUCCESSFULLY","Table updated successfully");
     define("ERROR_UPDATING_TABLE","Error updating table");
 
-    define("WELCOME_USER","Welcome :: ".ucwords(strtolower($_SESSION['name_en'])));
+    define("WELCOME_USER","Welcome :: ".ucwords(strtolower($_SESSION['name_en'] ?? '')));
 
     define("TABLE","Table");
     define("TABLE_AVAILABLE","Available");
@@ -323,7 +320,6 @@ if($_SESSION['lang']=="en")
     define("TABLE_IS_BUSY","Table is occupied");
 
     define("UNAME","Name");
-    define("PHONE","Phone");
     define("ADDRESS","Address");
     define("ONLY_NUMBERS","Enter only numbers in phone number");
     define("ADDRESS_CANNOT_BE_BLANK","Address cannot be blank");
@@ -349,7 +345,6 @@ if($_SESSION['lang']=="en")
     define("PERMISSIONS","User Permissions");
     define("UPDATES","Version Update");    
 
-    define("TABLE_COUNT_CANNOT_BE_BLANK","Table count cannot be blank");
 
     define("PLEASE_FILL_SETTINGS","Please fill the values in <a href='settings.php' style='color:#0a0'> Settings </a>");
 
@@ -439,7 +434,6 @@ if($_SESSION['lang']=="en")
 
     define("LOAD_FORM","Load");
 
-    define("DELETE","حذف");
     define("ADMIN_PASSWORD","Password");
     define("PASSWORD_CANNOT_B_BLANK","Error In Passowrd");
     define("CANNOT_CONNECT_TO_SERVER","Error In Passowrd");
@@ -560,10 +554,8 @@ define("OUTGOING_ENTRY","Outgoing Entry");
     define("TAX_NO","Tax Number");
 define("OPENING_PALANCE","Opening balance");
 define("CUSTOMERS","Customers");
-define("CUSTOMER_NAME","Customer name");
 define("CUSTOMER_PHONE","Customer Phone");
 
-define("FILES","Files");    
 define("COST_CENTER","Cost Center");
 define("REFERENE","Reference");
 define("ACCOUNT_NAME","Account Name");
@@ -573,6 +565,11 @@ define("ADD_QUOTATION","Add Quotation");
 define("EDIT_QUOTATION","Edit Quotation");
 define("Master Card","Master Card");
 define("PURCHASES_REPORT","Purchases Report");
+define("TRANSACTION","Transaction");
+define("OPEN","Open");
+define("TRANSACTION_NO","Transaction No");
+define("OK","OK");
+
 }
 else
 {
@@ -606,14 +603,12 @@ else
     define("MAHLI_SECTIONS","أقسام محلي");
     define("PROCEED","حفظ");
 
-    define('SITE_TITLE','POS :: تسجيل الدخول');
     define('LOGIN_TO_ACCOUNT',' تسجيل الدخول للحساب');
     define('EMAIL','البريد الالكتروني');
     define('PASSWORD','كلمة المرور');
     define('REMEMBER_ME','تذكرنى');
     define('LOGIN','تسجيل الدخول');
     define("USERNAME","اسم الدخول");
-    define("PASSWORD","كلمة السر");    
     define('FORGOT_PASSWORD','هل نسيت كلمة المرور ؟');
     
     define('CREATE_ACCOUNT','إنشاء حساب');
@@ -643,7 +638,6 @@ else
     define('USER_DOES_NOT_EXIST','اسم المستخدم غير موجود');
     define('FORGOT','إعادة تعيين');
     define('TITLE_WELCOME_ADMIN','نرحب :: المشرف');
-    define('DASHBOARD','لوحة التحكم');
     define('BRANCHES','الفروع');
     define('CATEGORIES','الفئات');
     define('ITEMS','الاصناف');
@@ -795,7 +789,6 @@ else
 
     define("ERROR_IN_ADDING_EMPLOYEE","خطأ في إضافة موظف");
     define("ERROR_IN_UPDATING_EMPLOYEE","خطأ في تحديث بيانات موظف");
-    define("EMAIL_UNAVAILABLE","البريد الالكتروني غير متوفر");
 
     define("UPDATE_EMPLOYEE","تحديث موظف");
     define("ADD_EXPENDITURE","إضافة مصروفات");
@@ -822,7 +815,7 @@ else
     define("TABLE_UPDATED_SUCCESSFULLY","تم تحديث الطاولات بنجاح");
     define("ERROR_UPDATING_TABLE","خطأ في تحديث الطاولات");
 
-    define("WELCOME_USER","Welcome :: ".ucwords(strtolower($_SESSION['name_en'])));
+    define("WELCOME_USER","Welcome :: ".ucwords(strtolower($_SESSION['name_en'] ?? '')));
 
     define("TABLE","طاوله");
     define("TABLE_AVAILABLE","متاح");
@@ -880,7 +873,6 @@ else
     define("TABLE_IS_BUSY","الطاولة مشغولة");
 
     define("UNAME","الاسم");
-    define("PHONE","الهاتف");
     define("ADDRESS","العنوان");
     define("ONLY_NUMBERS","يجب ادخال ارقام فقط");
     define("ADDRESS_CANNOT_BE_BLANK","يجب ادخال العنوان");
@@ -906,7 +898,6 @@ else
     define("PERMISSIONS","صلاحيات المستخدم");
     define("UPDATES","تحديث الإصدار");    
 
-    define("TABLE_COUNT_CANNOT_BE_BLANK","يجب ادخال رقم الطاولة");
 
     define("PLEASE_FILL_SETTINGS","من فضلك أدخل البيانات  <a href='settings.php' style='color:#0a0'> Settings </a>");
 
@@ -956,14 +947,7 @@ else
     define("ITEMS_UPDATED"," تم التعديل");
 
 
-    define('SAVE','حفظ');
-    define('CANCEL','إلغاء');
-    define('NEW_BRANCH','فرع جديد');
-    define('ADD_NEW','+ إضافة جديد');
-    define('DELETE','حذف');
-    define('EDIT','تحرير');
 
-    define("WELCOME_USER","مرحبا :: ".$_SESSION['name_ar']);
 
 
 
@@ -987,12 +971,6 @@ else
 
     define("DELIVERY_ORDERS","توصيل");
     define("DELIVERY_ORDER","توصيل");
-    define("KITCHEN_PRINTER_NAME","النسخه الثانية");
-    define("RESET_INVOICE_NUMER","تصفير رقم الفاتورة");
-    define("TEST_PRINTERS","اختبار الطابعة");
-    define("RESET_INVOICE_COUNTER","Reset Invoice No.");
-    define("RESET","استعادة");
-    define("SECTIONS","قسم");
     define("SAVE_SECTIONS","حفظ القسم");
     define("MAHALI_ORDER_PRE_PAY","محلى كاش");
     define("MAHALI_ORDER_POST_PAY","محلى طاولات");
@@ -1001,17 +979,12 @@ else
 
     define("DELIVERY_COST","خدمة توصيل");
 
-    define("PROCEED","طباعة");
-    define("MAHLI_SECTIONS","محلى");
 
     define("ADD_ITEM_PRINTER","تحديد أصناف");
     define("PRINTER_NAME","اسم الطابعة");
 
     define("CLEAR_POSITIONS","الافتراضى");
 
-    define("LANGUAGE_1","اللغةالاولى");
-    define("LANGUAGE_2","اللغةالاختيارية");
-    define("ITEM_OPTIONS","اختيار");
 
     define("CUSTOMER_SCREEN_IP","شاشة العميل");
 
@@ -1090,10 +1063,8 @@ define("OUTGOING_ENTRY","إذن صرف");
     define("TAX_NO","الرقم الضريبي");
     define("OPENING_PALANCE","رصيد افتتاحي");
 define("CUSTOMERS","العملاء");
-define("CUSTOMER_NAME","اسم العميل");
 define("CUSTOMER_PHONE","تليفون العميل");
 
-define("FILES","ملفات");
 define("COST_CENTER","مركز التكلفة");
 define("REFERENE","مرجع");
 define("ACCOUNT_NAME","اسم الحساب");
@@ -1138,6 +1109,10 @@ define("GIFT_QTY","كمية الهدية");
 define("CREATED_ON","تاريخ الإدخال");
 define("PURCHASED_ITEMS","الأصناف المشتراة");
 define("DEVICE_ID","معرف الجهاز");
+define("TRANSACTION","العملية");
+define("OPEN","فتح");
+define("TRANSACTION_NO","رقم الوردية");
+define("OK","موافق");
 }
 
 
@@ -1159,7 +1134,7 @@ define("TOTAL_PRICE_EN","Total");
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-define("IMAGE_DIRECTORY",$_SERVER['CONTEXT_DOCUMENT_ROOT']."/images/");
+define("IMAGE_DIRECTORY", ($_SERVER['CONTEXT_DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'] ?? __DIR__) . "/images/");
 define("CONSTANT_BRANCH_ADDED","1");
 define("CONSTANT_BRANCH_UPDATED","2");
 define("ENC_KEY","tU2s!f6w0~!@$%@@$$@!~@@!");

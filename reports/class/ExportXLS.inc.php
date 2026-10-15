@@ -919,7 +919,7 @@ foreach($this->arraylastPageFooter as $out){
        $isstring=false;
        
         
-//        if($this->report_count>10 && $data=='$F{qty}' || $data=='$V{qty2}')  {
+//        if($this->report_count>10 && $data=='$F[qty]' || $data=='$V[qty2]')  {
 //               echo "$data =  $fm<br/>";
 //             }
        foreach($this->arrayVariable as $vv=>$av){
@@ -1069,7 +1069,7 @@ foreach($this->arraylastPageFooter as $out){
         foreach($this->arrayVariable as $k=>$out) {
 
             if($out["calculation"]!=""){
-                      $out['target']=str_replace(array('$F{','}'),'',$out['target']);//,  (strlen($out['target'])-1) ); 
+                      $out['target']=str_replace(array('$F[',']'),'',$out['target']);//,  (strlen($out['target'])-1) ); 
 
                 
             }

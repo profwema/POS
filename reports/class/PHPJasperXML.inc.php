@@ -107,7 +107,7 @@ class PHPJasperXML {
     public function disconnect($cndriver="mysql") {
         if($cndriver=="mysql") {
             if($this->con) {
-                if(@mysqli_close()) {
+                if(@mysqli_close($this->con)) {
                     $this->con = false;
                     return true;
                 }
@@ -267,7 +267,7 @@ class PHPJasperXML {
         $this->sql =$xml_path;
         if(isset($this->arrayParameter)) {
             foreach($this->arrayParameter as  $v => $a) {
-                $this->sql = str_replace('$P{'.$v.'}', $a, $this->sql);
+                $this->sql = str_replace('$P['.$v.']', $a, $this->sql);
             }
         }
     }
@@ -770,13 +770,13 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
                                 * <crosstabDataset>
 					<dataset>
 						<datasetRun subDataset="ds2" uuid="7e3eef20-67ea-4d56-b5bc-15df22a79303">
-							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+							<connectionExpression><![CDATA[$P[REPORT_CONNECTION]]]></connectionExpression>
 						</datasetRun>
 					</dataset>
 				</crosstabDataset>
 				<rowGroup name="itemtype_name" width="70" totalPosition="End">
 					<bucket class="java.lang.String">
-						<bucketExpression><![CDATA[$F{itemtype_name}]]></bucketExpression>
+						<bucketExpression><![CDATA[$F[itemtype_name]]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
 						<cellContents backcolor="#F0F8FF" mode="Opaque">
@@ -786,7 +786,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 							<textField>
 								<reportElement uuid="049d6b20-f72a-467e-9fa3-9dffb8c6cb74" style="Crosstab Data Text" x="0" y="0" width="70" height="25"/>
 								<textElement/>
-								<textFieldExpression><![CDATA[$V{itemtype_name}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V[itemtype_name]]]></textFieldExpression>
 							</textField>
 						</cellContents>
 					</crosstabRowHeader>
@@ -805,7 +805,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 				</rowGroup>
 				<columnGroup name="category_name" height="30" totalPosition="End">
 					<bucket class="java.lang.String">
-						<bucketExpression><![CDATA[$F{category_name}]]></bucketExpression>
+						<bucketExpression><![CDATA[$F[category_name]]]></bucketExpression>
 					</bucket>
 					<crosstabColumnHeader>
 						<cellContents backcolor="#F0F8FF" mode="Opaque">
@@ -815,7 +815,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 							<textField>
 								<reportElement uuid="9bb33545-6749-494c-91c6-8b258d697187" style="Crosstab Data Text" x="0" y="0" width="92" height="30"/>
 								<textElement/>
-								<textFieldExpression><![CDATA[$V{category_name}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V[category_name]]]></textFieldExpression>
 							</textField>
 						</cellContents>
 					</crosstabColumnHeader>
@@ -833,7 +833,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 					</crosstabTotalColumnHeader>
 				</columnGroup>
 				<measure name="item_idMeasure" class="java.lang.Integer" calculation="Count">
-					<measureExpression><![CDATA[$F{item_id}]]></measureExpression>
+					<measureExpression><![CDATA[$F[item_id]]]></measureExpression>
 				</measure>
 
 				<crosstabCell width="93" height="25">
@@ -844,7 +844,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 						<textField>
 							<reportElement uuid="04c4b685-118a-4f2b-a458-c1da42e3d78e" style="Crosstab Data Text" x="0" y="0" width="92" height="25"/>
 							<textElement/>
-							<textFieldExpression><![CDATA[$V{item_idMeasure}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$V[item_idMeasure]]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
@@ -856,7 +856,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 						<textField>
 							<reportElement uuid="74e517a1-2f81-4f74-8c7c-5991b0d9a7f6" style="Crosstab Data Text" x="0" y="0" width="92" height="25"/>
 							<textElement/>
-							<textFieldExpression><![CDATA[$V{item_idMeasure}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$V[item_idMeasure]]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
@@ -868,7 +868,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 						<textField>
 							<reportElement uuid="cb2c3525-76bc-4309-afa2-7c6e855eec56" style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
 							<textElement/>
-							<textFieldExpression><![CDATA[$V{item_idMeasure}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$V[item_idMeasure]]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
@@ -880,7 +880,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 						<textField>
 							<reportElement uuid="f23635a8-257c-4d64-a116-8fcc3a9b1e2a" style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
 							<textElement/>
-							<textFieldExpression><![CDATA[$V{item_idMeasure}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$V[item_idMeasure]]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
@@ -920,7 +920,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
         /*
         <columnGroup name="category_name" height="30" totalPosition="End">
 					<bucket class="java.lang.String">
-						<bucketExpression><![CDATA[$F{category_name}]]></bucketExpression>
+						<bucketExpression><![CDATA[$F[category_name]]]></bucketExpression>
 					</bucket>
 					<crosstabColumnHeader>
 						<cellContents backcolor="#F0F8FF" mode="Opaque">
@@ -930,7 +930,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 							<textField>
 								<reportElement uuid="9bb33545-6749-494c-91c6-8b258d697187" style="Crosstab Data Text" x="0" y="0" width="92" height="30"/>
 								<textElement/>
-								<textFieldExpression><![CDATA[$V{category_name}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V[category_name]]]></textFieldExpression>
 							</textField>
 						</cellContents>
 					</crosstabColumnHeader>
@@ -977,7 +977,7 @@ $data->hyperlinkReferenceExpression=trim(str_replace(array(" ",'"'),"",$data->hy
 						<textField>
 							<reportElement uuid="cb2c3525-76bc-4309-afa2-7c6e855eec56" style="Crosstab Data Text" x="0" y="0" width="50" height="25"/>
 							<textElement/>
-							<textFieldExpression><![CDATA[$V{item_idMeasure}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$V[item_idMeasure]]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>*/
@@ -1305,10 +1305,10 @@ $font=$data->textElement->font["fontName"];
          //$data->hyperlinkReferenceExpression=$this->analyse_expression($data->hyperlinkReferenceExpression);
         //if( $data->hyperlinkReferenceExpression!=''){echo "$data->hyperlinkReferenceExpression";die;}
 
-//echo '$V{'.$this->grouplist[0]["name"].'_COUNT}';
-//echo '$V{'.$this->grouplist[1]["name"].'_COUNT}';
-//echo '$V{'.$this->grouplist[2]["name"].'_COUNT}';
-//echo '$V{'.$this->grouplist[3]["name"].'_COUNT}';
+//echo '$V['.$this->grouplist[0]["name"].'_COUNT]';
+//echo '$V['.$this->grouplist[1]["name"].'_COUNT]';
+//echo '$V['.$this->grouplist[2]["name"].'_COUNT]';
+//echo '$V['.$this->grouplist[3]["name"].'_COUNT]';
 //        
 //        echo $data->textFieldExpression."<br/>";//
 //echo $data->textFieldExpression."///////".var_dump($this->grouplist)."<br/>";
@@ -1322,11 +1322,11 @@ $font=$data->textElement->font["fontName"];
                     "x"=>$data->reportElement["x"]+0,"y"=>$data->reportElement["y"]+0);
 //### End of modification				
                 break;
-            case '"Page "+$V{PAGE_NUMBER}+" of"':
+            case '"Page "+$V[PAGE_NUMBER]+" of"':
                 $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>'Page $this->PageNo() of',"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"pageno","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>$data->hyperlinkReferenceExpression,"pattern"=>$data["pattern"],"valign"=>$valign,
                     "x"=>$data->reportElement["x"]+0,"y"=>$data->reportElement["y"]+0);
                 break;
-            case '$V{PAGE_NUMBER}':
+            case '$V[PAGE_NUMBER]':
                 
                 // $this->pdf->getAliasNbPages();
                 if(isset($data["evaluationTime"])&&$data["evaluationTime"]=="Report") {
@@ -1338,7 +1338,7 @@ $font=$data->textElement->font["fontName"];
                         "x"=>$data->reportElement["x"]+0,"y"=>$data->reportElement["y"]+0);
                 }
                 break;
-            case '" " + $V{PAGE_NUMBER}':
+            case '" " + $V[PAGE_NUMBER]':
                 $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>' {{:ptp:}}',
                     "border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"nb","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>$data->hyperlinkReferenceExpression,"pattern"=>$data["pattern"],"valign"=>$valign,
                     "x"=>$data->reportElement["x"]+0,"y"=>$data->reportElement["y"]+0);
@@ -1368,10 +1368,10 @@ $font=$data->textElement->font["fontName"];
 
     public function element_subReport($data) {
 //        $b=$data->subreportParameter;
-                $srsearcharr=array('.jasper','"',"'",' ','$P{SUBREPORT_DIR}+');
+                $srsearcharr=array('.jasper','"',"'",' ','$P[SUBREPORT_DIR]+');
                 $srrepalcearr=array('.jrxml',"","",'',$this->arrayParameter['SUBREPORT_DIR']);
 
-                if (strpos($data->subreportExpression,'$P{SUBREPORT_DIR}') === false){
+                if (strpos($data->subreportExpression,'$P[SUBREPORT_DIR]') === false){
                     $subreportExpression=str_replace($srsearcharr,$srrepalcearr,$data->subreportExpression);
                 }
                 else{
@@ -1557,7 +1557,7 @@ $font=$data->textElement->font["fontName"];
         foreach($this->arrayVariable as $k=>$out) {
 
             if($out["calculation"]!=""){
-                      $out['target']=str_replace(array('$F{','}'),'',$out['target']);//,  (strlen($out['target'])-1) ); 
+                      $out['target']=str_replace(array('$F[',']'),'',$out['target']);//,  (strlen($out['target'])-1) ); 
 
                 
             }
@@ -2081,7 +2081,7 @@ public function showLineChart($data,$y_axis){
         $param=$data['param'];
         foreach($param as $p)
             foreach($p as $tag =>$value)
-                $sql=str_replace('$P{'.$tag.'}',$value, $sql);
+                $sql=str_replace('$P['.$tag.']',$value, $sql);
             $sql=$this->changeSubDataSetSql($sql);
 
         }
@@ -2100,11 +2100,11 @@ public function showLineChart($data,$y_axis){
                     //$chartdata[$j][$i]=$value;
                     if($value=='')
                         $value=0;
-                    if($key==str_replace(array('$F{','}'),'',$seriesexp[0]))
+                    if($key==str_replace(array('$F[',']'),'',$seriesexp[0]))
                     array_push($seriesname,$value);
                     else
                     foreach($valueexp as $v => $y){
-                     if($key==str_replace(array('$F{','}'),'',$y)){
+                     if($key==str_replace(array('$F[',']'),'',$y)){
                          $chartdata[$i][$j]=(int)$value;
 
                            $j++;
@@ -2390,7 +2390,7 @@ public function showBarChart($data,$y_axis,$type='barChart'){
         $param=$data['param'];
         foreach($param as $p)
             foreach($p as $tag =>$value)
-                $sql=str_replace('$P{'.$tag.'}',$value, $sql);
+                $sql=str_replace('$P['.$tag.']',$value, $sql);
             $sql=$this->changeSubDataSetSql($sql);
 //echo $sql;die;
         }
@@ -2409,11 +2409,11 @@ public function showBarChart($data,$y_axis,$type='barChart'){
                     //$chartdata[$j][$i]=$value;
                     if($value=='')
                         $value=0;
-                    if($key==str_replace(array('$F{','}'),'',$seriesexp[0]))
+                    if($key==str_replace(array('$F[',']'),'',$seriesexp[0]))
                     array_push($seriesname,$value);
                     else
                     foreach($valueexp as $v => $y){
-                     if($key==str_replace(array('$F{','}'),'',$y)){
+                     if($key==str_replace(array('$F[',']'),'',$y)){
                          $chartdata[$i][$j]=(int)$value;
 
                            $j++;
@@ -2710,7 +2710,7 @@ public function showAreaChart($data,$y_axis,$type){
         $param=$data['param'];
         foreach($param as $p)
             foreach($p as $tag =>$value)
-                $sql=str_replace('$P{'.$tag.'}',$value, $sql);
+                $sql=str_replace('$P['.$tag.']',$value, $sql);
             $sql=$this->changeSubDataSetSql($sql);
 
         }
@@ -2729,11 +2729,11 @@ public function showAreaChart($data,$y_axis,$type){
                     //$chartdata[$j][$i]=$value;
                     if($value=='')
                         $value=0;
-                    if($key==str_replace(array('$F{','}'),'',$seriesexp[0]))
+                    if($key==str_replace(array('$F[',']'),'',$seriesexp[0]))
                     array_push($seriesname,$value);
                     else
                     foreach($valueexp as $v => $y){
-                     if($key==str_replace(array('$F{','}'),'',$y)){
+                     if($key==str_replace(array('$F[',']'),'',$y)){
                          $chartdata[$i][$j]=(int)$value;
 
                            $j++;
@@ -2959,13 +2959,13 @@ $this->chart->drawStackedAreaChart(array("Surrounding"=>60));
 private function changeSubDataSetSql($sql){
 
 foreach($this->currentrow as $name =>$value)
-        $sql=str_replace('$F{'.$name.'}',$value,$sql);
+        $sql=str_replace('$F['.$name.']',$value,$sql);
 
 foreach($this->arrayParameter as $name=>$value)
-    $sql=str_replace('$P{'.$name.'}',$value,$sql);
+    $sql=str_replace('$P['.$name.']',$value,$sql);
 
 foreach($this->arrayVariable as $name=>$value){
-    $sql=str_replace('$V{'.$value['target'].'}',$value['ans'],$sql);
+    $sql=str_replace('$V['.$value['target'].']',$value['ans'],$sql);
 
 
 }
@@ -3723,7 +3723,7 @@ foreach($this->arrayVariable as $name=>$value){
         
          $rr=$this->analyse_expression($footercontent[0]["printWhenExpression"]);
          
-         //echo $this->analyse_expression('$F{classtype}').",".$footercontent[0]["printWhenExpression"]."hard code result:".($this->analyse_expression('$F{classtype}')!='5A').",result:$rr<br/><br/>";
+         //echo $this->analyse_expression('$F[classtype]').",".$footercontent[0]["printWhenExpression"]."hard code result:".($this->analyse_expression('$F[classtype]')!='5A').",result:$rr<br/><br/>";
          if($footercontent[0]["printWhenExpression"]!=""){
                 if(!$rr){
                     $yplusbandheight-=$y;
@@ -4022,7 +4022,7 @@ foreach($this->arrayVariable as $name=>$value){
         
         $colgroup =$a['colgroup'][0];
         $measuremethod =$a['measuremethod'];
-        $measurefield =str_replace(array('$F{','}'),"",$a['measurefield']);
+        $measurefield =str_replace(array('$F[',']'),"",$a['measurefield']);
         $ce=$a['crosstabcell'];
        $this->pdf->SetXY($x+$this->arrayPageSetting["leftMargin"],$y+$y_axis);
        
@@ -4094,7 +4094,7 @@ foreach($this->arrayVariable as $name=>$value){
         $param=$data['param'];
         foreach($param as $p)
             foreach($p as $tag =>$value)
-                $sql=str_replace('$P{'.$tag.'}',$value, $sql);
+                $sql=str_replace('$P['.$tag.']',$value, $sql);
             $sql=$this->changeSubDataSetSql($sql);
 
         }
@@ -4530,21 +4530,21 @@ foreach($this->arrayVariable as $name=>$value){
 //                }
 //              //  echo $arrdata[$num]."==";
 //            }
-//               elseif($out.""=='$V{REPORT_COUNT}'){
+//               elseif($out.""=='$V[REPORT_COUNT]'){
 //           //        $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>&$this->report_count,"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"report_count","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"],"valign"=>$valign);
 //                                                        $arrdata[$num]=$this->report_count;
 //               }
-//            elseif($out.""=='$V{'.$this->grouplist[0]["name"].'_COUNT}'){
+//            elseif($out.""=='$V['.$this->grouplist[0]["name"].'_COUNT]'){
 //                                                  $arrdata[$num]=$this->group_count[$this->grouplist[0]["name"]]-1;
 //                                                          
-//                }elseif($out.""=='$V{'.$this->grouplist[1]["name"].'_COUNT}'){
+//                }elseif($out.""=='$V['.$this->grouplist[1]["name"].'_COUNT]'){
 //                                            $arrdata[$num]=$this->group_count[$this->grouplist[1]["name"]]-1;
 //                                            
 //                }
-//                elseif($out.""=='$V{'.$this->grouplist[2]["name"].'_COUNT}'){
+//                elseif($out.""=='$V['.$this->grouplist[2]["name"].'_COUNT]'){
 //                                            $arrdata[$num]=$this->group_count[$this->grouplist[2]["name"]]-1;
 //                }
-//                elseif($out.""=='$V{'.$this->grouplist[3]["name"].'_COUNT}'){
+//                elseif($out.""=='$V['.$this->grouplist[3]["name"].'_COUNT]'){
 //                                            $arrdata[$num]=$this->group_count[$this->grouplist[3]["name"]]-1;
 //                }
 //            elseif(substr($out,0,3)=='$V{') {
@@ -4557,7 +4557,7 @@ foreach($this->arrayVariable as $name=>$value){
 //					$total=&$this->arrayVariable[substr($out,$p1,$p2-$p1)]["ans"];
 //					$p1=$p2+1;
 //                                    
-//                                        //echo $out . "-><br/>".'$V{'.$this->grouplist[1]["name"].'_COUNT}'."<br/><br/>";
+//                                        //echo $out . "-><br/>".'$V['.$this->grouplist[1]["name"].'_COUNT]'."<br/><br/>";
 //                                       
 //                                      
 //                                            
@@ -4572,19 +4572,19 @@ foreach($this->arrayVariable as $name=>$value){
 //                                                        $nbr=&$this->arrayVariable[substr($out,$p1,$p2-$p1)]["ans"];
 //                                                       
 //                                                        
-////            case '$V{'.$this->grouplist[0]["name"].'_COUNT}':
+////            case '$V['.$this->grouplist[0]["name"].'_COUNT]':
 ////		 $gnam=$this->arrayband[0][$this->grouplist[0]["name"]];																
 ////                $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>&$this->group_count[$this->grouplist[0]["name"]],"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"group_count","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"],"valign"=>$valign);
 ////                break;
-////            case '$V{'.$this->grouplist[1]["name"].'_COUNT}':
+////            case '$V['.$this->grouplist[1]["name"].'_COUNT]':
 ////		$gnam=$this->arrayband[0][$this->grouplist[1]["name"]];																
 ////                $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>&$this->group_count[$this->grouplist[1]["name"]],"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"group_count","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"],"valign"=>$valign);
 ////                break;
-////            case '$V{'.$this->grouplist[2]["name"].'_COUNT}':
+////            case '$V['.$this->grouplist[2]["name"].'_COUNT]':
 ////		$gnam=$this->arrayband[0][$this->grouplist[2]["name"]];																
 ////                $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>&$this->group_count[$this->grouplist[2]["name"]],"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"group_count","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"],"valign"=>$valign);
 ////                break;
-////            case '$V{'.$this->grouplist[3]["name"].'_COUNT}':
+////            case '$V['.$this->grouplist[3]["name"].'_COUNT]':
 ////		$gnam=$this->arrayband[0][$this->grouplist[3]["name"]];																
 ////                $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>&$this->group_count[$this->grouplist[3]["name"]],"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"group_count","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"],"valign"=>$valign);
 ////                break;
@@ -4645,7 +4645,7 @@ foreach($this->arrayVariable as $name=>$value){
        $isstring=false;
        
         
-//        if($this->report_count>10 && $data=='$F{qty}' || $data=='$V{qty2}')  {
+//        if($this->report_count>10 && $data=='$F[qty]' || $data=='$V[qty2]')  {
 //               echo "$data =  $fm<br/>";
 //             }
        foreach($this->arrayVariable as $vv=>$av){

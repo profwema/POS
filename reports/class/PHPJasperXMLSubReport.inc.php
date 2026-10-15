@@ -91,7 +91,7 @@ class PHPJasperXMLSubReport{
     public function disconnect($cndriver="mysql") {
         if($cndriver=="mysql") {
             if($this->con) {
-                if(@mysqli_close()) {
+                if(@mysqli_close($this->con)) {
                     $this->con = false;
                     return true;
                 }
@@ -192,7 +192,7 @@ class PHPJasperXMLSubReport{
         $this->sql =$xml_path;
         if(isset($this->arrayParameter)) {
             foreach($this->arrayParameter as  $v => $a) {
-                $this->sql = str_replace('$P{'.$v.'}', $a, $this->sql);
+                $this->sql = str_replace('$P['.$v.']', $a, $this->sql);
             }
         }
     }
@@ -611,10 +611,10 @@ $data->hyperlinkReferenceExpression=" ".$this->analyse_expression($data->hyperli
                 $this->pointer[]=array ("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>date("Y.m.d.", time()),"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"date","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1));
 //### End of modification				
                 break;
-            case '"Page "+$V{PAGE_NUMBER}+" of"':
+            case '"Page "+$V[PAGE_NUMBER]+" of"':
                 $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>'Page $this->PageNo() of',"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"pageno","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"]);
                 break;
-            case '$V{PAGE_NUMBER}':
+            case '$V[PAGE_NUMBER]':
                 if(isset($data["evaluationTime"])&&$data["evaluationTime"]=="Report") {
                     $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>'{nb}',"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"pageno","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"]);
                 }
@@ -622,15 +622,15 @@ $data->hyperlinkReferenceExpression=" ".$this->analyse_expression($data->hyperli
                     $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>'$this->PageNo()',"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"pageno","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"]);
                 }
                 break;
-            case '" " + $V{PAGE_NUMBER}':
+            case '" " + $V[PAGE_NUMBER]':
                 $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>' {nb}',"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"nb","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"]);
                 break;
-            case '$V{REPORT_COUNT}':
+            case '$V[REPORT_COUNT]':
 //###                $this->report_count=0;	
                 $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>&$this->report_count,"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"report_count","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"]);
                 break;
-            case '$V{'.$this->gnam.'_COUNT}':
-//            case '$V{'.$this->arrayband[0]["gname"].'_COUNT}':
+            case '$V['.$this->gnam.'_COUNT]':
+//            case '$V['.$this->arrayband[0]["gname"].'_COUNT]':
 //###                $this->group_count=0;
 				$gnam=$this->arrayband[0]["gname"];																
                 $this->pointer[]=array("type"=>"MultiCell","width"=>$data->reportElement["width"],"height"=>$height,"txt"=>&$this->group_count["$this->gnam"],"border"=>$border,"align"=>$align,"fill"=>$fill,"hidden_type"=>"group_count","soverflow"=>$stretchoverflow,"poverflow"=>$printoverflow,"link"=>substr($data->hyperlinkReferenceExpression,1,-1),"pattern"=>$data["pattern"]);
@@ -655,10 +655,10 @@ $data->hyperlinkReferenceExpression=" ".$this->analyse_expression($data->hyperli
 
     public function element_subReport($data) {
 //        $b=$data->subreportParameter;
-                $srsearcharr=array('.jasper','"',"'",' ','$P{SUBREPORT_DIR}+');
+                $srsearcharr=array('.jasper','"',"'",' ','$P[SUBREPORT_DIR]+');
                 $srrepalcearr=array('.jrxml',"","",'',$this->arrayParameter['SUBREPORT_DIR']);
 
-                if (strpos($data->subreportExpression,'$P{SUBREPORT_DIR}') === false){
+                if (strpos($data->subreportExpression,'$P[SUBREPORT_DIR]') === false){
                     $subreportExpression=str_replace($srsearcharr,$srrepalcearr,$data->subreportExpression);
                 }
                 else{
@@ -1402,7 +1402,7 @@ public function showLineChart($data,$y_axis){
         $param=$data['param'];
         foreach($param as $p)
             foreach($p as $tag =>$value)
-                $sql=str_replace('$P{'.$tag.'}',$value, $sql);
+                $sql=str_replace('$P['.$tag.']',$value, $sql);
             $sql=$this->changeSubDataSetSql($sql);
 
         }
@@ -1421,11 +1421,11 @@ public function showLineChart($data,$y_axis){
                     //$chartdata[$j][$i]=$value;
                     if($value=='')
                         $value=0;
-                    if($key==str_replace(array('$F{','}'),'',$seriesexp[0]))
+                    if($key==str_replace(array('$F[',']'),'',$seriesexp[0]))
                     array_push($seriesname,$value);
                     else
                     foreach($valueexp as $v => $y){
-                     if($key==str_replace(array('$F{','}'),'',$y)){
+                     if($key==str_replace(array('$F[',']'),'',$y)){
                          $chartdata[$i][$j]=(int)$value;
 
                            $j++;
@@ -1711,7 +1711,7 @@ public function showBarChart($data,$y_axis,$type='barChart'){
         $param=$data['param'];
         foreach($param as $p)
             foreach($p as $tag =>$value)
-                $sql=str_replace('$P{'.$tag.'}',$value, $sql);
+                $sql=str_replace('$P['.$tag.']',$value, $sql);
             $sql=$this->changeSubDataSetSql($sql);
 
         }
@@ -1730,11 +1730,11 @@ public function showBarChart($data,$y_axis,$type='barChart'){
                     //$chartdata[$j][$i]=$value;
                     if($value=='')
                         $value=0;
-                    if($key==str_replace(array('$F{','}'),'',$seriesexp[0]))
+                    if($key==str_replace(array('$F[',']'),'',$seriesexp[0]))
                     array_push($seriesname,$value);
                     else
                     foreach($valueexp as $v => $y){
-                     if($key==str_replace(array('$F{','}'),'',$y)){
+                     if($key==str_replace(array('$F[',']'),'',$y)){
                          $chartdata[$i][$j]=(int)$value;
 
                            $j++;
@@ -2023,7 +2023,7 @@ public function showAreaChart($data,$y_axis,$type){
         $param=$data['param'];
         foreach($param as $p)
             foreach($p as $tag =>$value)
-                $sql=str_replace('$P{'.$tag.'}',$value, $sql);
+                $sql=str_replace('$P['.$tag.']',$value, $sql);
             $sql=$this->changeSubDataSetSql($sql);
 
         }
@@ -2042,11 +2042,11 @@ public function showAreaChart($data,$y_axis,$type){
                     //$chartdata[$j][$i]=$value;
                     if($value=='')
                         $value=0;
-                    if($key==str_replace(array('$F{','}'),'',$seriesexp[0]))
+                    if($key==str_replace(array('$F[',']'),'',$seriesexp[0]))
                     array_push($seriesname,$value);
                     else
                     foreach($valueexp as $v => $y){
-                     if($key==str_replace(array('$F{','}'),'',$y)){
+                     if($key==str_replace(array('$F[',']'),'',$y)){
                          $chartdata[$i][$j]=(int)$value;
 
                            $j++;
@@ -2272,13 +2272,13 @@ $this->chart->drawStackedAreaChart(array("Surrounding"=>60));
 private function changeSubDataSetSql($sql){
 
 foreach($this->currentrow as $name =>$value)
-        $sql=str_replace('$F{'.$name.'}',$value,$sql);
+        $sql=str_replace('$F['.$name.']',$value,$sql);
 
 foreach($this->arrayParameter as $name=>$value)
-    $sql=str_replace('$P{'.$name.'}',$value,$sql);
+    $sql=str_replace('$P['.$name.']',$value,$sql);
 
 foreach($this->arrayVariable as $name=>$value){
-    $sql=str_replace('$V{'.$value['target'].'}',$value['ans'],$sql);
+    $sql=str_replace('$V['.$value['target'].']',$value['ans'],$sql);
 
 
 }

@@ -54,7 +54,7 @@ if(count($_POST) > 0 )
                       VALUES('$name','$emailId','$password')";
         
         $res        = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));	
-        $insertId   = mysqli_insert_id();
+        $insertId   = mysqli_insert_id($MySQL);
 
         if($res)
         {
@@ -74,7 +74,7 @@ if(count($_POST) > 0 )
                           VALUES ('$name','$insertId','$city','$state','$street','$st_ar','97','050000000000')";
 
             $res	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-            $insertId2	= mysqli_insert_id();
+            $insertId2	= mysqli_insert_id($MySQL);
 
             $query      = "INSERT INTO employees(name_en,email,password,store_branch,type,storeid) 
                            VALUES ('Cashier','$cashierEm','e10adc3949ba59abbe56e057f20f883e','$insertId2','3','$insertId')";
@@ -191,6 +191,6 @@ function getRandomWord($len ) {
 	</center>
 </body>
 <?php
-mysqli_close();
+if (isset($MySQL) && $MySQL instanceof mysqli) @mysqli_close($MySQL);
 ?>
 </html>

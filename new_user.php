@@ -57,7 +57,7 @@ function insertAccount($name_en,$name_ar,$pairent,$refId,$MySQL)
             $name_ar = "الفرع الرئيسي";
             $query 	= "INSERT INTO `branches` (`name_en`,`name_ar`) VALUES ('$name_en','$name_ar')";
             $res	= mysqli_query($MySQL,$query) or die(mysqli_error($MySQL));
-            $insertId2	= mysqli_insert_id();
+            $insertId2	= mysqli_insert_id($MySQL);
             if ($res) echo 'branch added <br>';
             
              
@@ -68,7 +68,7 @@ function insertAccount($name_en,$name_ar,$pairent,$refId,$MySQL)
 
             $ress	= mysqli_query($MySQL,$queryy) or die(mysqli_error($MySQL));  
                         if ($ress) echo 'customers added <br>';
-            $refId      = mysqli_insert_id();      
+            $refId      = mysqli_insert_id($MySQL);      
             insertAccount($name_en,$name_ar,1,$refId,$MySQL);
             
 
@@ -79,7 +79,7 @@ function insertAccount($name_en,$name_ar,$pairent,$refId,$MySQL)
                                          VALUES ('$name_en','$name_ar','admin','".md5('123456')."','$insertId2')";
             $res        = mysqli_query($MySQL,$query) or die(mysqli_error($MySQL)); 
             if ($res) echo 'emp added <br>';
-            $refId      = mysqli_insert_id();      
+            $refId      = mysqli_insert_id($MySQL);      
             insertAccount($name_en,$name_ar,28,$refId,$MySQL);
             
             
@@ -89,7 +89,7 @@ function insertAccount($name_en,$name_ar,$pairent,$refId,$MySQL)
                                             VALUES ('$name_en','$name_ar', '1') ";
             $ress	= mysqli_query($MySQL,$queryy) or die(mysqli_error($MySQL));     
                         if ($ress) echo 'sub added <br>';
-            $refId      = mysqli_insert_id();      
+            $refId      = mysqli_insert_id($MySQL);      
             insertAccount($name_en,$name_ar,5,$refId,$MySQL);
             
            
@@ -104,7 +104,7 @@ function insertAccount($name_en,$name_ar,$pairent,$refId,$MySQL)
                                           VALUES ('$name_en','$name_ar','$insertId2','1') ";                                                       
             $ress	= mysqli_query($MySQL,$queryy) or die(mysqli_error($MySQL));	
             if ($ress) echo 'store added <br>';
-            $refId      = mysqli_insert_id();      
+            $refId      = mysqli_insert_id($MySQL);      
             insertAccount($name_en,$name_ar,37,$refId,$MySQL);
             insertAccount($name_en,$name_ar,40,$refId,$MySQL);
             insertAccount($name_en,$name_ar,47,$refId,$MySQL);            
@@ -112,7 +112,7 @@ function insertAccount($name_en,$name_ar,$pairent,$refId,$MySQL)
 
 
 
-mysqli_close();
+if (isset($MySQL) && $MySQL instanceof mysqli) @mysqli_close($MySQL);
 ?>
 </html>
     
