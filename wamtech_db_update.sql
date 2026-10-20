@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `updates` (
   PRIMARY KEY (`id`),
   KEY `version` (`version`),
   KEY `updateDate` (`updateDate`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `updates`
