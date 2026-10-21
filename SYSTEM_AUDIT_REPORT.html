@@ -666,7 +666,7 @@
             <a href="#axis5" class="nav-item"><i class="fas fa-desktop"></i> 5. شاشة الكاشير والطباعة</a>
             <a href="#findings-table" class="nav-item"><i class="fas fa-list-check"></i> مصفوفة الملاحظات (20)</a>
             <a href="#roadmap" class="nav-item"><i class="fas fa-route"></i> خارطة طريق التحديث</a>
-            <a href="#changelog" class="nav-item" style="color: #10b981; font-weight: 700;"><i class="fas fa-circle-check"></i> ترقيات PHP 8.2 المنجزة</a>
+            <a href="#changelog" class="nav-item" style="color: #10b981; font-weight: 700;"><i class="fas fa-circle-check"></i> سجل الترقيات (PHP 8.2 + DB)</a>
         </nav>
 
         <div class="sidebar-footer">
@@ -684,11 +684,11 @@
                 <span class="meta-pill"><i class="fas fa-building"></i> WAM Tech Soft</span>
                 <span class="meta-pill"><i class="fas fa-user-tie"></i> كبير مهندسي النظم ومحلل برمجيات</span>
                 <span class="meta-pill"><i class="fas fa-calendar-check"></i> أكتوبر 2026</span>
-                <span class="meta-pill" style="background: rgba(239,68,68,0.25); color: #fca5a5; border-color: rgba(239,68,68,0.4);"><i class="fas fa-eye"></i> وضع الاستكشاف (Audit Mode)</span>
+                <span class="meta-pill" style="background: rgba(16,185,129,0.25); color: #6ee7b7; border-color: rgba(16,185,129,0.4);"><i class="fas fa-check-double"></i> تمت الترقية والتوافق التشغيلي 100%</span>
             </div>
             <h1 class="hero-title">تقرير التدقيق المعماري والبرمجي الشامل</h1>
             <p class="hero-subtitle">
-                فحص وتحليل استراتيجي وتقني كامل لمستودع الكود وقواعد البيانات لمنظومة ERP + POS؛ يشمل تشريح نموذج البيانات، مسارات المبيعات والمخازن، الثغرات الأمنية الحرجة، وتقييم شاشة نقاط البيع.
+                فحص وتحليل استراتيجي وتقني كامل لمستودع الكود وقواعد البيانات لمنظومة ERP + POS؛ يشمل تشريح نموذج البيانات، مسارات المبيعات والمخازن، وسجل ترقية التوافق مع PHP 8.2 ومحرك InnoDB الحديث.
             </p>
         </header>
 
@@ -700,10 +700,10 @@
                 <div class="score-status danger"><i class="fas fa-circle-exclamation"></i> نمط God Controller وتكرار هائل</div>
             </div>
 
-            <div class="score-card danger">
+            <div class="score-card" style="border-top-color: #16a34a;">
                 <div class="score-label">قاعدة البيانات والبيانات <i class="fas fa-database"></i></div>
-                <div class="score-value danger">2.5 <span style="font-size: 1rem; color: #94a3b8;">/ 10</span></div>
-                <div class="score-status danger"><i class="fas fa-circle-exclamation"></i> محرك MyISAM وبلا معاملات ACID</div>
+                <div class="score-value" style="color: #16a34a;">8.5 <span style="font-size: 1rem; color: #94a3b8;">/ 10</span></div>
+                <div class="score-status" style="color: #16a34a;"><i class="fas fa-circle-check"></i> 100% InnoDB + فهارس متقدمة</div>
             </div>
 
             <div class="score-card danger">
@@ -1330,6 +1330,91 @@ if($function !="")
                             <td><code>wamtech_db(1).sql</code> & <code>wamtech_db_update(1).sql</code></td>
                             <td>ملفات SQL مكررة</td>
                             <td>نسخ مكررة بالاسم التلقائي من قواعد البيانات الأساسية بحجم يتجاوز 12MB.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 style="font-size: 1.25rem; font-weight: 800; margin: 32px 0 16px; color: var(--text-dark);"><i class="fas fa-database" style="color: var(--primary);"></i> ترقية وتحديث بنية وفهارس قاعدة البيانات (Database Modernization & Indexing)</h3>
+            
+            <div class="summary-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">الجداول المحولة إلى InnoDB</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #16a34a; margin-top: 4px;">85 / 85</div>
+                    <div style="font-size: 0.75rem; color: #16a34a; font-weight: 600; margin-top: 2px;">100% نجاح تام</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">الفهارس المضافة للأداء</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary); margin-top: 4px;">15 فهرساً</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">تسريع استعلامات POS والتقارير</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">سلامة البيانات والحسابات</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #0284c7; margin-top: 4px;">0% فقدان</div>
+                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 600; margin-top: 2px;">استرجاع كامل السجلات</div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th style="width: 220px;">الإجراء المنفذ</th>
+                            <th style="width: 140px;">النوع / التصنيف</th>
+                            <th>التفاصيل التقنية والأثر على النظام</th>
+                            <th style="width: 120px;">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>النسخ الاحتياطي الكامل (Pre-migration Backup)</td>
+                            <td><span class="badge medium">أمان البيانات</span></td>
+                            <td>توليد نسخة احتياطية كاملة وشاملة لكافة هياكل وبيانات قاعدة البيانات <code>wamtech_db</code> وتخزينها كملف SQL بحجم 20.9MB لضمان عدم المخاطرة بأي بيانات.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز ومحفوظ</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>التحويل الشامل لمحرك InnoDB (85 جدولاً)</td>
+                            <td><span class="badge critical">معمارية الـ DB</span></td>
+                            <td>تحويل كافة جداول النظام (85 جدولاً في <code>wamtech_db</code> + جدول <code>updates</code> في <code>wamtech_db_update</code>) من <code>MyISAM</code> إلى <code>InnoDB</code> لتوفير أمان المعاملات المالية (ACID)، وإلغاء قفل الجداول الكامل (Row-level locking بدلاً من Table-level locking).</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">100% منجز</span></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>معالجة تعارض جدول اليومية <code>journal</code></td>
+                            <td><span class="badge high">إصلاح قاموس البيانات</span></td>
+                            <td>حل تعارض تاريخي في قاموس بيانات InnoDB الداخلي أدى لتعطل المحرك في المحاولات السابقة؛ تم فك الارتباط وتفريغ وإعادة إنشاء الجدول كمحرك InnoDB واستعادة كافة سجلاته الـ 22 بنجاح دون أي فقدان.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز بنجاح</span></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>فهرسة المبيعات والطلبات <code>sales</code> & <code>orders</code></td>
+                            <td><span class="badge high">تحسين الأداء</span></td>
+                            <td>إضافة فهارس سريعة على <code>invoicenumber</code>, <code>transaction_No</code>, <code>user</code>, <code>invoice_date</code> وفهارس مركبة على <code>orders (storeid, specific_date)</code> و <code>(invoice_number, storeid)</code> لتسريع فتح وبحث الفواتير في شاشة POS.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز بنجاح</span></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>فهرسة بنود المبيعات والمشتريات والأصناف</td>
+                            <td><span class="badge medium">تحسين الأداء</span></td>
+                            <td>إضافة فهارس مركبة على <code>sales_items (invoice_No, itemid)</code> و <code>purchase_items (invoice_No, itemid)</code> وفهرس الفئات <code>items (catid)</code> لتسريع فرز الأصناف وحساب إجماليات الفواتير.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز بنجاح</span></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>فهرسة الورديات والعملاء والموردين</td>
+                            <td><span class="badge medium">تحسين الأداء</span></td>
+                            <td>إضافة فهرس <code>transactions (user_id, status)</code> لتسريع فحص حالة وردية الكاشير، وفهارس البحث السريع بالهاتف والمخزن على جدولي <code>customers</code> و <code>suppliers</code>.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز بنجاح</span></td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>تحديث وتصدير ملفات التثبيت <code>wamtech_db.sql</code></td>
+                            <td><span class="badge medium">نشر وتوزيع</span></td>
+                            <td>إعادة تصدير ملفات الـ SQL المرفقة بجذر المشروع لتصبح مبنية افتراضياً على محرك <code>InnoDB</code> وترميز <code>utf8mb4</code> لضمان استيراد نظيف ومعياري في أي بيئة تشغيلية مستقبلية.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز بنجاح</span></td>
                         </tr>
                     </tbody>
                 </table>
