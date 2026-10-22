@@ -42,17 +42,9 @@ $storeid	= $_SESSION['storeid'];
 						<form id="add-sup">
 							<input type="hidden" value="addSupplier" name="f">
 							<div class="mb-4">
-								<h5 class="text-primary mb-3"><i class="fas fa-language me-2"></i><?= LANGUAGE_1 ?></h5>
 								<div class="form-group-pro">
-									<label class="form-label-pro"><?= SUPPLIER_NAME ?></label>
-									<input type="text" class="form-input-pro" name='name' id='name'>
-								</div>
-							</div>
-							<div class="mb-4">
-								<h5 class="text-primary mb-3"><i class="fas fa-language me-2"></i><?= LANGUAGE_2 ?></h5>
-								<div class="form-group-pro">
-									<label class="form-label-pro"><?= SUPPLIER_NAME ?></label>
-									<input type="text" class="form-input-pro" name='name_ar'>
+									<label class="form-label-pro"><i class="fas fa-truck me-1"></i><?= SUPPLIER_NAME ?> <span class="text-danger">*</span></label>
+									<input type="text" class="form-input-pro" name='name_ar' id='name' placeholder="أدخل اسم المورد / الشركة" required>
 								</div>
 							</div>
 							<hr class="my-4">

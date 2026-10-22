@@ -54,29 +54,22 @@ $storeid	= $_SESSION['storeid'];
 						<form id="add-cat">
 							<input type="hidden" value="addCat" name="f">
 
-							<!-- Language 1 Section -->
-							<div class="mb-4">
-								<h5 class="text-primary mb-3">
-									<i class="fas fa-language me-2"></i>
-									<?= LANGUAGE_1 ?>
-								</h5>
-
-								<div class="row g-3">
-									<div class="col-md-6">
-										<div class="form-group-pro">
-											<label class="form-label-pro">
-												<?= CAT_NAME ?>
-												<span class="text-danger">*</span>
-											</label>
-											<input type="text" class="form-input-pro" name='name' id='name' required>
-										</div>
+							<!-- Category Info -->
+							<div class="row g-3 mb-4">
+								<div class="col-md-6">
+									<div class="form-group-pro">
+										<label class="form-label-pro">
+											<?= CAT_NAME ?>
+											<span class="text-danger">*</span>
+										</label>
+										<input type="text" class="form-input-pro" name='name_ar' id='name' placeholder="أدخل اسم التصنيف" required>
 									</div>
+								</div>
 
-									<div class="col-md-6">
-										<div class="form-group-pro">
-											<label class="form-label-pro"><?= IMAGE ?></label>
-											<input type="file" class="form-input-pro" name="file[]" accept="image/*">
-										</div>
+								<div class="col-md-6">
+									<div class="form-group-pro">
+										<label class="form-label-pro"><?= IMAGE ?></label>
+										<input type="file" class="form-input-pro" name="file[]" accept="image/*">
 									</div>
 								</div>
 							</div>
@@ -89,11 +82,11 @@ $storeid	= $_SESSION['storeid'];
 								</label>
 								<select name="branch[]" class="form-input-pro select2" multiple>
 									<?php
-									$query = "SELECT * FROM branches ORDER BY name_en ASC";
+									$query = "SELECT * FROM branches ORDER BY name_ar ASC";
 									$res   = mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
 									while ($data = mysqli_fetch_assoc($res)) {
 										$id   = $data['id'];
-										$name = $data['name_' . $language];
+										$name = $data['name_ar'] ?: $data['name_en'];
 										echo "<option value='$id'>$name</option>";
 									}
 									?>
@@ -120,22 +113,6 @@ $storeid	= $_SESSION['storeid'];
 											<?= ENABLED ?>
 										</label>
 									</div>
-								</div>
-							</div>
-
-							<!-- Divider -->
-							<hr class="my-4" style="border-top: 2px solid rgba(0,0,0,0.1);">
-
-							<!-- Language 2 Section -->
-							<div class="mb-4">
-								<h5 class="text-primary mb-3">
-									<i class="fas fa-language me-2"></i>
-									<?= LANGUAGE_2 ?>
-								</h5>
-
-								<div class="form-group-pro">
-									<label class="form-label-pro"><?= CAT_NAME ?></label>
-									<input type="text" class="form-input-pro" name='name_ar'>
 								</div>
 							</div>
 

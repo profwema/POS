@@ -179,7 +179,7 @@ $page_title = SUPPLIERS;
                     onclick="viewStatement(<?= $data['id'] ?>)">
                     <i class="fas fa-file-invoice-dollar"></i>
                   </button>
-                  <a href="edit_supplier.php?sd=<?= $secondIdval ?>"
+                  <a href="edit_supp.php?sd=<?= $secondIdval ?>"
                     class="admin-btn admin-btn-icon admin-btn-icon-sm admin-btn-outline-primary"
                     data-bs-toggle="tooltip"
                     title="تعديل">

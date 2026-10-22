@@ -40,21 +40,12 @@ $dataCat	= mysqli_fetch_assoc($res);
 <!--                                                  <input type="hidden" value="<?=$dataCat['id']?>" name="nd">-->
 
                                                   <fieldset>
-							<h4><?=LANGUAGE_1?></h4>
 							<div class="control-group">
-							  <label class="control-label" for="typeahead"><?=CUMPANY_NAME?> : </label>
+							  <label class="control-label" for="name"><?=CUMPANY_NAME?> : </label>
 							  <div class="controls">
-								<input type="text" class="span6 typeahead" name='name' id='name' value="<?=$dataCat['name_en']?>">
+								<?php $compName = htmlspecialchars(!empty($dataCat['name_ar']) ? $dataCat['name_ar'] : ($dataCat['name_en'] ?? '')); ?>
+								<input type="text" class="span6 typeahead" name='name_ar' id='name' value="<?=$compName?>" placeholder="اسم المنشأة / الشركة" required>
 								<span class="help-inline">&nbsp;</span>
-							  </div>
-							</div>
-							
-							<h4><?=LANGUAGE_2?></h4>
-							<div class="control-group">
-							  <label class="control-label" for="typeahead"><?=CUMPANY_NAME?> : </label>
-							  <div class="controls">
-								<input type="text" class="span6 typeahead" name='name_ar'value="<?=$dataCat['name_ar']?>" >
-								 <span class="help-inline">&nbsp;</span>
 							  </div>
 							</div> 
                                                         <br>

@@ -373,15 +373,6 @@ $lang = $_SESSION['lang'];
                 <span><?= LOGIN ?></span>
             </button>
 
-            <!-- Language Switcher -->
-            <div class="lang-switcher">
-                <a href='javascript:void(0)' onclick="changeLang('ar')" class="lang-btn" title="العربية">
-                    <i class="fas fa-language"></i> عربي
-                </a>
-                <a href='javascript:void(0)' onclick="changeLang('en')" class="lang-btn" title="English">
-                    <i class="fas fa-language"></i> English
-                </a>
-            </div>
 
         </form>
 

@@ -70,25 +70,23 @@ else
 						<form id="add-cat">
 							<input type="hidden" value="<?= $idval2 ?>" name="nd">
 							<input type="hidden" value="updateCat" name="f">
-							<div class="mb-4">
-								<h5 class="text-primary mb-3"><i class="fas fa-language me-2"></i><?= LANGUAGE_1 ?></h5>
-								<div class="row g-3">
-									<div class="col-md-6">
-										<div class="form-group-pro">
-											<label class="form-label-pro"><?= CAT_NAME ?> <span class="text-danger">*</span></label>
-											<input type="text" class="form-input-pro" name='name' id='name' value="<?= $dataCat['name_en'] ?>" required>
-										</div>
+							<!-- Category Info -->
+							<div class="row g-3 mb-4">
+								<div class="col-md-6">
+									<div class="form-group-pro">
+										<label class="form-label-pro"><?= CAT_NAME ?> <span class="text-danger">*</span></label>
+										<input type="text" class="form-input-pro" name='name_ar' id='name' value="<?= htmlspecialchars($dataCat['name_ar'] ?: $dataCat['name_en'], ENT_QUOTES, 'UTF-8') ?>" required>
 									</div>
-									<div class="col-md-6">
-										<div class="form-group-pro">
-											<label class="form-label-pro"><?= IMAGE ?></label>
-											<input type="file" class="form-input-pro" name="file[]" accept="image/*">
-											<?php if ($thumb != ""): ?>
-												<div class="mt-2">
-													<img src='<?= $thumb ?>' class='rounded' style='width: 100px; height: 100px; object-fit: cover;'>
-												</div>
-											<?php endif; ?>
-										</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group-pro">
+										<label class="form-label-pro"><?= IMAGE ?></label>
+										<input type="file" class="form-input-pro" name="file[]" accept="image/*">
+										<?php if ($thumb != ""): ?>
+											<div class="mt-2">
+												<img src='<?= $thumb ?>' class='rounded' style='width: 100px; height: 100px; object-fit: cover;'>
+											</div>
+										<?php endif; ?>
 									</div>
 								</div>
 							</div>
@@ -96,11 +94,11 @@ else
 								<label class="form-label-pro"><i class="fas fa-building me-1"></i><?= BRANCH ?></label>
 								<select name="branch[]" class="form-input-pro select2" multiple>
 									<?php
-									$query = "SELECT * FROM branches WHERE storeid='$storeid' ORDER BY name_en ASC";
+									$query = "SELECT * FROM branches WHERE storeid='$storeid' ORDER BY name_ar ASC";
 									$res   = mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
 									while ($data = mysqli_fetch_assoc($res)) {
 										$id   = $data['id'];
-										$name = $data['name_' . $language];
+										$name = $data['name_ar'] ?: $data['name_en'];
 										$selected = in_array($data['id'], $branchArray) ? " selected='true' " : "";
 										echo "<option value='$id' $selected>$name</option>";
 									}
@@ -124,14 +122,6 @@ else
 											<i class="fas fa-toggle-on me-1"></i><?= ENABLED ?>
 										</label>
 									</div>
-								</div>
-							</div>
-							<hr class="my-4">
-							<div class="mb-4">
-								<h5 class="text-primary mb-3"><i class="fas fa-language me-2"></i><?= LANGUAGE_2 ?></h5>
-								<div class="form-group-pro">
-									<label class="form-label-pro"><?= CAT_NAME ?></label>
-									<input type="text" class="form-input-pro" name='name_ar' value="<?= $dataCat['name_ar'] ?>">
 								</div>
 							</div>
 							<div class="d-flex gap-2 mt-4">

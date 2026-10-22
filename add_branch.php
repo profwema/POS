@@ -41,18 +41,17 @@ $language = $_SESSION['lang'];
 						<form id="add-branch">
 							<input type="hidden" value="addBranch" name="f">
 							<div class="mb-4">
-								<h5 class="text-primary mb-3"><i class="fas fa-language me-2"></i><?= LANGUAGE_1 ?></h5>
 								<div class="row g-3">
 									<div class="col-md-6">
 										<div class="form-group-pro">
 											<label class="form-label-pro"><?= BRANCH_NAME ?> <span class="text-danger">*</span></label>
-											<input type="text" class="form-input-pro" name='name' id='name' required>
+											<input type="text" class="form-input-pro" name='name_ar' id='name' placeholder="أدخل اسم الفرع" required>
 										</div>
 									</div>
 									<div class="col-md-6">
 										<div class="form-group-pro">
 											<label class="form-label-pro"><?= STREET ?> <span class="text-danger">*</span></label>
-											<input type="text" class="form-input-pro" name='street' id="street" required>
+											<input type="text" class="form-input-pro" name='street_ar' id="street" placeholder="أدخل اسم الشارع / الحي" required>
 										</div>
 									</div>
 								</div>
@@ -123,23 +122,7 @@ $language = $_SESSION['lang'];
 									</div>
 								</div>
 							</div>
-							<div class="mb-4">
-								<h5 class="text-primary mb-3"><i class="fas fa-language me-2"></i><?= LANGUAGE_2 ?></h5>
-								<div class="row g-3">
-									<div class="col-md-6">
-										<div class="form-group-pro">
-											<label class="form-label-pro"><?= BRANCH_NAME ?></label>
-											<input type="text" class="form-input-pro" name='name_ar'>
-										</div>
-									</div>
-									<div class="col-md-6">
-										<div class="form-group-pro">
-											<label class="form-label-pro"><?= STREET ?></label>
-											<input type="text" class="form-input-pro" name='street_ar'>
-										</div>
-									</div>
-								</div>
-							</div>
+
 							<div class="d-flex gap-2 mt-4">
 								<button type="button" id='submit-branch' class="btn-pro btn-pro-success">
 									<i class="fas fa-save me-1"></i><?= SAVE ?>

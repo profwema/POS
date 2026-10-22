@@ -106,20 +106,14 @@ else
                                 <input type="hidden" value="updateMultiItem" name="f">
                                 <fieldset>
                                     <div class="control-group">
-                                        <div class="salesOptions">
-                                            <label class="control-label" for="typeahead"><?=ITEM_NAME?> <?=LANGUAGE_1?> : </label>
+                                        <div class="salesOptions" style="width:100%">
+                                            <label class="control-label" for="name"><?=ITEM_NAME?> : </label>
                                             <div class="controls">
-                                                <input type="text" class="span6 typeahead"  name='name' id='name' value="<?=$dataCat['name_en']?>" style="width:80%"> &nbsp; *
+                                                <?php $itemName = htmlspecialchars(!empty($dataCat['name_ar']) ? $dataCat['name_ar'] : ($dataCat['name_en'] ?? '')); ?>
+                                                <input type="text" class="span6 typeahead" placeholder="أدخل اسم الصنف" name='name_ar' id='name' value="<?=$itemName?>" style="width:90%" required> &nbsp; *
                                                 <span class="help-inline">&nbsp;</span>
                                             </div>
                                         </div>                            
-                                        <div class="salesOptions">    
-                                            <label class="control-label" for="typeahead"><?=ITEM_NAME?> <?=LANGUAGE_2?> : </label>
-                                            <div class="controls">
-                                                <input type="text" class="span6 typeahead"  name='name_ar'  id='name_ar' value="<?=$dataCat['name_ar']?>"  style="width:80%">
-                                                <span class="help-inline">&nbsp;</span>
-                                            </div>
-                                        </div>
                                     </div>    
                                     <hr>
                             <?php

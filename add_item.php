@@ -38,20 +38,13 @@ $storeid	= $_SESSION['storeid'];
                                 <input type="hidden" value="addMultiItem" name="f">
                                 <fieldset>                                    
                                     <div class="control-group">        
-                                        <div class="salesOptions">
-                                            <label class="control-label" for="typeahead"><?=ITEM_NAME?> <?=LANGUAGE_1?> : </label>
+                                        <div class="salesOptions" style="width:100%">
+                                            <label class="control-label" for="name"><?=ITEM_NAME?> : </label>
                                             <div class="controls">
-                                                <input type="text" class="span6 typeahead"  name='name' id='name' style="width:80%"> &nbsp; *
+                                                <input type="text" class="span6 typeahead" placeholder="أدخل اسم الصنف" name='name_ar' id='name' style="width:90%" required> &nbsp; *
                                                 <span class="help-inline">&nbsp;</span>
                                             </div>
                                         </div>
-                                        <div class="salesOptions">
-                                            <label class="control-label" for="typeahead"><?=ITEM_NAME?> <?=LANGUAGE_2?> : </label>
-                                            <div class="controls">
-                                                <input type="text" class="span6 typeahead"  name='name_ar'  id='name_ar' style="width:80%">
-                                                <span class="help-inline">&nbsp;</span>
-                                            </div>
-                                        </div> 
                                     </div> 
                                     <hr>
                                         <?php //

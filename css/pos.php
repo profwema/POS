@@ -106,17 +106,9 @@ $delcost  = floatval($data['amount']);
         <form class="pos-popup" id="add-customer" autocomplete="off">
             <input type="hidden" value="addCustomer" name="f">
             <div class="cont_group">
-               
-                <label ><?=CUSTOMER_NAME?>  <?=LANGUAGE_1?> : </label>
+                <label><?=CUSTOMER_NAME?> : </label>
                 <div>
-                    <input type="text" name='name' id='name'>
-                </div>
-            </div>
-            <div class="cont_group">
-               
-                <label ><?=CUSTOMER_NAME?>  <?=LANGUAGE_2?>: </label>
-                <div>
-                    <input type="text" name='name_ar' id='name_ar'>
+                    <input type="text" name='name_ar' id='name' placeholder="أدخل اسم العميل" required>
                 </div>
             </div>
             <div class="cont_group">

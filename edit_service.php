@@ -5,80 +5,75 @@ require_once("controller.php");
 $language 	= $_SESSION['lang'];
 $storeid	= $_SESSION['storeid'];
 
-$query          = "SELECT * FROM services WHERE storeid='$storeid'";
-$res            = mysqli_query($adController->MySQL,$query);
-$data           = mysqli_fetch_assoc($res);
+$service_id = isset($_REQUEST['sd']) ? mysqli_real_escape_string($adController->MySQL, $_REQUEST['sd']) : '';
+$query      = "SELECT * FROM services WHERE storeid='$storeid' AND id='$service_id'";
+$res        = mysqli_query($adController->MySQL, $query);
+$data       = mysqli_fetch_assoc($res);
+$servName   = htmlspecialchars(!empty($data['name_ar']) ? $data['name_ar'] : ($data['name_en'] ?? ''));
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl" data-theme="light">
+
 <head>
 	<meta charset="utf-8">
-	<title>WAM Tech Soft</title>
-	<?php require_once("script_php_variables.php");?>
-	<?php require_once("header.php");?>	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>WAM Tech POS - <?= EDIT_SERVICE ?></title>
+	<?php require_once("header.php"); ?>
+	<link href="css/admin-pro.css" rel="stylesheet">
 </head>
 
 <body>
-		<?php require_once("header_top.php");?>
-	
-		<div class="container-fluid-full">
-		<div class="row-fluid">
-			<?php require_once("left_menu.php");?>
-			<div id="content" class="span10">
-			<div>
-				<div class="box span12">
-					<div class="box-header" data-original-title>
-						<h2><i class="halflings-icon edit"></i><span class="break"></span><?=EDIT_SERVICE?></h2>
-					</div>
-					<div class="box-content">
-						<form class="form-horizontal" id="add-service">
-						  <input type="hidden" value="updateService" name="f">
-                                                  <input type="hidden" value="<?=$_REQUEST['sd']?>" name="id">
-						  <fieldset>
-							<h4><?=LANGUAGE_1?></h4>
-							<div class="control-group">
-							  <label class="control-label" for="typeahead"><?=SERVICE_NAME_EN?> : </label>
-							  <div class="controls">
-								<input type="text" class="span6 typeahead"  name='name' id='name' value="<?=$data['name_en']?>"> &nbsp; *
-								 <span class="help-inline">&nbsp;</span>
-							  </div>
-							</div>
-							
-							<h4><?=LANGUAGE_2?></h4>
-							<div class="control-group">
-							  <label class="control-label" for="typeahead"><?=SERVICE_NAME_AR?> : </label>
-							  <div class="controls">
-								<input type="text" class="span6 typeahead"  name='name_ar'   value="<?=$data['name_ar']?>"  >
-								 <span class="help-inline">&nbsp;</span>
-							  </div>
-							</div>
-							<div class="form-actions">
-							  <button type="button" id='submit-service' class="btn btn-primary"><?=SAVE?></button>
-							  <button type="reset" class="btn"><?=CANCEL?></button>
-							</div>
-							<p>&nbsp;</p>
-							<p class='error-red'>
-								&nbsp;
-								
-							</p>
-
-						  </fieldset>
-						</form>   
-
+	<div class="admin-wrapper">
+		<?php require_once("components/sidebar_pro.php"); ?>
+		<div style="flex: 1; display: flex; flex-direction: column;">
+			<?php require_once("components/header_pro.php"); ?>
+			<main class="admin-content">
+				<div class="page-header">
+					<h1 class="page-title">
+						<i class="fas fa-edit text-warning me-2"></i><?= EDIT_SERVICE ?>
+					</h1>
+					<div class="page-breadcrumb">
+						<div class="breadcrumb-item"><i class="fas fa-home"></i><span>الرئيسية</span></div>
+						<span class="breadcrumb-separator">/</span>
+						<div class="breadcrumb-item"><a href="services.php"><?= SERVICES ?></a></div>
+						<span class="breadcrumb-separator">/</span>
+						<div class="breadcrumb-item"><span class="text-primary"><?= EDIT ?></span></div>
 					</div>
 				</div>
+				<div class="card-pro">
+					<div class="card-header-pro">
+						<h2 class="card-title-pro"><i class="fas fa-info-circle"></i> تعديل بيانات الخدمة</h2>
+					</div>
+					<div class="card-body-pro">
+						<form id="add-service">
+							<input type="hidden" value="updateService" name="f">
+							<input type="hidden" value="<?= htmlspecialchars($_REQUEST['sd'] ?? '') ?>" name="id">
+							
+							<div class="mb-4">
+								<div class="form-group-pro">
+									<label class="form-label-pro"><i class="fas fa-concierge-bell me-1"></i><?= SERVICE ?> <span class="text-danger">*</span></label>
+									<input type="text" class="form-input-pro" name='name_ar' id='name' value="<?= $servName ?>" required>
+								</div>
+							</div>
 
-			</div>
-
-			
-
+							<div class="d-flex gap-2 mt-4">
+								<button type="button" id='submit-service' class="btn-pro btn-pro-success">
+									<i class="fas fa-save me-1"></i><?= SAVE ?>
+								</button>
+								<button type="reset" class="btn-pro btn-pro-outline">
+									<i class="fas fa-times me-1"></i><?= CANCEL ?>
+								</button>
+								<a href="services.php" class="btn-pro btn-pro-outline ms-auto">
+									<i class="fas fa-arrow-right me-1"></i>العودة للقائمة
+								</a>
+							</div>
+							<p class='error-red mt-3'>&nbsp;</p>
+						</form>
+					</div>
+				</div>
+			</main>
 		</div>
-		</div>
-		</div>
-		
-	
-	<div class="clearfix"></div>
-	
-	<?php require_once("footer.php");?>
+	</div>
+	<?php require_once("footer.php"); ?>
 </body>
 </html>

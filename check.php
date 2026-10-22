@@ -1,23 +1,20 @@
 <?php
-include('db.php');
+require_once('db.conn.php');
 
-if(isSet($_POST['username']))
-{
-$username = $_POST['username'];
+if (isset($_POST['username'])) {
+    $username = trim($_POST['username']);
 
+    if ($username === '') {
+        echo '<span style="color:red">يرجى إدخال اسم المستخدم</span>';
+        exit;
+    }
 
+    $sql_check = safe_query($MySQL, "SELECT id FROM employees WHERE user = ?", [$username]);
 
-$sql_check = mysqli_query($adController->MySQL,$adController->MySQLi_Handle,"SELECT id FROM users WHERE user='$username'") or die(mysqli_error($adController->MySQL));
-
-if(mysqli_num_rows($sql_check))
-{
-echo '<span style = "color:red">اسم المستخدم غير متاح </span>';
+    if ($sql_check && mysqli_num_rows($sql_check) > 0) {
+        echo '<span style="color:red">اسم المستخدم غير متاح</span>';
+    } else {
+        echo 'OK';
+    }
 }
-else
-{
-echo 'OK';
-}
-
-}
-
 ?>

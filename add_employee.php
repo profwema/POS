@@ -187,17 +187,9 @@ $("#reveal").on('click',function() {
                                     <input type="hidden" value="addEmp" name="f">
                                     <fieldset>     
                                       <div class="control-group">
-                                          <label class="control-label" for="typeahead"> <?=EMPLOYEE_NAME?> : </label>
-                                          <div class="controls" style="">
-                                              <input type="text" class="span6 typeahead"  placeholder="<?=LANGUAGE_1?>" name='name' id='name' required> &nbsp; *
-                                                 <span class="help-inline">&nbsp;</span>
-                                          </div>
-                                      </div>
-                                        
-                                      <div class="control-group">
-                                          <label class="control-label" for="typeahead"> <?=EMPLOYEE_NAME?> : </label>
+                                          <label class="control-label" for="name"> <?=EMPLOYEE_NAME?> : </label>
                                           <div class="controls">
-                                              <input type="text" class="span6 typeahead" placeholder="<?=LANGUAGE_2?>" name='name_ar'  required  >
+                                              <input type="text" class="span6 typeahead" placeholder="<?=EMPLOYEE_NAME?>" name='name_ar' id='name' required> &nbsp; *
                                                  <span class="help-inline">&nbsp;</span>
                                           </div>
                                       </div>                                                        

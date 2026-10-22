@@ -19,17 +19,25 @@
                 <div id="filesMenu" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
                     <div class="accordion-body p-0">
                         <ul class="list-unstyled mb-0">
+                            <?php if (has_permission('view_cat')): ?>
                             <li><a href="categories.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-tags text-muted me-2"></i><?= CATEGORIES ?></a></li>
                             <li><a href="units.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-balance-scale text-muted me-2"></i><?= UNITS ?></a></li>
+                            <?php endif; ?>
+                            <?php if (has_permission('view_items')): ?>
                             <li><a href="items.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-cube text-muted me-2"></i><?= ITEMS ?></a></li>
+                            <?php endif; ?>
                             <li><a href="customers.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-users text-muted me-2"></i><?= CUSTOMERS ?></a></li>
                             <li><a href="suppliers.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-truck text-muted me-2"></i><?= SUPPLIERS ?></a></li>
+                            <?php if (can_manage_employees()): ?>
                             <li><a href="employees.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-user-tie text-muted me-2"></i><?= EMPLOYEES ?></a></li>
+                            <?php endif; ?>
+                            <?php if (is_admin()): ?>
                             <li><a href="branches.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-code-branch text-muted me-2"></i><?= BRANCHES ?></a></li>
                             <li><a href="stores.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-warehouse text-muted me-2"></i><?= STORES ?></a></li>
                             <li><a href="jobTitle.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-briefcase text-muted me-2"></i><?= JOPTITLE ?></a></li>
                             <li><a href="delivery_cost.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-shipping-fast text-muted me-2"></i><?= DELIVERY_COST ?></a></li>
                             <li><a href="shifts.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-clock text-muted me-2"></i><?= SHIFTS ?></a></li>
+                            <?php endif; ?>
                         </ul>
                     </div>
                 </div>
@@ -49,14 +57,17 @@
                             <li><a href="quotations.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-file-invoice text-muted me-2"></i><?= QUOTATIONS ?></a></li>
                             <li><a href="saleInvoice.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-receipt text-muted me-2"></i><?= SALES ?></a></li>
                             <li><a href="salesRet.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-undo text-muted me-2"></i><?= RETURNED_SALES ?></a></li>
+                            <?php if (can_view_reports()): ?>
                             <li><a href="saleInvoice-report.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-chart-line text-muted me-2"></i><?= INVOICE_REPORT ?></a></li>
                             <li><a href="saleItem-report.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-chart-bar text-muted me-2"></i><?= ITEMS_REPORT ?></a></li>
+                            <?php endif; ?>
                         </ul>
                     </div>
                 </div>
             </div>
 
             <!-- 3. المشتريات -->
+            <?php if (!is_cashier()): ?>
             <div class="accordion-item border-0 mb-2">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed bg-white rounded shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#purchasesMenu">
@@ -69,14 +80,18 @@
                         <ul class="list-unstyled mb-0">
                             <li><a href="purchase.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-file-invoice-dollar text-muted me-2"></i><?= PURCHASES ?></a></li>
                             <li><a href="purchaseRet.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-undo text-muted me-2"></i><?= RETURNED_PURCHASES ?></a></li>
+                            <?php if (can_view_reports()): ?>
                             <li><a href="purchInvoice-report.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-chart-line text-muted me-2"></i><?= INVOICE_REPORT ?></a></li>
                             <li><a href="purchItem-erport.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-chart-bar text-muted me-2"></i><?= ITEMS_REPORT ?></a></li>
+                            <?php endif; ?>
                         </ul>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- 4. المخازن -->
+            <?php if (!is_cashier()): ?>
             <div class="accordion-item border-0 mb-2">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed bg-white rounded shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#storesMenu">
@@ -88,17 +103,23 @@
                     <div class="accordion-body p-0">
                         <ul class="list-unstyled mb-0">
                             <li><a href="item-movement.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-exchange-alt text-muted me-2"></i><?= ITEM_MOVEMENT ?></a></li>
+                            <?php if (can_view_reports()): ?>
                             <li><a href="store-inventory.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-clipboard-list text-muted me-2"></i><?= STORES_INVENTORY ?></a></li>
+                            <?php endif; ?>
+                            <?php if (can_access_accounting()): ?>
                             <li><a href="open-palance.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-balance-scale text-muted me-2"></i><?= OPENING_PALANCE ?></a></li>
                             <li><a href="incoming-entry.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-arrow-down text-muted me-2"></i><?= INCOMING_ENTRY ?></a></li>
                             <li><a href="outgoing-entry.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-arrow-up text-muted me-2"></i><?= OUTGOING_ENTRY ?></a></li>
+                            <?php endif; ?>
                             <li><a href="stores-transfer.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-truck-moving text-muted me-2"></i><?= STORE_TRANSFAIR ?></a></li>
                         </ul>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- 5. الحسابات -->
+            <?php if (can_access_accounting()): ?>
             <div class="accordion-item border-0 mb-2">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed bg-white rounded shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#accountsMenu">
@@ -117,8 +138,10 @@
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- 6. الإعدادات -->
+            <?php if (can_access_settings()): ?>
             <div class="accordion-item border-0 mb-2">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed bg-white rounded shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#settingsMenu">
@@ -130,12 +153,12 @@
                     <div class="accordion-body p-0">
                         <ul class="list-unstyled mb-0">
                             <li><a href="settings.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-sliders-h text-muted me-2"></i><?= GENERALSET ?></a></li>
-                            <li><a href="permissions.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-user-lock text-muted me-2"></i><?= PERMISSIONS ?></a></li>
                             <li><a href="updates.php" class="d-block py-2 px-3 text-decoration-none text-dark hover-bg-light"><i class="fas fa-sync-alt text-muted me-2"></i><?= UPDATES ?></a></li>
                         </ul>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
         </div>
 

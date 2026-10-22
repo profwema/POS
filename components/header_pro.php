@@ -86,20 +86,6 @@
       </ul>
     </div>
 
-    <!-- Language Switcher -->
-    <div class="navbar-item">
-      <button class="navbar-btn dropdown-toggle" data-bs-toggle="dropdown" aria-label="Language">
-        <i class="fas fa-globe"></i>
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="javascript:void(0)" onclick="changeLang('ar')">
-            <i class="fas fa-check text-success me-2"></i> العربية
-          </a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" onclick="changeLang('en')">
-            English
-          </a></li>
-      </ul>
-    </div>
 
     <!-- Dark Mode Toggle -->
     <div class="navbar-item">
@@ -113,25 +99,24 @@
       <div class="navbar-user dropdown-toggle" data-bs-toggle="dropdown" aria-label="User Menu">
         <img src="img/emp/user.png" alt="User" class="navbar-avatar">
         <div class="navbar-user-info">
-          <span class="navbar-user-name"><?= $_SESSION['name'] ?></span>
-          <span class="navbar-user-role"><?= WELCOME ?></span>
+          <span class="navbar-user-name"><?= htmlspecialchars($_SESSION['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="navbar-user-role"><?= htmlspecialchars($_SESSION['role_name'] ?? 'مستخدم', ENT_QUOTES, 'UTF-8') ?></span>
         </div>
       </div>
       <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 220px;">
         <li class="dropdown-header text-center">
           <img src="img/emp/user.png" alt="User" class="rounded-circle mb-2" width="60" height="60">
-          <div class="fw-bold"><?= $_SESSION['name'] ?></div>
-          <div class="text-muted small">المدير</div>
+          <div class="fw-bold"><?= htmlspecialchars($_SESSION['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+          <div class="text-muted small"><?= htmlspecialchars($_SESSION['role_name'] ?? 'مستخدم', ENT_QUOTES, 'UTF-8') ?></div>
         </li>
         <li>
           <hr class="dropdown-divider">
         </li>
-        <li><a class="dropdown-item" href="settings.php">
-            <i class="fas fa-user-circle me-2 text-primary"></i> الملف الشخصي
-          </a></li>
+        <?php if (function_exists('is_admin') && is_admin()): ?>
         <li><a class="dropdown-item" href="settings.php">
             <i class="fas fa-cog me-2 text-info"></i> الإعدادات
           </a></li>
+        <?php endif; ?>
         <li>
           <hr class="dropdown-divider">
         </li>

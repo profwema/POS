@@ -1,4 +1,6 @@
 <?php
+require_once(__DIR__ . "/auth.php");
+
 $pageName = basename($_SERVER['PHP_SELF'] ?? '');
 
 $freepages = array("login.php","register.php","forgot_password.php");
@@ -18,5 +20,8 @@ else
 		print("<script>location.replace('.');</script>");
 		exit();
 	}
+
+	// Enforce Role-Based Access Control (RBAC)
+	enforce_page_access($pageName);
 }
 ?>

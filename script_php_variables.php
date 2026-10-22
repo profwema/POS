@@ -71,4 +71,15 @@ var storeUpdatedSuccess= "<?=STORE_UPDATED_SUCCESSFULLY?>";
 var success            = "<?=SUCCESS?>";
 
 var storeBlank		="<?=STORE_CANNOT_BE_BLANK?>";
+
+var csrfToken = "<?= csrf_token() ?>";
+
+// Configure jQuery AJAX to automatically attach CSRF Token to headers
+if (typeof jQuery !== 'undefined') {
+    jQuery.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        if (!options.crossDomain) {
+            jqXHR.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+        }
+    });
+}
 </script>

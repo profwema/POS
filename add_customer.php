@@ -43,17 +43,9 @@ $storeid	= $_SESSION['storeid'];
 						<form id="add-customer">
 							<input type="hidden" value="addCustomer" name="f">
 							<div class="mb-4">
-								<h5 class="text-primary mb-3"><i class="fas fa-language me-2"></i><?= LANGUAGE_1 ?></h5>
 								<div class="form-group-pro">
-									<label class="form-label-pro"><?= CUSTOMER_NAME ?></label>
-									<input type="text" class="form-input-pro" name='name' id='name'>
-								</div>
-							</div>
-							<div class="mb-4">
-								<h5 class="text-primary mb-3"><i class="fas fa-language me-2"></i><?= LANGUAGE_2 ?></h5>
-								<div class="form-group-pro">
-									<label class="form-label-pro"><?= CUSTOMER_NAME ?></label>
-									<input type="text" class="form-input-pro" name='name_ar'>
+									<label class="form-label-pro"><i class="fas fa-user me-1"></i><?= CUSTOMER_NAME ?> <span class="text-danger">*</span></label>
+									<input type="text" class="form-input-pro" name='name_ar' id='name' placeholder="أدخل اسم العميل بالكامل" required>
 								</div>
 							</div>
 							<hr class="my-4">

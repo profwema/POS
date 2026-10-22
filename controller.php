@@ -122,10 +122,10 @@ class AdController
 		
 		return  $num;
 	}
-        function isExsist($table,$field,$value,$id ,$chick)
+        function isExsist($table, $field, $value, $id = '', $chick = 0)
 	{
-		$storeid	= $_SESSION['storeid'];
-                if ($chick==0)
+		$storeid	= $_SESSION['storeid'] ?? 1;
+                if ($chick == 0)
                 $query 		= "SELECT * FROM $table WHERE $field = '$value' ";
                 else
 		$query 		= "SELECT * FROM $table WHERE $field = '$value'  AND id !='$id'";
@@ -137,62 +137,81 @@ class AdController
 
 	function login()
 	{
+		$user 		= trim($_POST['user'] ?? '');
+		$password 	= trim($_POST['password'] ?? '');
 
-		$user 		= $_POST['user'];
-		$password 	= $_POST['password'];
-		$password 	= md5($_POST['password']);//$aes->encrypt();
-		$query		= "SELECT * FROM employees WHERE user = '$user' AND password='$password'";
-		//echo $query.'- ';
-		$res		= mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-
-		$num		= mysqli_num_rows($res);
-		//echo $num ;
-                $data		= mysqli_fetch_assoc($res);			
-		if($num)
-		{                    
-                    session_start();	
-		    $language		    = $_SESSION['lang'];
-		    $name		    = $data['name_'.$language];
-		    $_SESSION['storeid']    = $data['storeid'];                    
-		    $_SESSION['name']	    = $name;	
-                    $_SESSION['userlogged'] = $data['id']; 		    
- 	
-
-
-
-
-                    echo "1";
-		}
-		else
+		if ($user === '' || $password === '') {
 			echo USER_DOES_NOT_EXIST;
+			return;
+		}
 
+		$query = "SELECT * FROM employees WHERE user = ?";
+		$res = safe_query($this->MySQL, $query, [$user]);
+
+		if ($res && mysqli_num_rows($res) > 0)
+		{
+			$data = mysqli_fetch_assoc($res);
+			$storedHash = (string)($data['password'] ?? '');
+
+			// Check password via modern Bcrypt or legacy MD5
+			$passwordMatch = false;
+			if (password_verify($password, $storedHash)) {
+				$passwordMatch = true;
+			} elseif (md5($password) === $storedHash) {
+				$passwordMatch = true;
+				// Progressive upgrade: rehash MD5 to Bcrypt upon successful login
+				$newHash = password_hash($password, PASSWORD_BCRYPT);
+				safe_query($this->MySQL, "UPDATE employees SET password = ? WHERE id = ?", [$newHash, $data['id']]);
+			}
+
+			if ($passwordMatch) {
+				if (session_status() === PHP_SESSION_NONE) {
+					session_start();
+				}
+				$_SESSION['lang'] = 'ar';
+				$_SESSION['storeid'] = (int)$data['storeid'];
+				$_SESSION['name'] = $data['name_ar'];
+				$_SESSION['userlogged'] = (int)$data['id'];
+
+				if (function_exists('auth_init_session')) {
+					auth_init_session($this->MySQL);
+				}
+
+				echo "1";
+				return;
+			}
+		}
+
+		echo USER_DOES_NOT_EXIST;
 	}
 
 
 	function forgot()
 	{
 
-		$email 		= $_POST['email'];
+		$email 		= trim($_POST['email'] ?? '');
+		if ($email === '') {
+			echo ERROR_IN_RESETING_PWD;
+			return;
+		}
 
-		$query 		= "SELECT * FROM storeuser WHERE email = '$email' ";
-		$res		= mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-		$num		= mysqli_num_rows($res);
-		$data		= mysqli_fetch_assoc($res);
-		if($num)
+		$query 		= "SELECT * FROM storeuser WHERE email = ? ";
+		$res		= safe_query($this->MySQL, $query, [$email]);
+		$num		= $res ? mysqli_num_rows($res) : 0;
+		$data		= $res ? mysqli_fetch_assoc($res) : null;
+		if($num && $data)
 		{			
 			$hashVal  	= $email."_".$data['id']."_".time();
 			$aes 		= new AES($hashVal, ENC_KEY, ENC_BS);
 			$hashVal	= $aes->encrypt();
 
-			$query 		= "SELECT * FROM forgot WHERE uid = '$data[id]' ";
-			$res		= mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-			$num		= mysqli_num_rows($res);
-			if($num)
-				$query	= "UPDATE forgot SET hash='$hashVal' WHERE uid='$data[id]'";
+			$checkForgot = safe_query($this->MySQL, "SELECT * FROM forgot WHERE uid = ?", [$data['id']]);
+			$numForgot	= $checkForgot ? mysqli_num_rows($checkForgot) : 0;
+			if($numForgot)
+				$exe = safe_query($this->MySQL, "UPDATE forgot SET hash = ? WHERE uid = ?", [$hashVal, $data['id']]);
 			else
-				$query	= "INSERT INTO forgot(uid,hash) VALUES('$data[id]','$hashVal')";
+				$exe = safe_query($this->MySQL, "INSERT INTO forgot(uid, hash) VALUES(?, ?)", [$data['id'], $hashVal]);
 
-			$exe		= mysqli_query($this->MySQL,$query);
 			if($exe)
 			{
 				$mail		= new Email();
@@ -216,22 +235,22 @@ class AdController
         function getItemdata()
 	{
             $resp                   = array();
-            $lang                   = $_SESSION['lang'];
-            $storeid                = $_SESSION['storeid'];
-            $id                     = $_REQUEST['id'];
+            $storeid                = $_SESSION['storeid'] ?? '';
+            $id                     = $_REQUEST['id'] ?? '';
             
-            $query                  = "SELECT * FROM items WHERE id='$id'  ";
-            $resItem                = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-            $dataItem               = mysqli_fetch_assoc($resItem);
+            $query                  = "SELECT * FROM items WHERE id = ?";
+            $resItem                = safe_query($this->MySQL, $query, [$id]);
+            $dataItem               = $resItem ? mysqli_fetch_assoc($resItem) : null;
             
-            $unitquery              = "SELECT * FROM units WHERE id = '".$dataItem['unit']."'" ;
-            $unitVal                = mysqli_query($this->MySQL,$unitquery);
-            $dataUnit               = mysqli_fetch_assoc($unitVal);
+            if ($dataItem) {
+                $unitVal            = safe_query($this->MySQL, "SELECT * FROM units WHERE id = ?", [$dataItem['unit']]);
+                $dataUnit           = $unitVal ? mysqli_fetch_assoc($unitVal) : null;
 
-            $dataItem['unit_en']    = $dataUnit['name_en'];
-            $dataItem['unit_ar']    = $dataUnit['name_ar'];
-            
-            $resp[]	= $dataItem;
+                $dataItem['unit_en']    = $dataUnit['name_en'] ?? '';
+                $dataItem['unit_ar']    = $dataUnit['name_ar'] ?? '';
+                
+                $resp[]	= $dataItem;
+            }
             echo json_encode($resp);
 	}        
 
@@ -372,8 +391,10 @@ function getStates()
 	function addBranch()
 	{
 		$this->checkAuthorized();
-		$name		= trim($_POST['name']);
-		$street		= trim($_POST['street']);
+		$name_ar	= trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+		$name		= $name_ar;
+		$street_ar	= trim($_POST['street_ar'] ?? $_POST['street'] ?? '');
+		$street		= $street_ar;
 		$country	= trim($_POST['country']);
 		$state		= trim($_POST['state']);
 		$city		= trim($_POST['city']);
@@ -440,193 +461,175 @@ function getStates()
 
 	function delete_data()
 	{
-		$this->checkAuthorized();
-		$table 	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['a']),0);
-		$id	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['b']),0);
-		$p	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['d']),0);
+		$table 	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['a'] ?? ''),0);
+		$id	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['b'] ?? ''),0);
+		$p	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['d'] ?? ''),0);
 
-                if($table == "items")
-                {
-                	$query  = "INSERT INTO items_deleted SELECT o.* FROM items o WHERE o.item_thread='$id'";
-                        $res    = mysqli_query($this->MySQL,$query);
-                    $query 	 = "DELETE FROM $table WHERE item_thread='$id' ";
-                    $res    = mysqli_query($this->MySQL,$query);                    
-                }
-                else if($table == "services")
-                {
-                    
-                        $query  = "SELECT id,services FROM employees WHERE FIND_IN_SET($id,services)";
-                        $res    = mysqli_query($this->MySQL,$query);
-                        while($data   = mysqli_fetch_assoc($res))
-                        {
-                             $idvalu = $data['id'];
-                             $ser    = explode(",",$data['services']);
-                             $bSer   = array();
-                             for($ii=0;$ii < count($ser);$ii++)
-                             {
-                                 if($ser[$ii] != $id)
-                                     $bSer[]    = $ser[$ii];
-                             }
-                             $ser    = implode(",",$bSer);
-                             
-                             $query  = "UPDATE employees SET services='$ser' WHERE id='$idvalu'";
-                             mysqli_query($this->MySQL,$query);
-                             
-                        }
-                       
-                        
-                        $query  = "SELECT id,services FROM items WHERE FIND_IN_SET($id,services)";
-                        $res    = mysqli_query($this->MySQL,$query);
-                        while($data   = mysqli_fetch_assoc($res))
-                        {
-                             $idvalu = $data['id'];
-                             $ser    = explode(",",$data['services']);
-                             $bSer   = array();
-                             for($ii=0;$ii < count($ser);$ii++)
-                             {
-                                 if($ser[$ii] != $id)
-                                     $bSer[]    = $ser[$ii];
-                             }
-                             $ser    = implode(",",$bSer);
-                             
-                             $query  = "UPDATE items SET services='$ser' WHERE id='$idvalu'";
-                             mysqli_query($this->MySQL,$query);
-                             
-                        }
-                        
-                	$query 	 = "DELETE FROM $table WHERE id='$id' ";             
-                }
-                else
-                {
-                    $query 	 = "DELETE FROM $table WHERE id='$id' ";
-                    $this->deleteAcount ($p,$id);
-                }
-                
-                
-		echo mysqli_query($this->MySQL,$query);
+		$allowedTables = [
+			'items', 'services', 'customers', 'suppliers', 'employees',
+			'branches', 'units', 'stores', 'categories', 'jobTitle',
+			'delivery_cost', 'shifts', 'discounts', 'expenditure', 'open_palance', 'quote_settings'
+		];
 
-
-		exit();
-		
-	}
-	function delete_invoice()
-	{
-		$this->checkAuthorized();
-		$invoiceTable 	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['vt']),0);
-		$invoice  	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['id']),0);
-                $otherTable  	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['ot']),0);
-                $storeid = $_SESSION['storeid'];
-                
-                $query	 = "UPDATE `$invoiceTable` SET `state` ='0'
-                         WHERE invoicenumber='$invoice' ";
-                $exe = mysqli_query($this->MySQL,$query);
-                $invoiceTable= $invoiceTable."_items";
-                $query	 = "UPDATE `$invoiceTable` SET`state` ='0'
-                             WHERE invoice_No	='$invoice' ";
-                $exe = mysqli_query($this->MySQL,$query); 
-                
-                if ($otherTable)
-                {                 
-                    $query	 = "UPDATE `$otherTable` SET `state` ='0'
-                             WHERE invoice_No='$invoice' AND ";
-                    $exe = mysqli_query($this->MySQL,$query);
-                    $otherTable= $otherTable."_items";
-                    $query	 = "UPDATE `$otherTable` SET`state` ='0'
-                                 WHERE invoice_No='$invoice' ";
-                    $exe = mysqli_query($this->MySQL,$query); 
-                    
-                    $query	 = "UPDATE `journal` SET `state` ='0'
-                             WHERE docNo='$invoice' ";
-                    $exe = mysqli_query($this->MySQL,$query);
-                    $query	 = "UPDATE `journal_items` SET`state` ='0'
-                                 WHERE reference='$invoice' ";
-                    $exe = mysqli_query($this->MySQL,$query);                     
-                    
-                }      
-                echo '1';
-		exit();
-	}  
-        function delete_trans()
-	{
-		$this->checkAuthorized();
-
-		$invoice  	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['id']),0);
-
-                $storeid = $_SESSION['storeid'];
-                
-                $query	 = "UPDATE store_trans SET `state` ='0'
-                         WHERE trans_number='$invoice' ";
-                $exe = mysqli_query($this->MySQL,$query);
-                $query	 = "UPDATE store_trans_items SET`state` ='0'
-                             WHERE trans_number='$invoice' ";
-                $exe = mysqli_query($this->MySQL,$query); 
-
-//                    $tData     = mysqli_fetch_assoc(mysqli_query($this->MySQL,"SELECT trans_number FROM store_trans WHERE  id='$idval' AND storeid='$storeid'"));
-//                    $transNo   = $tData['trans_number'];
-//                    $tData     = mysqli_fetch_assoc(mysqli_query($this->MySQL,"SELECT id FROM income WHERE purchase_invoice= '$transNo' AND storeid='$storeid'"));
-//                    $insertidIncome   = $tData['id'];
-//                    $tData     = mysqli_fetch_assoc(mysqli_query($this->MySQL,"SELECT id FROM outgo WHERE purchase_invoice= '$transNo' AND storeid='$storeid'"));
-//                    $insertidOutgo   = $tData['id'];                    
-                    
-                    $query	 = "UPDATE income SET `state` ='0'
-                             WHERE invoice_No='$invoice' ";
-                    $exe = mysqli_query($this->MySQL,$query);
-                    $query	 = "UPDATE outgo SET `state` ='0'
-                             WHERE invoice_No='$invoice' ";
-                    $exe = mysqli_query($this->MySQL,$query);                    
-                    $query	 = "UPDATE `income_items` SET`state` ='0'
-                                 WHERE invoice_No='$invoice' ";
-                    $exe = mysqli_query($this->MySQL,$query);                     
-                     $query	 = "UPDATE `outgo_items` SET`state` ='0'
-                                 WHERE invoice_No='$invoice' ";
-                    $exe = mysqli_query($this->MySQL,$query);          
-                    
-                echo '1';
-		exit();
-	}                
-	function delete_journal()
-	{
-//		$this->checkAuthorized();
-
-            $invoice = $this->encrypt_decrypt(2,urldecode($_REQUEST['no']),0);               
-
-                
-                $query	 = "UPDATE `journal` SET `state` ='0'
-                         WHERE journalNo='$invoice' ";
-                $exe = mysqli_query($this->MySQL,$query);
-                $query	 = "UPDATE `journal_items` SET`state` ='0'
-                         WHERE journalNo='$invoice' '";
-                $exe = mysqli_query($this->MySQL,$query); 
-                
-   
-                echo '1';
-		exit();
-	}  
-	function deleteImages($dir,$table,$id)
-	{
-		
-		$myDir	 = $this->getDirectoryOnlyPath($dir);
-		$query 	 = "SELECT * FROM images WHERE `table`='$table' AND dir='$dir' AND foreign_id='$id'";
-		$res	 = mysqli_query($this->MySQL,$query);
-		while($data = mysqli_fetch_assoc($res))
-		{
-			$fullPath_original 	= $myDir.$data['original'];
-			$thumb_path		= $myDir.$data['thumb'];
-
-			@unlink($fullPath_original);
-			@unlink($thumb_path);
+		if (!in_array($table, $allowedTables, true)) {
+			echo '0';
+			exit();
 		}
 
-		$del	 = "DELETE FROM images WHERE `table`='$table' AND dir='$dir' AND foreign_id='$id'";
-		mysqli_query($this->MySQL,$del);
+		// Enforce table-specific RBAC permissions
+		if ($table === 'employees') {
+			$this->checkAuthorized('delete_emp');
+		} elseif ($table === 'items') {
+			$this->checkAuthorized('delete_items');
+		} elseif ($table === 'categories') {
+			$this->checkAuthorized('delete_cat');
+		} elseif ($table === 'open_palance' || $table === 'expenditure') {
+			$this->checkAuthorized('accounting');
+		} elseif (in_array($table, ['branches', 'stores', 'units', 'jobTitle', 'shifts', 'quote_settings'], true)) {
+			$this->checkAuthorized('admin');
+		} else {
+			$this->checkAuthorized();
+		}
+
+		if ($table == "items")
+		{
+			safe_query($this->MySQL, "INSERT INTO items_deleted SELECT o.* FROM items o WHERE o.item_thread = ?", [$id]);
+			$res = safe_query($this->MySQL, "DELETE FROM items WHERE item_thread = ?", [$id]);                    
+		}
+		else if ($table == "services")
+		{
+			$res = safe_query($this->MySQL, "SELECT id, services FROM employees WHERE FIND_IN_SET(?, services)", [$id]);
+			if ($res) {
+				while ($data = mysqli_fetch_assoc($res))
+				{
+					$idvalu = $data['id'];
+					$ser    = explode(",", (string)($data['services'] ?? ''));
+					$bSer   = array();
+					for ($ii = 0; $ii < count($ser); $ii++)
+					{
+						if ($ser[$ii] != $id) {
+							$bSer[] = $ser[$ii];
+						}
+					}
+					$ser = implode(",", $bSer);
+					safe_query($this->MySQL, "UPDATE employees SET services = ? WHERE id = ?", [$ser, $idvalu]);
+				}
+			}
+			
+			$resItem = safe_query($this->MySQL, "SELECT id, services FROM items WHERE FIND_IN_SET(?, services)", [$id]);
+			if ($resItem) {
+				while ($data = mysqli_fetch_assoc($resItem))
+				{
+					$idvalu = $data['id'];
+					$ser    = explode(",", (string)($data['services'] ?? ''));
+					$bSer   = array();
+					for ($ii = 0; $ii < count($ser); $ii++)
+					{
+						if ($ser[$ii] != $id) {
+							$bSer[] = $ser[$ii];
+						}
+					}
+					$ser = implode(",", $bSer);
+					safe_query($this->MySQL, "UPDATE items SET services = ? WHERE id = ?", [$ser, $idvalu]);
+				}
+			}
+			
+			$res = safe_query($this->MySQL, "DELETE FROM services WHERE id = ?", [$id]);             
+		}
+		else
+		{
+			$res = safe_query($this->MySQL, "DELETE FROM `$table` WHERE id = ?", [$id]);
+			$this->deleteAcount($p, $id);
+		}
+		
+		echo $res ? '1' : '0';
+		exit();
+	}
+
+	function delete_invoice()
+	{
+		$this->checkAuthorized('admin');
+		$invoiceTable 	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['vt'] ?? ''),0);
+		$invoice  	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['id'] ?? ''),0);
+		$otherTable  	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['ot'] ?? ''),0);
+
+		$allowedInvoiceTables = ['sales', 'purchase', 'purchaseRet', 'salesRet', 'quotations', 'orderTrans'];
+		if (!in_array($invoiceTable, $allowedInvoiceTables, true)) {
+			echo '0';
+			exit();
+		}
+
+		safe_query($this->MySQL, "UPDATE `$invoiceTable` SET `state` = '0' WHERE invoicenumber = ?", [$invoice]);
+		$invoiceItemsTable = $invoiceTable . "_items";
+		safe_query($this->MySQL, "UPDATE `$invoiceItemsTable` SET `state` = '0' WHERE invoice_No = ?", [$invoice]); 
+		
+		if ($otherTable && in_array($otherTable, ['income', 'outgo'], true))
+		{                 
+			safe_query($this->MySQL, "UPDATE `$otherTable` SET `state` = '0' WHERE invoice_No = ?", [$invoice]);
+			$otherItemsTable = $otherTable . "_items";
+			safe_query($this->MySQL, "UPDATE `$otherItemsTable` SET `state` = '0' WHERE invoice_No = ?", [$invoice]); 
+			
+			safe_query($this->MySQL, "UPDATE `journal` SET `state` = '0' WHERE docNo = ?", [$invoice]);
+			safe_query($this->MySQL, "UPDATE `journal_items` SET `state` = '0' WHERE reference = ?", [$invoice]);                     
+		}      
+		echo '1';
+		exit();
+	}  
+
+	function delete_trans()
+	{
+		$this->checkAuthorized('accounting');
+		$invoice  = $this->encrypt_decrypt(2,urldecode($_REQUEST['id'] ?? ''),0);
+		
+		safe_query($this->MySQL, "UPDATE store_trans SET `state` = '0' WHERE trans_number = ?", [$invoice]);
+		safe_query($this->MySQL, "UPDATE store_trans_items SET `state` = '0' WHERE trans_number = ?", [$invoice]); 
+		safe_query($this->MySQL, "UPDATE income SET `state` = '0' WHERE invoice_No = ?", [$invoice]);
+		safe_query($this->MySQL, "UPDATE outgo SET `state` = '0' WHERE invoice_No = ?", [$invoice]);                    
+		safe_query($this->MySQL, "UPDATE `income_items` SET `state` = '0' WHERE invoice_No = ?", [$invoice]);                     
+		safe_query($this->MySQL, "UPDATE `outgo_items` SET `state` = '0' WHERE invoice_No = ?", [$invoice]);          
+		
+		echo '1';
+		exit();
+	}                
+
+	function delete_journal()
+	{
+		$this->checkAuthorized('accounting');
+		$invoice = $this->encrypt_decrypt(2,urldecode($_REQUEST['no'] ?? ''),0);               
+
+		safe_query($this->MySQL, "UPDATE `journal` SET `state` = '0' WHERE journalNo = ?", [$invoice]);
+		safe_query($this->MySQL, "UPDATE `journal_items` SET `state` = '0' WHERE journalNo = ?", [$invoice]); 
+
+		echo '1';
+		exit();
+	}  
+
+	function deleteImages($dir, $table, $id)
+	{
+		$myDir = $this->getDirectoryOnlyPath($dir);
+		$res   = safe_query($this->MySQL, "SELECT * FROM images WHERE `table` = ? AND dir = ? AND foreign_id = ?", [$table, $dir, $id]);
+		if ($res) {
+			while ($data = mysqli_fetch_assoc($res))
+			{
+				$fullPath_original 	= $myDir . $data['original'];
+				$thumb_path		= $myDir . $data['thumb'];
+
+				@unlink($fullPath_original);
+				@unlink($thumb_path);
+			}
+		}
+
+		safe_query($this->MySQL, "DELETE FROM images WHERE `table` = ? AND dir = ? AND foreign_id = ?", [$table, $dir, $id]);
 		return;
 	}
 
 
 	function updateBranch()
 	{
-		$name		= trim($_POST['name']);
-		$street		= trim($_POST['street']);
+		$name_ar	= trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+		$name		= $name_ar;
+		$street_ar	= trim($_POST['street_ar'] ?? $_POST['street'] ?? '');
+		$street		= $street_ar;
 		$country	= trim($_POST['country']);
 		$state		= trim($_POST['state']);
 		$city		= trim($_POST['city']);
@@ -743,10 +746,11 @@ function getStates()
 
 	function addCat()
 	{
+		$this->checkAuthorized('add_cat');
 		$hash			= time()."_".$_SERVER['REMOTE_ADDR']."_".$_SESSION['storeid'];
 		$hash			= $this->encrypt_decrypt(1, $hash,0);
-		$name			= $_POST['name'];
-		$name_ar		= $_POST['name_ar'];
+		$name_ar		= trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+		$name			= $name_ar;
 		$branch			= $_POST['branch'];
 		$show_to_cashier	= $_POST['show_to_cashier'];
 		$enabled		= $_POST['enabled'];
@@ -793,12 +797,15 @@ function getStates()
 			$id  = mysqli_insert_id($this->MySQL);
 			if($exe)
 			{
-				for($i=0;$i<count($array['original']);$i++)
+				if (!empty($array['original']) && is_array($array['original']))
 				{
-					$original 	= $array['original'][$i];
-					$thumb		= $array['thumb'][$i];
-					$query = "INSERT INTO `images` (`foreign_id`, `original`, `thumb`, `table`, `dir`) VALUES ('$id', '$original', '$thumb', 'categories', '".DIR_CAT_NAME."')";
-					mysqli_query($this->MySQL,$query);
+					for($i=0;$i<count($array['original']);$i++)
+					{
+						$original 	= $array['original'][$i];
+						$thumb		= $array['thumb'][$i];
+						$query = "INSERT INTO `images` (`foreign_id`, `original`, `thumb`, `table`, `dir`) VALUES ('$id', '$original', '$thumb', 'categories', '".DIR_CAT_NAME."')";
+						mysqli_query($this->MySQL,$query);
+					}
 				}
 				echo CATEGORY_ADDED_SUCCESSFULLY;
 
@@ -815,20 +822,21 @@ function getStates()
 
 	function updateCat()
 	{
-		$name			= $_POST['name'];
-		$name_ar		= $_POST['name_ar'];
-		$branch			= $_POST['branch'];
-		$show_to_cashier	= $_POST['show_to_cashier'];
-		$enabled		= $_POST['enabled'];
-		$catid			= $_POST['nd'];
-		$storeid		= $_SESSION['storeid'];
+		$this->checkAuthorized('edit_cat');
+		$name_ar		= trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+		$name			= $name_ar;
+		$branch			= $_POST['branch'] ?? [];
+		$show_to_cashier	= $_POST['show_to_cashier'] ?? '0';
+		$enabled		= $_POST['enabled'] ?? '0';
+		$catid			= $_POST['nd'] ?? '';
+		$storeid		= $_SESSION['storeid'] ?? 1;
 
 		$catid			= $this->encrypt_decrypt(2,urldecode($catid),0);
 		$catid 			= $this->encrypt_decrypt(2,$catid,0);
 		$catid			= $this->encrypt_decrypt(2,$catid,0);
 
 		$allBranches		= '0';
-		if(count($branch) > 0)
+		if(is_array($branch) && count($branch) > 0)
 		{
 			$allBranches		= '0';
 			$query 	= "SELECT GROUP_CONCAT(id) AS lst FROM branches WHERE  id IN (".implode(',',$branch).") ORDER BY name_en ASC";
@@ -848,8 +856,6 @@ function getStates()
 		if($show_to_cashier == "")
 			$show_to_cashier ="0";
 
-		
-
 		$obj = new validation();
 		if($name == "" && $name_ar =="")
 			$error = NAME_REQUIRED;
@@ -862,12 +868,11 @@ function getStates()
 			`name_en` ='$name',
 			`store_branch` ='$branch',
 			`showtocashier` ='$show_to_cashier',
-			`name_ar` ='$name_ar' ,allbranches='$allBranches' WHERE ` id='$catid'";
+			`name_ar` ='$name_ar' ,allbranches='$allBranches' WHERE id='$catid'";
 			$exe = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
 			if($exe)
 			{
-				
-				if(count($array['original']) > 0)
+				if(!empty($array['original']) && is_array($array['original']) && count($array['original']) > 0)
 				{
 					$this->deleteImages(DIR_CAT_NAME,'categories',$catid);
 					
@@ -916,8 +921,8 @@ function getStates()
 
 	function addMultiItem()
 	{
-		$name			= $_POST['name'];
-		$name_ar		= $_POST['name_ar'];	
+		$name_ar		= trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+		$name			= $name_ar;	
                 $cat			= $_POST['cat'];
                 $vat			= $_POST['vat'];
                 $selt			= $_POST['selt'];
@@ -1006,8 +1011,8 @@ function getStates()
 
 	function updateMultiItem()
 	{
-		$name			= $_POST['name'];
-		$name_ar		= $_POST['name_ar'];
+		$name_ar		= trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+		$name			= $name_ar;
 		$cat			= $_POST['cat'];
                 $vat			= $_POST['vat'];
                 $selt			= $_POST['selt'];
@@ -1153,12 +1158,13 @@ function getStates()
 
 	function addEmp()
 	{
-		$name			= $_POST['name'];
-		$name_ar		= $_POST['name_ar'];
+		$this->checkAuthorized('add_emp');
+		$name_ar		= trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+		$name			= $name_ar;
 		$branch			= $_POST['branch'];
 		//$store			= $_POST['store'];   
 		$pwdVal			= $_POST['pass']; 
-		$password 		= md5($pwdVal);//$aes->encrypt();                
+		$password 		= password_hash($pwdVal, PASSWORD_BCRYPT);                
                 $user			= $_POST['user'];                 
 		$email			= $_POST['email'];
 		$mobile			= $_POST['mobile'];
@@ -1282,7 +1288,8 @@ function getStates()
 
 	function updateEmp()
 	{
-            $name			= $_POST['name'];
+		$this->checkAuthorized('edit_emp');
+		$name			= $_POST['name'];
             $name_ar                    = $_POST['name_ar'];
             $branch			= $_POST['branch'];
             $email			= $_POST['email'];
@@ -1420,11 +1427,53 @@ function getStates()
             }
 	}
 
-	function checkAuthorized()
+	function checkAuthorized($requiredPermission = null, $checkCsrf = false)
 	{
-		if(!isset($_SESSION['storeid']))
+		if (session_status() === PHP_SESSION_NONE) {
+			session_start();
+		}
+		if (!isset($_SESSION['storeid']) || !isset($_SESSION['userlogged']))
 		{
-			echo "Unauthorized Access";
+			http_response_code(401);
+			echo "Unauthorized Access: Please login";
+			exit();
+		}
+
+		if (function_exists('auth_init_session')) {
+			auth_init_session($this->MySQL);
+		}
+
+		if ($requiredPermission !== null) {
+			$authorized = false;
+			if (function_exists('is_admin') && is_admin()) {
+				$authorized = true;
+			} elseif ($requiredPermission === 'admin') {
+				$authorized = function_exists('is_admin') && is_admin();
+			} elseif ($requiredPermission === 'accounting') {
+				$authorized = function_exists('can_access_accounting') && can_access_accounting();
+			} elseif ($requiredPermission === 'reports') {
+				$authorized = function_exists('can_view_reports') && can_view_reports();
+			} elseif (function_exists('has_permission')) {
+				$authorized = has_permission($requiredPermission);
+			}
+
+			if (!$authorized) {
+				http_response_code(403);
+				echo "Access Denied: Insufficient Permissions";
+				exit();
+			}
+		}
+
+		if ($checkCsrf) {
+			$this->verifyCsrf();
+		}
+	}
+
+	function verifyCsrf()
+	{
+		if (function_exists('verify_csrf_token') && !verify_csrf_token()) {
+			http_response_code(403);
+			echo "Invalid or expired CSRF token";
 			exit();
 		}
 	}
@@ -1551,8 +1600,8 @@ function getStates()
 
 	function addExpenditure()
 	{
-		$desc		= $_POST['desc_en'];
-		$desc_ar	= $_POST['desc_ar'];
+		$desc_ar	= trim($_POST['desc_ar'] ?? $_POST['desc'] ?? $_POST['desc_en'] ?? '');
+		$desc		= $desc_ar;
 		$cost		= $_POST['cost'];
 		$branch		= $_POST['branch'];
 		$dated		= $_POST['dated'];
@@ -1586,8 +1635,8 @@ function getStates()
 
 	function updateExpenditure()
 	{
-		$desc		= $_POST['desc_en'];
-		$desc_ar	= $_POST['desc_ar'];
+		$desc_ar	= trim($_POST['desc_ar'] ?? $_POST['desc'] ?? $_POST['desc_en'] ?? '');
+		$desc		= $desc_ar;
 		$cost		= $_POST['cost'];
 		$branch		= $_POST['branch'];
 		$dated		= $_POST['dated'];
@@ -1882,8 +1931,8 @@ function getStates()
         
             function addService()
             {
-                    $name			= $_POST['name'];
-                    $name_ar                    = $_POST['name_ar'];
+                    $name_ar                    = trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+                    $name			= $name_ar;
                     $storeid                    = $_SESSION['storeid'];
                     
                     $obj = new validation();
@@ -1914,8 +1963,8 @@ function getStates()
 
             function updateService()
             {
-                    $name			= $_POST['name'];
-                    $name_ar                    = $_POST['name_ar'];
+                    $name_ar                    = trim($_POST['name_ar'] ?? $_POST['name'] ?? '');
+                    $name			= $name_ar;
                     $storeid                    = $_SESSION['storeid'];
 
                     $service			= $_POST['id'];
@@ -1959,8 +2008,8 @@ function getStates()
             for($i=0 ; $i<count($idv) ; $i++)
             {
                 
-                $nameEn     = $name_en[$i];
-                $nameAr     = $name_ar[$i];
+                $nameAr     = trim($name_ar[$i] ?? ($name_en[$i] ?? ''));
+                $nameEn     = $nameAr;
                 $idValue    = $idv[$i];
                 $start      = $from[$i];
                 $ends       = $to[$i];                
@@ -1994,8 +2043,8 @@ function storesUpdate()
             for($i=0 ; $i<count($idv) ; $i++)
             {
                 
-                $nameEn     = $name_en[$i];
-                $nameAr     = $name_ar[$i];
+                $nameAr     = trim($name_ar[$i] ?? ($name_en[$i] ?? ''));
+                $nameEn     = $nameAr;
                 $idValue    = $idv[$i];
                 $brch       = $branch[$i];
 
@@ -2060,8 +2109,8 @@ function storesUpdate()
             for($i=0 ; $i<count($idv) ; $i++)
             {
                 
-                $nameEn     = $name_en[$i];
-                $nameAr     = $name_ar[$i];
+                $nameAr     = trim($name_ar[$i] ?? ($name_en[$i] ?? ''));
+                $nameEn     = $nameAr;
                 $idValue    = $idv[$i];
                 
                 if($nameEn != '' || $nameAr !='')
@@ -2103,8 +2152,8 @@ function storesUpdate()
             for($i=0 ; $i<count($idv) ; $i++)
             {
                 
-                $nameEn     = $name_en[$i];
-                $nameAr     = $name_ar[$i];
+                $nameAr     = trim($name_ar[$i] ?? ($name_en[$i] ?? ''));
+                $nameEn     = $nameAr;
                 $idValue    = $idv[$i];
                 
                 if($nameEn != '' || $nameAr !='')
@@ -2145,8 +2194,8 @@ function storesUpdate()
 
             for($i=0 ; $i<count($idv) ; $i++)
             {
-                $nameEn     = $name_en[$i];
-                $nameAr     = $name_ar[$i];
+                $nameAr     = trim($name_ar[$i] ?? ($name_en[$i] ?? ''));
+                $nameEn     = $nameAr;
                 $codeI       = $code[$i];
                 $idValue    = $idv[$i];
              
@@ -2172,8 +2221,8 @@ function storesUpdate()
         
         function addSupplier()
         {
-            $name_en        = $_REQUEST['name'];
-            $name_ar        = $_REQUEST['name_ar'];
+            $name_ar        = trim($_REQUEST['name_ar'] ?? $_REQUEST['name'] ?? '');
+            $name_en        = $name_ar;
             $com_reg        = $_REQUEST['com_reg'];
             $tax_no         = $_REQUEST['tax_no'];
             $phone          = $_REQUEST['phone'];
@@ -2204,8 +2253,8 @@ function storesUpdate()
         function updateSupplier()
 	{
 	    $suppId	    = $_POST['nd'];
-            $name_en        = $_REQUEST['name'];
-            $name_ar        = $_REQUEST['name_ar'];
+            $name_ar        = trim($_REQUEST['name_ar'] ?? $_REQUEST['name'] ?? '');
+            $name_en        = $name_ar;
             $com_reg        = $_REQUEST['com_reg'];
             $tax_no         = $_REQUEST['tax_no'];
             $phone          = $_REQUEST['phone'];
@@ -2240,8 +2289,8 @@ function storesUpdate()
 
         function addCustomer()
         {
-            $name_en        = $_REQUEST['name'];
-            $name_ar        = $_REQUEST['name_ar'];
+            $name_ar        = trim($_REQUEST['name_ar'] ?? $_REQUEST['name'] ?? '');
+            $name_en        = $name_ar;
             $tax_no         = $_REQUEST['tax_no'];
             $address        = $_REQUEST['address'];
             $phone          = $_REQUEST['phone'];
@@ -2278,8 +2327,8 @@ function storesUpdate()
         function updateCustomer()
 	{
 	    $custId	    = $_POST['nd'];
-            $name_en        = $_REQUEST['name'];
-            $name_ar        = $_REQUEST['name_ar'];
+            $name_ar        = trim($_REQUEST['name_ar'] ?? $_REQUEST['name'] ?? '');
+            $name_en        = $name_ar;
             $tax_no         = $_REQUEST['tax_no'];
             $address        = $_REQUEST['address'];
             $phone          = $_REQUEST['phone'];
@@ -2318,9 +2367,10 @@ function storesUpdate()
         }		
         function updateSettings()
 	{
+		$this->checkAuthorized('admin');
 	    $setid	    = $_POST['nd'];
-            $name_en        = $_REQUEST['name'];
-            $name_ar        = $_REQUEST['name_ar'];
+            $name_ar        = trim($_REQUEST['name_ar'] ?? $_REQUEST['name'] ?? '');
+            $name_en        = $name_ar;
             $tax_no         = $_REQUEST['tax_no'];
             $smoking        = $_REQUEST['smoking'];     
             $enableNegative        = $_REQUEST['enableNegative'];     
@@ -2376,6 +2426,7 @@ function storesUpdate()
         }
         function updateQSettings()
 	{
+		$this->checkAuthorized('admin');
 	    //$setid	    = $_POST['nd'];
             $barcode        = intval($_REQUEST['barcode']);
             $unit           = intval($_REQUEST['unit']);
@@ -4158,16 +4209,16 @@ function addOpenPalance()
                 
             function addAccount()
             {
+		$this->checkAuthorized('accounting');
                 $pairent                    = $_POST['pairent'];
-                $name_ar                    = $_POST['name_ar'];
-                $name_en                    = $_POST['name_en']; 
+                $name_ar                    = trim($_POST['name_ar'] ?? $_POST['name'] ?? $_POST['name_en'] ?? '');
+                $name_en                    = $name_ar; 
 //                    $code                       = $_POST['code'];  
                 $type                       = $_POST['type'];
                 $flbs                       = $_POST['flbs'];                    
                 $child                      = intval($_POST['child']);
 
-                $obj = new validation();
-                if($name_en == "" && $name_ar =="")
+                if(empty($name_ar))
                         $error = NAME_REQUIRED;
 
                 if(!$error)
@@ -4187,15 +4238,15 @@ function addOpenPalance()
 
             function editAccount()
             {
+		$this->checkAuthorized('accounting');
                 $pairent    = $_POST['pairent'];
-                $name_ar    = $_POST['name_ar'];
-                $name_en    = $_POST['name_en']; 
+                $name_ar    = trim($_POST['name_ar'] ?? $_POST['name'] ?? $_POST['name_en'] ?? '');
+                $name_en    = $name_ar; 
                 //                    $code                       = $_POST['code'];  
                 $type       = $_POST['type'];
                 $flbs       = $_POST['flbs'];                    
                 $child      = intval($_POST['child']);
-                $obj        = new validation();
-                if($name_en == "" && $name_ar =="")
+                if(empty($name_ar))
                 {
                     echo NAME_REQUIRED;
                 }
@@ -4229,6 +4280,7 @@ function addOpenPalance()
        
         function delAccount()       
         {
+		$this->checkAuthorized('accounting');
             $id         =   $_REQUEST['aid'];
             $count      =   $this->getChildCount($id);
             $query      =   "SELECT * FROM `accounts` WHERE`id`='".$id."'";
@@ -4362,6 +4414,7 @@ function addOpenPalance()
         
    function addJournal()
    {
+		$this->checkAuthorized('accounting');
             $journalNo      = $_POST['journalNo'];
             $document       = $_POST['document'];           
             $branch         = $_POST['branch'];
@@ -4427,6 +4480,7 @@ function addOpenPalance()
    
         function editJournal()
         {
+		$this->checkAuthorized('accounting');
             $journalNo   = $_POST['journalNo'];
             $document    = $_POST['document'];           
             $branch      = $_POST['branch'];

@@ -237,21 +237,14 @@ $("#reveal").on('click',function() {
                                 <input type="hidden" value="<?=$idval2?>" name="nd" id="nd">
                                 <input type="hidden" value="updateEmp" name="f">
                                 <fieldset>
-                                     <div class="control-group">
-                                          <label class="control-label" for="typeahead"> <?=EMPLOYEE_NAME?> : </label>
-                                          <div class="controls" style="">
-                                              <input type="text" class="span6 typeahead"  placeholder="<?=LANGUAGE_1?>" name='name' id='name'value="<?=$dataCat['name_en']?>" required> &nbsp; *
-                                                 <span class="help-inline">&nbsp;</span>
-                                          </div>
-                                      </div>
-                                        
                                       <div class="control-group">
-                                          <label class="control-label" for="typeahead"> <?=EMPLOYEE_NAME?> : </label>
-                                          <div class="controls">
-                                              <input type="text" class="span6 typeahead" placeholder="<?=LANGUAGE_2?>" name='name_ar'value="<?=$dataCat['name_ar']?>"  required  >
-                                                 <span class="help-inline">&nbsp;</span>
-                                          </div>
-                                      </div>                                     
+                                           <label class="control-label" for="name"> <?=EMPLOYEE_NAME?> : </label>
+                                           <div class="controls">
+                                               <?php $empName = htmlspecialchars(!empty($dataCat['name_ar']) ? $dataCat['name_ar'] : ($dataCat['name_en'] ?? '')); ?>
+                                               <input type="text" class="span6 typeahead" placeholder="<?=EMPLOYEE_NAME?>" name='name_ar' id='name' value="<?=$empName?>" required> &nbsp; *
+                                                  <span class="help-inline">&nbsp;</span>
+                                           </div>
+                                       </div>                                     
 
                                     <div class="control-group">
                                         <label class="control-label" for="fileInput"><?=IMAGE?> : </label>

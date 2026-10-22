@@ -178,20 +178,11 @@ $storeid	= $_SESSION['storeid'];
                                                   <input type="hidden" name="flbs" id='fl'>
                                               </div>
                                             </div>                                        
-                                            <h4><?=LANGUAGE_1?></h4>
                                             <div class="control-group">
-                                                <label class="control-label" for=" typeahead"><?=ACCOUNT_NAME?> : </label>
+                                                <label class="control-label" for="name_ar"><?=ACCOUNT_NAME?> : </label>
                                                 <div class="controls">
-                                                    <input type="text" class=" typeahead"  name='name_en' id='name_en' disabled> *
-                                                     <span class="help-inline">&nbsp;</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <h4><?=LANGUAGE_2?></h4>
-                                            <div class="control-group">
-                                                <label class="control-label" for=" typeahead"><?=ACCOUNT_NAME?> : </label>
-                                                <div class="controls">
-                                                    <input type="text" class=" typeahead"  name='name_ar' id='name_ar' disabled> *
+                                                    <input type="text" class="typeahead" name='name_ar' id='name_ar' placeholder="اسم الحساب" disabled> *
+                                                    <input type="hidden" name='name_en' id='name_en'>
                                                     <span class="help-inline">&nbsp;</span>
                                                 </div>
                                             </div> 
