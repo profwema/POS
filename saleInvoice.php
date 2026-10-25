@@ -39,13 +39,13 @@ require_once("controller.php");
                                    <div class="salesOptions">                               
                                       <label class="control-label" for="date01"><?=FROM_DATE?></label>
                                       <div class="controls">
-                                          <input type="text" class=" datepicker-nobar" id="fr_date" name="fr_date" value="<?=$_POST['fr_date']?>">
+                                          <input type="text" class=" datepicker-nobar" id="fr_date" name="fr_date" value="<?=htmlspecialchars($_POST['fr_date'] ?? '')?>">
                                      </div>
                                    </div>
                                    <div class="salesOptions">                                                                 
                                       <label class="control-label" for="date02"><?=TO_DATE?></label>
                                       <div class="controls">
-                                         <input type="text" class=" datepicker-nobar" id="to_date" name="to_date" value="<?=$_POST['to_date']?>">
+                                         <input type="text" class=" datepicker-nobar" id="to_date" name="to_date" value="<?=htmlspecialchars($_POST['to_date'] ?? '')?>">
                                       </div>
                                    </div>
                                </div>                                                                      
@@ -74,7 +74,7 @@ require_once("controller.php");
                                 <tr>
                                     <th><?=INVOICE_NUMBER?></th>
                                     <th><?=CUSTOMER_NAME?></th>
-                                    <th><?=DECUMENT?></th>
+                                    <th><?=DOCUMENT?></th>
                                     <th><?=BRANCH?></th>
                                     <th><?=DATE?></th>
                                     <th><?=REPORT?></th>
@@ -83,63 +83,55 @@ require_once("controller.php");
                             </thead>   
                             <tbody>
                                         <?php
-                                        // Date(added) = '$date;
-                                        // WHERE datetime BETWEEN('2009-10-20 00:00:00' AND '2009-10-20 23:59:59')
-//                                            $dateSearch  = $_POST['dateSearch'];
-//                                            $dateSearch  = explode("/",$dateSearch);
-//                                            $dateSearch  = $dateSearch[2]."-".$dateSearch[1]."-".$dateSearch[0];
-//                                            $search = " AND `invoice_date` LIKE '%$dateSearch%' ";
-                                        // SELECT * FROM `sales` WHERE `invoice_date` LIKE '%2020-01-26%' 
                                                 $search = '';
-                                                $fdate		        = $_POST['fr_date'];  
-                                                if ($fdate) $search .=" AND invoice_date >= '$fdate 00:00:00'";                 
-                                                $tdate		        = $_POST['to_date'];  
-                                                if ($tdate) $search .=" AND invoice_date <= '$tdate 23:59:59'";                                                  
+                                                $fdate  = !empty($_POST['fr_date']) ? mysqli_real_escape_string($adController->MySQL, trim($_POST['fr_date'])) : '';
+                                                if ($fdate) $search .= " AND s.invoice_date >= '$fdate 00:00:00'";
+                                                $tdate  = !empty($_POST['to_date']) ? mysqli_real_escape_string($adController->MySQL, trim($_POST['to_date'])) : '';
+                                                if ($tdate) $search .= " AND s.invoice_date <= '$tdate 23:59:59'";
                                                      
-                                                $language 	= LANG;
-                                                $storeid	= $_SESSION['storeid'];
-                                                $query	 	= "SELECT * FROM sales WHERE storeid='$storeid' AND state = '1' $search ORDER BY invoicenumber DESC";
-                                                $res 	 	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-                                                while($data 	= mysqli_fetch_assoc($res))
+                                                $language = defined('LANG') ? LANG : 'ar';
+                                                $storeid  = (int)($_SESSION['storeid'] ?? 0);
+
+                                                $query = "SELECT s.*, 
+                                                                 c.name_{$language} AS customer_name, 
+                                                                 b.name_{$language} AS branch_name 
+                                                          FROM sales s 
+                                                          LEFT JOIN customers c ON s.customer = c.id AND c.storeid = '$storeid' 
+                                                          LEFT JOIN branches b ON s.branch = b.id AND b.storeid = '$storeid' 
+                                                          WHERE s.storeid = '$storeid' AND s.state = '1' $search 
+                                                          ORDER BY s.invoicenumber DESC";
+                                                $res = mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
+                                                while($data = mysqli_fetch_assoc($res))
                                                 {
-                                                        $query		  = "SELECT * FROM customers  WHERE id='$data[customer]' AND storeid='$storeid'";
-                                                        $resSup		  = mysqli_query($adController->MySQL,$query);
-                                                        $dataSup 	  = mysqli_fetch_assoc($resSup);
-                                                        $customer	  = $dataSup['name_'.$language];
+                                                        $customer      = htmlspecialchars($data['customer_name'] ?? '');
+                                                        $branch        = htmlspecialchars($data['branch_name'] ?? '');
+                                                        $invoice       = htmlspecialchars($data["invoicenumber"] ?? '');
+                                                        $supp_invoice  = htmlspecialchars($data["document"] ?? '');
+                                                        $date          = htmlspecialchars($data['invoice_date'] ?? '');
 
-                                                        $query		  = "SELECT * FROM branches  WHERE id='$data[branch]' AND storeid='$storeid'";
-                                                        $resBra		  = mysqli_query($adController->MySQL,$query);
-                                                        $dataBra 	  = mysqli_fetch_assoc($resBra);
-                                                        $branch	          = $dataBra['name_'.$language];
-                                                        $invoice	  = $data["invoicenumber"];	
-                                                        $supp_invoice	  = $data["document"];
-                                                        $date	          = $data['invoice_date'];
-
-
-                                                        $idval		  = urlencode($adController->encrypt_decrypt(1,$invoice,0));
-                                                        $invoiceTable	  = urlencode($adController->encrypt_decrypt(1,'sales',0));
-                                                        $otherTable	  = urlencode($adController->encrypt_decrypt(1,'outgo',0));
-
+                                                        $idval         = urlencode($adController->encrypt_decrypt(1, $data["invoicenumber"], 0));
+                                                        $invoiceTable  = urlencode($adController->encrypt_decrypt(1, 'sales', 0));
+                                                        $otherTable    = urlencode($adController->encrypt_decrypt(1, 'outgo', 0));
 
                                                         echo "<tr>";
-
                                                         echo "<td>$invoice</td>";
-                                                                echo "<td>$customer</td>";
-                                                                echo "<td>$supp_invoice</td>";
-                                                                echo "<td>$branch</td>";
-                                                                echo "<td>$date</td>";
-                                                                echo "<td class='center'>
-                                                                                        <a href='reports/sales.php?sd=$invoice' target='_blank'>
-                                                                                                <img src='img/print.png' style='width:30px'>
-                                                                                        </a>  </td>";                                                                      
-                                                                echo "<td class='center'>
-                                                                                <a class='btn btn-info' href='edit_saleInvoice.php?sd=$idval'>
-                                                                                        <i class='halflings-icon white edit'></i>  
-                                                                                </a>
-                                                                                <a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteInvoice(\"$invoiceTable\",\"$idval\",\"$otherTable\");'>
-                                                                                        <i class='halflings-icon white trash'></i> 
-                                                                                </a>
-                                                                        </td>";
+                                                        echo "<td>$customer</td>";
+                                                        echo "<td>$supp_invoice</td>";
+                                                        echo "<td>$branch</td>";
+                                                        echo "<td>$date</td>";
+                                                        echo "<td class='center'>
+                                                                <a href='reports/sales.php?sd=$invoice' target='_blank'>
+                                                                    <img src='img/print.png' style='width:30px'>
+                                                                </a>
+                                                              </td>";
+                                                        echo "<td class='center'>
+                                                                <a class='btn btn-info' href='edit_saleInvoice.php?sd=$idval'>
+                                                                    <i class='halflings-icon white edit'></i>  
+                                                                </a>
+                                                                <a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteInvoice(\"$invoiceTable\",\"$idval\",\"$otherTable\");'>
+                                                                    <i class='halflings-icon white trash'></i> 
+                                                                </a>
+                                                              </td>";
                                                         echo "</tr>";
                                                 }
                                         ?>

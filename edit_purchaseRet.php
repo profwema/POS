@@ -34,7 +34,7 @@ while($dataItemsList	= mysqli_fetch_assoc($ress))
 	<?php require_once("script_php_variables.php");?>
 	<?php require_once("header.php");?>	
         <script type="text/javascript">
-//            var itemsAlready    = "<?=mysqli_escape_string(json_encode($arrayPi))?>";
+//            var itemsAlready    = "";
 //            itemsAlready        = $.parseJSON(itemsAlready);
             numAlready          = <?=$numAlready?>;
         </script>    

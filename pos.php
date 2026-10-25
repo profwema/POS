@@ -79,21 +79,45 @@ $delcost  = floatval($data['amount'] ?? 0);
     var $enableNegative = '<?=$enableNegative?>';   
     var delcost = '<?=$delcost?>';    
     <?php
-    if ($_SESSION['result'])
+    if (!empty($_SESSION['result']) && $_SESSION['result'] !== 'SUCCESS')
     {
-        
         ?>
             alert('<?=$_SESSION['result']?>');
-           
-           <?php
-    }
+        <?php
         unset($_SESSION['result']);
-
+    }
     ?>
 </script>
 </head>
 
 <body>
+    <?php if (!empty($_SESSION['result']) || !empty($_GET['last_invoice'])): ?>
+        <?php 
+            $invoiceSaved = !empty($_GET['last_invoice']) ? htmlspecialchars($_GET['last_invoice']) : '';
+            $toastMsg = $invoiceSaved !== '' ? "تم حفظ الفاتورة بنجاح: " . $invoiceSaved : htmlspecialchars($_SESSION['result'] ?? '');
+            unset($_SESSION['result']);
+        ?>
+        <div id="pos-toast" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#059669; color:#fff; padding:12px 28px; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.3); z-index:99999; font-size:15px; font-weight:bold; display:flex; align-items:center; gap:10px;">
+            <i class="fa fa-check-circle" style="font-size:22px;"></i>
+            <span><?= $toastMsg ?></span>
+        </div>
+        <script>
+            setTimeout(function(){ $("#pos-toast").fadeOut(400); }, 3500);
+        </script>
+    <?php endif; ?>
+
+    <!-- POS Keyboard Shortcuts Bar -->
+    <div class="pos-shortcuts-bar" style="background:#0f172a; color:#f8fafc; padding:7px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; font-size:12px; border-bottom:1px solid #334155; user-select:none;">
+        <span style="font-weight:bold; color:#38bdf8;"><i class="fa fa-keyboard-o"></i> الاختصارات:</span>
+        <span onclick="togglePosShortcutsModal()" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F1</kbd> مساعدة</span>
+        <span onclick="$('#search-items').focus().select();" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F2</kbd> باركود</span>
+        <span onclick="posFastCashSubmit();" style="cursor:pointer; background:#047857; color:#fff; padding:3px 9px; border-radius:4px; font-weight:bold;"><kbd style="background:#065f46; color:#a7f3d0; padding:1px 5px; border-radius:3px; font-size:11px;">F4</kbd> كاش وحفظ</span>
+        <span onclick="$('#mada').focus().select();" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F7</kbd> شبكة / مدى</span>
+        <span onclick="posNewSale();" style="cursor:pointer; background:#b91c1c; color:#fff; padding:3px 9px; border-radius:4px;"><kbd style="background:#7f1d1d; color:#fecaca; padding:1px 5px; border-radius:3px; font-size:11px;">F8</kbd> فاتورة جديدة</span>
+        <span onclick="$('#customer').trigger('chosen:open');" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F9</kbd> العميل</span>
+        <span onclick="addDeliverInf();" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F10</kbd> توصيل</span>
+        <span onclick="closeTables(); $('#search-items').focus();" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#64748b; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">Esc</kbd> إلغاء</span>
+    </div>
     
     <div class='delivery-table-content' id="new_trans"> 
 

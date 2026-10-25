@@ -8,8 +8,9 @@ use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\PrintBuffers\ImagePrintBuffer;
 
-$connector = new FilePrintConnector("//localhost/POS-80");
-$printer = new Printer($connector);
+try {
+    $connector = new FilePrintConnector("//localhost/POS-80");
+    $printer = new Printer($connector);
 
 
 require_once("escpos/ar/I18N/Arabic.php");
@@ -127,6 +128,9 @@ $printer -> feed();
 $printer -> cut();
 $printer -> pulse();
 $printer -> close();
+} catch (\Throwable $pe) {
+    error_log("Thermal printer error: " . $pe->getMessage());
+}
        
 
 

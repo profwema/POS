@@ -37,7 +37,7 @@ require_once("controller.php");
                                                       <tr>
                                                               <th><?=INVOICE_NUMBER?></th>
                                                               <th><?=CUSTOMER_NAME?></th>
-                                                              <th><?=DECUMENT?></th>
+                                                              <th><?=DOCUMENT?></th>
                                                               <th><?=BRANCH?></th>
                                                               <th><?=SALING_DATE?></th>
                                                               <th><?=CREATED_ON?></th>
@@ -47,54 +47,45 @@ require_once("controller.php");
                                                     </thead>   
 						  	<tbody>
 								<?php
-									$language 	= LANG;
-									$storeid	= $_SESSION['storeid'];
-									$query	 	= "SELECT * FROM quote WHERE storeid='$storeid' AND state = '1'";
-									$res 	 	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-									while($data 	= mysqli_fetch_assoc($res))
+									$language = defined('LANG') ? LANG : 'ar';
+									$storeid  = (int)($_SESSION['storeid'] ?? 0);
+									$query    = "SELECT q.*, 
+                                                                 c.name_{$language} AS customer_name, 
+                                                                 b.name_{$language} AS branch_name 
+                                                          FROM quote q 
+                                                          LEFT JOIN customers c ON q.supplier = c.id AND c.storeid = '$storeid' 
+                                                          LEFT JOIN branches b ON q.branch = b.id AND b.storeid = '$storeid' 
+                                                          WHERE q.storeid = '$storeid' AND q.state = '1' 
+                                                          ORDER BY q.id DESC";
+									$res      = mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
+									while($data = mysqli_fetch_assoc($res))
 									{
-										$query		  = "SELECT * FROM customers  WHERE id='$data[supplier]' AND storeid='$storeid'";
-										$resSup		  = mysqli_query($adController->MySQL,$query);
-										$dataSup 	  = mysqli_fetch_assoc($resSup);
-										$customer	= $dataSup['name_'.$language];
+										$customer      = htmlspecialchars($data['customer_name'] ?? '');
+										$branch        = htmlspecialchars($data['branch_name'] ?? '');
+										$invoice       = htmlspecialchars($data["invoicenumber"] ?? '');
+										$supp_invoice  = htmlspecialchars($data["supplier_invoice"] ?? '');
+										$dated         = htmlspecialchars($data["dated"] ?? '');
+										$purchase_date = htmlspecialchars($data['purchase_date'] ?? '');
 
-                                                                                $query		  = "SELECT * FROM branches  WHERE id='$data[branch]' AND storeid='$storeid'";
-										$resBra		  = mysqli_query($adController->MySQL,$query);
-										$dataBra 	  = mysqli_fetch_assoc($resBra);
-                                                                                $branch	          = $dataBra['name_'.$language];
-
-						
-										$invoice	= $data["invoicenumber"];	
-										
-										
-                                                                                $supp_invoice	= $data["supplier_invoice"];
-										$dated		= $data["dated"];
-										$purchase_date	= $data['purchase_date'];
-
-
-                                                                                $idval		= urlencode($adController->encrypt_decrypt(1,$data['id'],0));
-										$invoiceTable	= urlencode($adController->encrypt_decrypt(1,'quote',0));
-                                                                                $detailTable	= urlencode($adController->encrypt_decrypt(1,'quote_items',0));
-                                                                                //$otherTable	= urlencode($adController->encrypt_decrypt(1,'outgo',0));
-
-										$secondIdval	= urlencode($adController->encrypt_decrypt(1,$idval,0));
-								
+										$idval        = (int)$data['id'];
+										$invoiceTable = urlencode($adController->encrypt_decrypt(1, 'quote', 0));
+										$invVal       = urlencode($adController->encrypt_decrypt(1, $data["invoicenumber"], 0));
 
 										echo "<tr>";
-											echo "<td>$invoice</td>";
-                                                                                        echo "<td>$customer</td>";
-                                                                                        echo "<td>$supp_invoice</td>";
-                                                                                        echo "<td>$branch</td>";
-											echo "<td>$purchase_date</td>";
-											echo "<td>$dated</td>";
-											echo "<td class='center'>
-													<a class='btn btn-info' href='edit_qouta.php?sd=$secondIdval'>
-														<i class='halflings-icon white edit'></i>  
-													</a>
-													<a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteInvoice(\"$invoiceTable\",\"$detailTable\",\"$idval\",\"$otherTable\");'>
-														<i class='halflings-icon white trash'></i> 
-													</a>
-												</td>";
+										echo "<td>$invoice</td>";
+										echo "<td>$customer</td>";
+										echo "<td>$supp_invoice</td>";
+										echo "<td>$branch</td>";
+										echo "<td>$purchase_date</td>";
+										echo "<td>$dated</td>";
+										echo "<td class='center'>
+												<a class='btn btn-info' href='edit_qouta.php?sd=$idval'>
+													<i class='halflings-icon white edit'></i>  
+												</a>
+												<a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteInvoice(\"$invoiceTable\",\"$invVal\",\"\");'>
+													<i class='halflings-icon white trash'></i> 
+												</a>
+											</td>";
 										echo "</tr>";
 									}
 								?>

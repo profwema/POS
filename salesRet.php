@@ -26,7 +26,7 @@ require_once("controller.php");
 					</div>
 					<div class="box-content">
 						<p align="right">
-                                                    <a class="btn btn-success" href="add_SalesRet.php">
+                                                    <a class="btn btn-success" href="add_salesRet.php">
 								<i class="icon-plus"></i>
 							</a>
 						</p>
@@ -46,55 +46,50 @@ require_once("controller.php");
                                                     </thead>   
 						  	<tbody>
 								<?php
-									$language 	= LANG;
-									$storeid	= $_SESSION['storeid'];
-									$query	 	= "SELECT * FROM sales_ret WHERE storeid='$storeid' AND state = '1' ORDER BY invoicenumber DESC ";
-									$res 	 	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-									while($data 	= mysqli_fetch_assoc($res))
+									$language = defined('LANG') ? LANG : 'ar';
+									$storeid  = (int)($_SESSION['storeid'] ?? 0);
+									$query    = "SELECT sr.*, 
+                                                                 c.name_{$language} AS customer_name, 
+                                                                 b.name_{$language} AS branch_name 
+                                                          FROM sales_ret sr 
+                                                          LEFT JOIN customers c ON sr.customer = c.id AND c.storeid = '$storeid' 
+                                                          LEFT JOIN branches b ON sr.branch = b.id AND b.storeid = '$storeid' 
+                                                          WHERE sr.storeid = '$storeid' AND sr.state = '1' 
+                                                          ORDER BY sr.invoicenumber DESC";
+									$res      = mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
+									while($data = mysqli_fetch_assoc($res))
 									{
-										$query		  = "SELECT * FROM customers  WHERE id='$data[customer]' AND storeid='$storeid'";
-										$resSup		  = mysqli_query($adController->MySQL,$query);
-										$dataSup 	  = mysqli_fetch_assoc($resSup);
-										$customer	= $dataSup['name_'.$language];
+										$customer     = htmlspecialchars($data['customer_name'] ?? '');
+										$branch       = htmlspecialchars($data['branch_name'] ?? '');
+										$invoice      = htmlspecialchars($data["invoicenumber"] ?? '');
+										$salesInvoice = htmlspecialchars($data['salesInvoice'] ?? '');
+										$supp_invoice = htmlspecialchars($data["document"] ?? '');
+										$date         = htmlspecialchars($data['invoice_date'] ?? '');
 
-                                                                                $query		  = "SELECT * FROM branches  WHERE id='$data[branch]' AND storeid='$storeid'";
-										$resBra		  = mysqli_query($adController->MySQL,$query);
-										$dataBra 	  = mysqli_fetch_assoc($resBra);
-                                                                                $branch	          = $dataBra['name_'.$language];
-										$invoice	= $data["invoicenumber"];
-                                                                                $salesInvoice   = $data['salesInvoice'];
-
-                                                                                $supp_invoice	= $data["document"];
-//										$dated		= $data["dated"];
-										$date	        = $data['invoice_date'];
-
-
-
-                                                                                $idval		= urlencode($adController->encrypt_decrypt(1,$invoice,0));
-										$invoiceTable	= urlencode($adController->encrypt_decrypt(1,'sales_ret',0));
-                                                                               $otherTable	= urlencode($adController->encrypt_decrypt(1,'income',0));
-                                                                                
- 								
+										$idval        = urlencode($adController->encrypt_decrypt(1, $data["invoicenumber"], 0));
+										$invoiceTable = urlencode($adController->encrypt_decrypt(1, 'sales_ret', 0));
+										$otherTable   = urlencode($adController->encrypt_decrypt(1, 'income', 0));
 
 										echo "<tr>";
-											echo "<td>$invoice</td>";
-											echo "<td>$salesInvoice</td>";
-                                                                                         echo "<td>$branch</td>";
-                                                                                        echo "<td>$customer</td>";
-                                                                                        echo "<td>$supp_invoice</td>";
-											echo "<td>$date</td>";
-                                                                                        echo "<td class='center'>
-                                                                                                                <a href='reports/reSales.php?sd=$invoice' target='_blank'>
-                                                                                                                        <img src='img/print.png' style='width:30px'>
-                                                                                                                </a>  </td>";                                                                                             
-											echo "<td class='center'>
-													<a class='btn btn-info' href='edit_salesRet.php?sd=$idval'>
-														<i class='halflings-icon white edit'></i>  
-													</a>
-													<a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteInvoice(\"$invoiceTable\",\"$idval\",\"$otherTable\");'>
-														<i class='halflings-icon white trash'></i> 
-													</a>
-												</td>";
+										echo "<td>$invoice</td>";
+										echo "<td>$salesInvoice</td>";
+										echo "<td>$branch</td>";
+										echo "<td>$customer</td>";
+										echo "<td>$supp_invoice</td>";
+										echo "<td>$date</td>";
+										echo "<td class='center'>
+												<a href='reports/reSales.php?sd=$invoice' target='_blank'>
+													<img src='img/print.png' style='width:30px'>
+												</a>
+											  </td>";
+										echo "<td class='center'>
+												<a class='btn btn-info' href='edit_salesRet.php?sd=$idval'>
+													<i class='halflings-icon white edit'></i>  
+												</a>
+												<a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteInvoice(\"$invoiceTable\",\"$idval\",\"$otherTable\");'>
+													<i class='halflings-icon white trash'></i> 
+												</a>
+											  </td>";
 										echo "</tr>";
 									}
 								?>

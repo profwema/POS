@@ -31,54 +31,61 @@ while($data = mysqli_fetch_assoc($res))
     
     echo " $invoice - $outgoInvoice <br>  ";
 
-    $query              = "SELECT store FROM employees WHERE id='$userid'";
-    $resStore                = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-    
-    $dataType		= mysqli_fetch_assoc($resStore);
-    $store      	= $dataType['store'];
-    
-    $totalAll           = 0;
-    $totaldel           = 0;
-    $query              = "SELECT * FROM orders WHERE hasvalue ='$hash'";
-    $resItem            = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-    while($dataItem     = mysqli_fetch_assoc($resItem))
-    {
-        $itemId     = $dataItem['itemid'];
-        $qty        = $dataItem['qty'];
-        $price      = $dataItem['cost'];
-        $disc       = $dataItem['discount'];
-        $tax        = $dataItem['vat'];
-        $delCost    = $dataItem['delivery_cost'];        
-        $totalDisc  = $qty *( $price - $disc);
-        $vat        = $totalDisc/100 * $tax;
-        $totalNet   = $totalDisc + $vat;
+    mysqli_begin_transaction($adController->MySQL);
+    try {
+        $query              = "SELECT store FROM employees WHERE id='$userid'";
+        $resStore           = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
         
-        echo "---- $itemId --- $totalNet --- $delCost <br>  ";
+        $dataType		= mysqli_fetch_assoc($resStore);
+        $store      	= $dataType['store'];
         
-        $totalAll += $totalNet;
-        $totaldel += $delCost;
-        
-        $query      = "INSERT INTO sales_items ( itemid  , quantity , cost   , discount , tax  , store  , invoice_No , storeid) VALUES"
-                                                   . "('$itemId','$qty'    ,'$price','$disc'   ,'$tax','$store','$invoice'  ,'$storeid')";
-        mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL)); 
-        $query      = "INSERT INTO outgo_items ( itemid   , quantity, cost   , discount, tax,    store  , outgo_No,  invoice_No   ,invoice_Type ,date , storeid) VALUES"
-                                                . "( '$itemId','$qty'   ,'$price','$disc'  , '$tax','$store','$outgoInvoice','$invoice','SALES','$pExpiry','$storeid')";
-        mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));    
+        $totalAll           = 0;
+        $totaldel           = 0;
+        $query              = "SELECT * FROM orders WHERE hasvalue ='$hash'";
+        $resItem            = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
+        while($dataItem     = mysqli_fetch_assoc($resItem))
+        {
+            $itemId     = $dataItem['itemid'];
+            $qty        = $dataItem['qty'];
+            $price      = $dataItem['cost'];
+            $disc       = $dataItem['discount'];
+            $tax        = $dataItem['vat'];
+            $delCost    = $dataItem['delivery_cost'];        
+            $totalDisc  = $qty *( $price - $disc);
+            $vat        = $totalDisc/100 * $tax;
+            $totalNet   = $totalDisc + $vat;
+            
+            echo "---- $itemId --- $totalNet --- $delCost <br>  ";
+            
+            $totalAll += $totalNet;
+            $totaldel += $delCost;
+            
+            $query      = "INSERT INTO sales_items ( itemid  , quantity , cost   , discount , tax  , store  , invoice_No , storeid) VALUES"
+                                                       . "('$itemId','$qty'    ,'$price','$disc'   ,'$tax','$store','$invoice'  ,'$storeid')";
+            mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL)); 
+            $query      = "INSERT INTO outgo_items ( itemid   , quantity, cost   , discount, tax,    store  , outgo_No,  invoice_No   ,invoice_Type ,date , storeid) VALUES"
+                                                    . "( '$itemId','$qty'   ,'$price','$disc'  , '$tax','$store','$outgoInvoice','$invoice','SALES','$pExpiry','$storeid')";
+            mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));    
+        }
+        $totalAll = $totalAll + $totaldel;
+        echo "---- totals :  $totalAll ---- $totaldel <br>  ";
+         
+        $query          = "INSERT INTO sales(invoicenumber, branch,    customer,   document, invoice_date, user,    orderType,    paymentType, delver,     all_total,  storeid) VALUES"
+                                          . "('$invoice', '$branch', '$customer', '$hash',  '$pExpiry',   '$userid', '$orderType', '$paymentType','$totaldel',   '$totalAll','$storeid')";
+        $exe            = mysqli_query($adController->MySQL,$query);
+
+        $queryOutgo     = "INSERT INTO outgo (outgo_No     ,branch    ,invoice_type, Beneficiary, invoice_No, date , user  , all_total ,storeid) VALUES"
+                                         . "('$outgoInvoice','$branch' ,'SALES'  , '$customer', '$invoice', '$pExpiry','$userid','$totalAll','$storeid')";
+        $exe            = mysqli_query($adController->MySQL,$queryOutgo);            
+
+        $query          = "DELETE FROM `orders` WHERE hasvalue='$hash'";
+        $exe            = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
+
+        mysqli_commit($adController->MySQL);
+    } catch (\Throwable $e) {
+        mysqli_rollback($adController->MySQL);
+        echo "Error processing order $hash: " . $e->getMessage() . "<br>";
     }
-    $totalAll = $totalAll + $totaldel;
-     echo "---- totals :  $totalAll ---- $totaldel <br>  ";
-     
-    $query          = "INSERT INTO sales(invoicenumber, branch,    customer,   document, invoice_date, user,    orderType,    paymentType, delver,     all_total,  storeid) VALUES"
-                                      . "('$invoice', '$branch', '$customer', '$hash',  '$pExpiry',   '$userid', '$orderType', '$paymentType','$totaldel',   '$totalAll','$storeid')";
-    $exe            = mysqli_query($adController->MySQL,$query);
-
-    $queryOutgo     = "INSERT INTO outgo (outgo_No     ,branch    ,invoice_type, Beneficiary, invoice_No, date , user  , all_total ,storeid) VALUES"
-                                     . "('$outgoInvoice','$branch' ,'SALES'  , '$customer', '$invoice', '$pExpiry','$userid','$totalAll','$storeid')";
-    $exe            = mysqli_query($adController->MySQL,$queryOutgo);            
-
-            $query          = "DELETE FROM `orders` WHERE hasvalue='$hash'";
-            $exe            = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-   
 }
 
 

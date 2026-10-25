@@ -37,6 +37,27 @@ class AdController
     	}
   	}       
 
+	public function beginTransaction()
+	{
+		if ($this->MySQL instanceof mysqli) {
+			mysqli_begin_transaction($this->MySQL);
+		}
+	}
+
+	public function commit()
+	{
+		if ($this->MySQL instanceof mysqli) {
+			mysqli_commit($this->MySQL);
+		}
+	}
+
+	public function rollback()
+	{
+		if ($this->MySQL instanceof mysqli) {
+			mysqli_rollback($this->MySQL);
+		}
+	}
+
 	function setLang()
 	{
 		$_SESSION['lang'] = $_REQUEST['l'];
@@ -553,7 +574,7 @@ function getStates()
 		$invoice  	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['id'] ?? ''),0);
 		$otherTable  	 = $this->encrypt_decrypt(2,urldecode($_REQUEST['ot'] ?? ''),0);
 
-		$allowedInvoiceTables = ['sales', 'purchase', 'purchaseRet', 'salesRet', 'quotations', 'orderTrans'];
+		$allowedInvoiceTables = ['sales', 'purchase', 'purchaseRet', 'purchase_ret', 'salesRet', 'sales_ret', 'quotations', 'quote', 'income', 'outgo', 'orderTrans', 'store_trans'];
 		if (!in_array($invoiceTable, $allowedInvoiceTables, true)) {
 			echo '0';
 			exit();
@@ -2494,86 +2515,88 @@ function storesUpdate()
            $balance = $this->getBalanceItem($item,$store,$old);
            echo $balance;
        }
-       function getBalanceItem($item,$store,$old )
-       {
-           $storeid        = $_SESSION['storeid'];       
-        
-           $queryCode  = "SELECT item_thread FROM items WHERE id = '$item' ";
-            $resCode	= mysqli_query($this->MySQL,$queryCode);
-            $dataCode   = mysqli_fetch_assoc($resCode);
-            $thred     =  $dataCode['item_thread']; 
-            
-            $queryItems   = "SELECT i.id AS id, i.intimate_stock AS noOfQty "
-                    . "FROM items i "
-                    . "WHERE i.item_thread = '$thred' ORDER BY i.intimate_stock DESC" ;
-            $resItem  =    mysqli_query($this->MySQL,$queryItems) or die(mysqli_error($this->MySQL));        //echo $queryAll."<br>";hhh
-            while($dataItem = mysqli_fetch_assoc($resItem))
-            {
-                $itemsListArray[count($itemsListArray)] = $dataItem;
-                $itemId = $dataItem['id'];  
-                $noOfQty = $dataItem['noOfQty'];
-               
-                if ($item == $itemId) $itemNoOfQty = $noOfQty;
-                
-                $query  = "SELECT o.quantity AS qty "
-                    . "FROM open_palance o "
-                    . "WHERE  o.itemid = '$itemId' "
-                    . "AND o.store = '$store' AND o.storeid='$storeid'";
-
-                $res    = mysqli_query($this->MySQL,$query);
-                while($data = mysqli_fetch_assoc($res))
-                {
-                   $qty     = $data['qty'];
-                   $total   += $qty*$noOfQty;
-                }      
-                
-                $query = "SELECT o.quantity AS qty "
-                    . "FROM income_items o "
-                    . "WHERE  o.itemid = '$itemId' "
-                    . "AND o.store = '$store' AND o.storeid='$storeid' AND state = '1'";
-                $res = mysqli_query($this->MySQL,$query);               
-                while($data = mysqli_fetch_assoc($res))
-                {
-                   $qty     = $data['qty'];
-                   $total   += $qty*$noOfQty;
-                }  
-
-                $query = "SELECT o.quantity AS qty "
-                        . "FROM outgo_items o "
-                        . "WHERE  o.itemid = '$itemId' "
-                    . "AND o.store = '$store' AND o.storeid='$storeid' AND state = '1'";
-                $res = mysqli_query($this->MySQL,$query);
-                while($data = mysqli_fetch_assoc($res))
-                {
-                   $qty     = $data['qty']*-1;
-                   $total   += $qty*$noOfQty;
-                }            
-                
-            }
-            $palance = intval($total/$itemNoOfQty);
-            return $palance + $old;
-       }
-               
-        function getNewInvoiceNo($table,$field,$type,$branch)
+        function getBalanceItem($item, $store, $old)
         {
-            $query  = "SELECT $field AS No FROM $table ORDER BY SUBSTRING($field, -5) DESC LIMIT 1";
-            $res	= mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-            $num	= mysqli_num_rows($res);
-            $data	= mysqli_fetch_assoc($res);
-            if($num)
-            {
-                $rest = substr($data['No'], -5);  
-                $trans_No = intval($rest)+1;
+            $storeid = (int)($_SESSION['storeid'] ?? 0);
+            $itemId = (int)$item;
+            $store = (int)$store;
+            $old = (float)$old;
+            $total = 0.0;
+            $itemNoOfQty = 1.0;
+
+            $queryCode = "SELECT item_thread, intimate_stock FROM items WHERE id = '$itemId' LIMIT 1";
+            $resCode = mysqli_query($this->MySQL, $queryCode);
+            if ($resCode && $dataCode = mysqli_fetch_assoc($resCode)) {
+                $thred = mysqli_real_escape_string($this->MySQL, (string)($dataCode['item_thread'] ?? ''));
+                $itemNoOfQty = (float)($dataCode['intimate_stock'] ?? 1);
+            } else {
+                return $old;
             }
-            else 
-                $trans_No = 1;
+
+            if ($itemNoOfQty <= 0) {
+                $itemNoOfQty = 1.0;
+            }
+
+            // Fetch related unit items in thread
+            $queryItems = "SELECT id, intimate_stock AS noOfQty FROM items WHERE item_thread = '$thred' ORDER BY intimate_stock DESC";
+            $resItem = mysqli_query($this->MySQL, $queryItems);
             
-            $trans_No   =   $type.
-                            str_pad($_SESSION['storeid'],3,"0",STR_PAD_LEFT).  // store id 
-                            str_pad($branch,2,"0",STR_PAD_LEFT). // branch id 
-                            '00'.  // user id 
-                            str_pad($trans_No,5,"0",STR_PAD_LEFT);    
-            return $trans_No;
+            if ($resItem) {
+                while ($dataItem = mysqli_fetch_assoc($resItem)) {
+                    $curItemId = (int)$dataItem['id'];
+                    $noOfQty = (float)($dataItem['noOfQty'] ?? 1);
+
+                    if ($curItemId === $itemId && $noOfQty > 0) {
+                        $itemNoOfQty = $noOfQty;
+                    }
+
+                    // Direct SQL aggregation for open_palance, income_items, and outgo_items
+                    $aggSql = "SELECT 
+                        (SELECT COALESCE(SUM(quantity), 0) FROM open_palance WHERE itemid = '$curItemId' AND store = '$store' AND storeid = '$storeid') AS open_qty,
+                        (SELECT COALESCE(SUM(quantity), 0) FROM income_items WHERE itemid = '$curItemId' AND store = '$store' AND storeid = '$storeid' AND state = '1') AS income_qty,
+                        (SELECT COALESCE(SUM(quantity), 0) FROM outgo_items WHERE itemid = '$curItemId' AND store = '$store' AND storeid = '$storeid' AND state = '1') AS outgo_qty";
+                    
+                    $resAgg = mysqli_query($this->MySQL, $aggSql);
+                    if ($resAgg && $rowAgg = mysqli_fetch_assoc($resAgg)) {
+                        $netQty = ((float)$rowAgg['open_qty']) + ((float)$rowAgg['income_qty']) - ((float)$rowAgg['outgo_qty']);
+                        $total += ($netQty * $noOfQty);
+                    }
+                }
+            }
+
+            $palance = intval($total / $itemNoOfQty);
+            return $palance + $old;
+        }
+               
+        function getNewInvoiceNo($table, $field, $type, $branch)
+        {
+            $storeid = (int)($_SESSION['storeid'] ?? 0);
+            $branchId = (int)$branch;
+            $prefix = $type . str_pad($storeid, 3, "0", STR_PAD_LEFT) . str_pad($branchId, 2, "0", STR_PAD_LEFT) . '00';
+            
+            // Query with prefix match and FOR UPDATE to lock concurrent transactions from assigning the same sequence
+            $query = "SELECT $field AS No FROM `$table` WHERE $field LIKE '{$prefix}%' ORDER BY $field DESC LIMIT 1 FOR UPDATE";
+            $res = mysqli_query($this->MySQL, $query);
+            
+            $trans_No = 1;
+            if ($res && mysqli_num_rows($res) > 0) {
+                $data = mysqli_fetch_assoc($res);
+                $lastNo = substr($data['No'], -5);
+                $trans_No = intval($lastNo) + 1;
+            } else {
+                // Fallback for legacy tables that might not have matching prefix
+                $fallbackQuery = "SELECT $field AS No FROM `$table` ORDER BY id DESC LIMIT 1 FOR UPDATE";
+                $fallbackRes = mysqli_query($this->MySQL, $fallbackQuery);
+                if ($fallbackRes && mysqli_num_rows($fallbackRes) > 0) {
+                    $fbData = mysqli_fetch_assoc($fallbackRes);
+                    $lastNo = substr($fbData['No'] ?? '', -5);
+                    if ($lastNo !== '') {
+                        $trans_No = intval($lastNo) + 1;
+                    }
+                }
+            }
+            
+            return $prefix . str_pad($trans_No, 5, "0", STR_PAD_LEFT);
         }             
         
         function getExistInvoiceNo($table,$fieldReq,$fieldGiven,$invoice)
@@ -2814,28 +2837,43 @@ function storesUpdate()
         function addSale()
         {          
             $chick = $this->chickSales();
-            if ($chick ==1)
+            if ($chick == 1)
             {
-                
-                $branch      =   $_POST['branch'];
-                $invoice     =   $this->getNewInvoiceNo("sales","invoicenumber",'11',$branch);   
-                $outgo_No    =   $this->getNewInvoiceNo("outgo","outgo_No",'32',$branch);    
-                $journalNo   =   $this->getNewInvoiceNo("journal","journalNo",'40',$branch);   
+                $this->beginTransaction();
+                try {
+                    $branch      =   $_POST['branch'];
+                    $invoice     =   $this->getNewInvoiceNo("sales","invoicenumber",'11',$branch);   
+                    $outgo_No    =   $this->getNewInvoiceNo("outgo","outgo_No",'32',$branch);    
+                    $journalNo   =   $this->getNewInvoiceNo("journal","journalNo",'40',$branch);   
 
-                $time        =   date("h:i:s");
-		$set= $this->setSales($invoice,$time,$outgo_No,$journalNo);
-                $_SESSION['result']= 'SUCCESS';                
-                if (isset($_POST['cashier']))
-                {
-                    	    
-                    require_once ("escpos/index.php");
-
-
-                   header("Location: pos.php");
-                }
-                else 
-                {
-                    header("Location: saleInvoice.php");
+                    $time        =   date("h:i:s");
+                    $set = $this->setSales($invoice,$time,$outgo_No,$journalNo);
+                    $this->commit();
+                    $_SESSION['result']= 'SUCCESS';                
+                    if (isset($_POST['cashier']))
+                    {
+                        try {
+                            @include_once ("escpos/index.php");
+                        } catch (\Throwable $pe) {
+                            error_log("Thermal printing error: " . $pe->getMessage());
+                        }
+                        $_SESSION['last_invoice'] = $invoice;
+                        header("Location: pos.php?last_invoice=" . urlencode($invoice));
+                        exit();
+                    }
+                    else 
+                    {
+                        header("Location: saleInvoice.php");
+                        exit();
+                    }
+                } catch (\Throwable $e) {
+                    $this->rollback();
+                    $_SESSION['result'] = 'ERROR: ' . $e->getMessage();
+                    if (isset($_POST['cashier'])) {
+                        header("Location: pos.php");
+                    } else {
+                        header("Location: saleInvoice.php");
+                    }
                 }
             }
             else
@@ -2847,18 +2885,26 @@ function storesUpdate()
         function editSale()
         {
             $chich = $this->chickSales();
-            if ($chich ==1)
+            if ($chich == 1)
             {                      
-                $branch      =   $_POST['branch'];
-                $invoice     =   $_POST['invoice'];
-                $outgo_No    =   $this->getExistInvoiceNo('outgo','outgo_No','invoice_No',$invoice);    
-                $journalNo   =   $this->getExistInvoiceNo('journal','journalNo','docNo',$invoice); 
-                $time        =   $this->getInvoiceTime('sales',$invoice);
-                $this->resetInvoice($invoice,'sales','outgo');
-                $this->setSales($invoice,$time,$outgo_No,$journalNo);
+                $this->beginTransaction();
+                try {
+                    $branch      =   $_POST['branch'];
+                    $invoice     =   $_POST['invoice'];
+                    $outgo_No    =   $this->getExistInvoiceNo('outgo','outgo_No','invoice_No',$invoice);    
+                    $journalNo   =   $this->getExistInvoiceNo('journal','journalNo','docNo',$invoice); 
+                    $time        =   $this->getInvoiceTime('sales',$invoice);
+                    $this->resetInvoice($invoice,'sales','outgo');
+                    $this->setSales($invoice,$time,$outgo_No,$journalNo);
+                    $this->commit();
 
-                $response['invoice']    = $invoice;
-                $response['success']    = "1";
+                    $response['invoice']    = $invoice;
+                    $response['success']    = "1";
+                } catch (\Throwable $e) {
+                    $this->rollback();
+                    $response['error']      = $e->getMessage();
+                    $response['success']    = "0";
+                }
             }
             else
             {
@@ -2974,16 +3020,24 @@ function storesUpdate()
         function addSaleRet()
         {
             $chick = $this->chickSaleRet();
-            if ($chick ==1)
+            if ($chick == 1)
             {
-                $branch      =   $_POST['branch'];
-                $invoice     =   $this->getNewInvoiceNo("sales_ret","invoicenumber",'12',$branch);     
-                $income_No   =   $this->getNewInvoiceNo("income","income_No",'31',$branch);    
-                $journalNo   =   $this->getNewInvoiceNo("journal","journalNo",'40',$branch);   
-                $time        =   date("h:i:s");
-                $this->setPSaleRet($invoice,$time,$income_No,$journalNo);
-               $response['invoice']    = $invoice;
-               $response['success']    = "1";
+                $this->beginTransaction();
+                try {
+                    $branch      =   $_POST['branch'];
+                    $invoice     =   $this->getNewInvoiceNo("sales_ret","invoicenumber",'12',$branch);     
+                    $income_No   =   $this->getNewInvoiceNo("income","income_No",'31',$branch);    
+                    $journalNo   =   $this->getNewInvoiceNo("journal","journalNo",'40',$branch);   
+                    $time        =   date("h:i:s");
+                    $this->setPSaleRet($invoice,$time,$income_No,$journalNo);
+                    $this->commit();
+                    $response['invoice']    = $invoice;
+                    $response['success']    = "1";
+                } catch (\Throwable $e) {
+                    $this->rollback();
+                    $response['error']      = $e->getMessage();
+                    $response['success']    = "0";
+                }
             }
             else
             {
@@ -2997,19 +3051,27 @@ function storesUpdate()
         {
             $chich = $this->chickSaleRet();
 
-            if ($chich ==1)
+            if ($chich == 1)
             {       
-                $branch      =   $_POST['branch'];
-                $invoice     =   $_POST['invoice'];
+                $this->beginTransaction();
+                try {
+                    $branch      =   $_POST['branch'];
+                    $invoice     =   $_POST['invoice'];
 
-                $income_No   =   $this->getExistInvoiceNo('income','income_No','invoice_No',$invoice);    
-                $journalNo   =   $this->getExistInvoiceNo('journal','journalNo','docNo',$invoice); 
-                $time        =   $this->getInvoiceTime('sales_ret',$invoice);
-                
-                $this->resetInvoice($invoice,'sales_ret','income');
-                $this->setPSaleRet($invoice,$time,$income_No,$journalNo);
-               $response['invoice']    = $invoice;
-               $response['success']    = "1";
+                    $income_No   =   $this->getExistInvoiceNo('income','income_No','invoice_No',$invoice);    
+                    $journalNo   =   $this->getExistInvoiceNo('journal','journalNo','docNo',$invoice); 
+                    $time        =   $this->getInvoiceTime('sales_ret',$invoice);
+                    
+                    $this->resetInvoice($invoice,'sales_ret','income');
+                    $this->setPSaleRet($invoice,$time,$income_No,$journalNo);
+                    $this->commit();
+                    $response['invoice']    = $invoice;
+                    $response['success']    = "1";
+                } catch (\Throwable $e) {
+                    $this->rollback();
+                    $response['error']      = $e->getMessage();
+                    $response['success']    = "0";
+                }
             }
             else
             {
@@ -3130,16 +3192,24 @@ function storesUpdate()
         function addPurchase()
         {
             $chick = $this->chickPurchase();
-            if ($chick ==1)
+            if ($chick == 1)
             {
-                $branch      =   $_POST['branch'];
-                $invoice     =   $this->getNewInvoiceNo("purchase","invoicenumber",'21',$branch);     
-                $income_No   =   $this->getNewInvoiceNo("income","income_No",'31',$branch);    
-                $journalNo   =   $this->getNewInvoiceNo("journal","journalNo",'40',$branch);   
-                $time        =   date("h:i:s");
-               $this->setPurchase($invoice,$time,$income_No,$journalNo);
-               $response['invoice']    = $invoice;
-               $response['success']    = "1";
+                $this->beginTransaction();
+                try {
+                    $branch      =   $_POST['branch'];
+                    $invoice     =   $this->getNewInvoiceNo("purchase","invoicenumber",'21',$branch);     
+                    $income_No   =   $this->getNewInvoiceNo("income","income_No",'31',$branch);    
+                    $journalNo   =   $this->getNewInvoiceNo("journal","journalNo",'40',$branch);   
+                    $time        =   date("h:i:s");
+                    $this->setPurchase($invoice,$time,$income_No,$journalNo);
+                    $this->commit();
+                    $response['invoice']    = $invoice;
+                    $response['success']    = "1";
+                } catch (\Throwable $e) {
+                    $this->rollback();
+                    $response['error']      = $e->getMessage();
+                    $response['success']    = "0";
+                }
             }
             else
             {
@@ -3151,18 +3221,26 @@ function storesUpdate()
         function editPurchase()
         {
             $chich = $this->chickPurchase();
-            if ($chich ==1)
+            if ($chich == 1)
             {       
-                $branch      =   $_POST['branch'];
-                $invoice     =   $_POST['invoice'];
-                $income_No   =   $this->getExistInvoiceNo('income','income_No','invoice_No',$invoice);    
-                $journalNo   =   $this->getExistInvoiceNo('journal','journalNo','docNo',$invoice); 
-                $time        =   $this->getInvoiceTime('purchase',$invoice);
-                
-                $this->resetInvoice($invoice,'purchase','income');
-                $this->setPurchase($invoice,$time,$income_No,$journalNo);
-               $response['invoice']    = $invoice;
-               $response['success']    = "1";
+                $this->beginTransaction();
+                try {
+                    $branch      =   $_POST['branch'];
+                    $invoice     =   $_POST['invoice'];
+                    $income_No   =   $this->getExistInvoiceNo('income','income_No','invoice_No',$invoice);    
+                    $journalNo   =   $this->getExistInvoiceNo('journal','journalNo','docNo',$invoice); 
+                    $time        =   $this->getInvoiceTime('purchase',$invoice);
+                    
+                    $this->resetInvoice($invoice,'purchase','income');
+                    $this->setPurchase($invoice,$time,$income_No,$journalNo);
+                    $this->commit();
+                    $response['invoice']    = $invoice;
+                    $response['success']    = "1";
+                } catch (\Throwable $e) {
+                    $this->rollback();
+                    $response['error']      = $e->getMessage();
+                    $response['success']    = "0";
+                }
             }
             else
             {
@@ -3275,16 +3353,24 @@ function storesUpdate()
         function addPurchaseRet()
         {
             $chick = $this->chickPurchaseRet();
-            if ($chick ==1)
+            if ($chick == 1)
             {
-                $branch      =   $_POST['branch'];
-                $invoice     =   $this->getNewInvoiceNo("purchase_ret","invoicenumber",'22',$branch);     
-                $outgo_No   =   $this->getNewInvoiceNo("outgo","outgo_No",'32',$branch);    
-                $journalNo   =   $this->getNewInvoiceNo("journal","journalNo",'40',$branch);   
-                $time        =   date("h:i:s");
-                $this->setPurchaseRet($invoice,$time,$outgo_No,$journalNo);
-               $response['invoice']    = $invoice;
-               $response['success']    = "1";
+                $this->beginTransaction();
+                try {
+                    $branch      =   $_POST['branch'];
+                    $invoice     =   $this->getNewInvoiceNo("purchase_ret","invoicenumber",'22',$branch);     
+                    $outgo_No    =   $this->getNewInvoiceNo("outgo","outgo_No",'32',$branch);    
+                    $journalNo   =   $this->getNewInvoiceNo("journal","journalNo",'40',$branch);   
+                    $time        =   date("h:i:s");
+                    $this->setPurchaseRet($invoice,$time,$outgo_No,$journalNo);
+                    $this->commit();
+                    $response['invoice']    = $invoice;
+                    $response['success']    = "1";
+                } catch (\Throwable $e) {
+                    $this->rollback();
+                    $response['error']      = $e->getMessage();
+                    $response['success']    = "0";
+                }
             }
             else
             {
@@ -3298,19 +3384,27 @@ function storesUpdate()
         {
             $chich = $this->chickPurchaseRet();
 
-            if ($chich ==1)
+            if ($chich == 1)
             {       
-                $branch      =   $_POST['branch'];
-                $invoice     =   $_POST['invoice'];
+                $this->beginTransaction();
+                try {
+                    $branch      =   $_POST['branch'];
+                    $invoice     =   $_POST['invoice'];
 
-                $outgo_No   =   $this->getExistInvoiceNo('outgo','outgo_No','invoice_No',$invoice);    
-                $journalNo   =   $this->getExistInvoiceNo('journal','journalNo','docNo',$invoice); 
-                $time        =   $this->getInvoiceTime('purchase_ret',$invoice);
-                
-                $this->resetInvoice($invoice,'purchase_ret','outgo');
-                $this->setPurchaseRet($invoice,$time,$outgo_No,$journalNo);
-               $response['invoice']    = $invoice;
-               $response['success']    = "1";
+                    $outgo_No    =   $this->getExistInvoiceNo('outgo','outgo_No','invoice_No',$invoice);    
+                    $journalNo   =   $this->getExistInvoiceNo('journal','journalNo','docNo',$invoice); 
+                    $time        =   $this->getInvoiceTime('purchase_ret',$invoice);
+                    
+                    $this->resetInvoice($invoice,'purchase_ret','outgo');
+                    $this->setPurchaseRet($invoice,$time,$outgo_No,$journalNo);
+                    $this->commit();
+                    $response['invoice']    = $invoice;
+                    $response['success']    = "1";
+                } catch (\Throwable $e) {
+                    $this->rollback();
+                    $response['error']      = $e->getMessage();
+                    $response['success']    = "0";
+                }
             }
             else
             {
@@ -3901,193 +3995,206 @@ function addUotgoing()
             
             
         }   
-function addQuote()
-   {
-    
-            $storeid        = $_SESSION['storeid'];
-            $branch         = $_POST['branch'];
-            $customer       = $_POST['customer'];
-            $$invoiceSup     = $_POST['supplier_invoice'];
-            $pExpiry        = $_POST['purchase_expiry'];
-            $pExpiry        = explode("/",$pExpiry);
-            $pExpiry        = $pExpiry[2]."-".$pExpiry[1]."-".$pExpiry[0]." 00:00:00";
-            
-            $final_discount     = $_POST['final_discount'];
-            $totalAll         = $_POST['totalAll'];
-            $invoice        = $_POST['invoice'];
-            
-            $thread         = md5($invoice);
-            
-            $itemsArray     = $_POST['barcode'];
-            $atleastOne     = 0;
-            
-            for($i=0; $i<count($itemsArray); $i++)
-            {
-                $itemId     = $itemsArray[$i];
-                $itemId     = explode("@@",$itemId);
-                $itemId     = $itemId[1];
-                $qty        = $_POST['item_qty'][$i];
-                $store      = $_POST['store'][$i];
-                if($store != '' && $itemId != '' && $qty != '' )
-                {
-                    $atleastOne = 1;
-                    break;
-                }
-            }
-            
-            if(!$atleastOne)
-            {
-                echo NO_ITEM_ENTERED;
-                return;
-            }
-            
-            if($customer == "" || $$invoiceSup == "")
-            {
-                echo SUPPLIER_NAME_COMPULSORY."<br>";
-                echo INVOICE_NUMBER_COMPULSORY;
-                return;
-            }
-            
-            $query          = "INSERT INTO quote (thread,invoicenumber,branch   ,supplier   ,supplier_invoice,purchase_date , dis_added       , all_total ,storeid) VALUES"
-                                              . "('$thread','$invoice'  ,'$branch','$customer','$invoiceSup'   ,'$pExpiry'    ,'$final_discount','$totalAll','$storeid')";
-            $exe            = mysqli_query($this->MySQL,$query);
-            $insertid       = mysqli_insert_id($this->MySQL);      
-            
-            for($i=0; $i<count($itemsArray); $i++)
-            {
-                $itemId     = $itemsArray[$i];
-                $itemId     = explode("@@",$itemId);
-                $itemId     = $itemId[1];
-                
-                $store        = $_POST['store'][$i];
-                $qty        = $_POST['item_qty'][$i];
-                //echo "erte ".$qty;
-                $price      = $_POST['item_price'][$i];
-                $disc       = $_POST['item_disc'][$i];
-                $tax        = $_POST['item_vat'][$i];   
-                
-                
-                if($store != '' && $itemId != '' && $qty != '' && $price != '')
-                {
-                    $query      = "INSERT INTO quote_items (item_thread , itemid  , quantity , cost   , discount , tax  , store  , purchase_id , storeid) VALUES"
-                                                           . "('$thread'   , '$itemId','$qty'    ,'$price','$disc'   ,'$tax','$store','$insertid'  ,'$storeid')";
-                    mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));                    
-                }
-                
-            }
-            echo "1";
-        }
-        
-     function editQuote()
-        {
-            $idcoming       = $_POST['sd'];
-            $storeid        = $_SESSION['storeid'];
-            $branch         = $_POST['branch'];
-            $customer       = $_POST['customer'];
-            $invoiceSup     = $_POST['supplier_invoice'];
-            $pExpiry        = $_POST['purchase_expiry'];
-            $pExpiry        = explode("/",$pExpiry);
-            $pExpiry        = $pExpiry[2]."-".$pExpiry[1]."-".$pExpiry[0]." 00:00:00";
-            
-            $final_discount     = $_POST['final_discount'];
-            $totalAll           = $_POST['totalAll'];
-            $invoice            = $_POST['invoice'];
-            
-            $thread         = md5($invoice);
-            
-            $itemsArray     = $_POST['barcode'];
-            $atleastOne     = 0;
-            
-            for($i=0; $i<count($itemsArray); $i++)
-            {
-                $itemId     = $itemsArray[$i];
-                $itemId     = explode("@@",$itemId);
-                $itemId     = $itemId[1];
-                $qty        = $_POST['item_qty'][$i];
-                $store      = $_POST['store'][$i];
-                if($store != '' && $itemId != '' && $qty != '' )
-                {
-                    $atleastOne = 1;
-                    break;
-                }
-            }
-            
-            if(!$atleastOne)
-            {
-                echo NO_ITEM_ENTERED;
-                return;
-            }
-            
-            if($customer == "" || $invoiceSup == "")
-            {
-                echo SUPPLIER_NAME_COMPULSORY."<br>";
-                echo INVOICE_NUMBER_COMPULSORY;
-                return;
-            }
-          
-            $query          = "UPDATE quote SET branch='$branch',supplier='$customer',supplier_invoice='$invoiceSup',purchase_date='$pExpiry',dis_added='$final_discount',all_total='$totalAll' WHERE storeid='$storeid' AND id='$idcoming'";
-
-            $exe            = mysqli_query($this->MySQL,$query);
-            $insertid       = $idcoming;     
-
-            $queryArr       = array();
-            $idArray        = array();
-            $tArray         = array();
-            $combArray      = array();
-            
-            for($i=0; $i<count($itemsArray); $i++)
-            {
-                
-                $itemId     = $itemsArray[$i];
-                $itemId     = explode("@@",$itemId);
-                $itemId     = $itemId[1];
-                
-                $store        = $_POST['store'][$i];
-                $qty        = $_POST['item_qty'][$i];
-                //echo "erte ".$qty;
-                $price      = $_POST['item_price'][$i];
-                $disc       = $_POST['item_disc'][$i];
-                $tax        = $_POST['item_vat'][$i];   
-                
-                if($store != '' && $itemId != '' && $qty != '' && $price != '')              
-                    {
-                    $idArray[]  = $itemId; 
-
-                    $query      = "SELECT COUNT(id) AS cnt FROM quote_items WHERE storeid='$storeid' AND itemid='$itemId' AND purchase_id='$idcoming'";
-                    $res23      = mysqli_query($this->MySQL,$query);
-                    $data23     = mysqli_fetch_assoc($res23);
-                    $num23      = intval($data23['cnt']);
-                    if($num23 == 0) 
-                    {
-                        $query       = "INSERT INTO quote_items (item_thread , itemid  , quantity , cost   , discount , tax  , store  , purchase_id , storeid) VALUES"
-                                                               . "('$thread'   , '$itemId','$qty'    ,'$price','$disc'   ,'$tax','$store','$insertid'  ,'$storeid')";
-                    }
-                    else
-                    {
-                        $query       = "UPDATE quote_items SET quantity='$qty' , cost='$price' ,discount='$disc' ,tax='$tax' ,store='$store' WHERE storeid='$storeid' AND itemid='$itemId' AND purchase_id='$idcoming'";
-                    }
-                    
-                    mysqli_query($this->MySQL,$query);
-                }
-            }
-            
-            $query      = "SELECT * FROM quote_items WHERE purchase_id='$idcoming' AND storeid='$storeid'";  
-            $res23      = mysqli_query($this->MySQL,$query);
-            while($data23 = mysqli_fetch_assoc($res23))
-            {
-                $query  = "";
-                $item  = $data23['itemid'];
-                if(!in_array($item, $idArray))
-                {
-                    //echo $item;
-                    $query      = "DELETE FROM quote_items WHERE itemid='$item' AND purchase_id='$idcoming' AND storeid='$storeid'";
-                    file_put_contents("f.txt", $query);
-                    mysqli_query($this->MySQL,$query);
-                }
-            }
-            
-            echo "1";
-        }        
+	function addQuote()
+	{
+		$this->checkAuthorized('admin');
+		$storeid = (int)($_SESSION['storeid'] ?? 0);
+		$branch = (int)($_POST['branch'] ?? 0);
+		$customer = (int)($_POST['customer'] ?? 0);
+		$invoiceSup = mysqli_real_escape_string($this->MySQL, trim($_POST['supplier_invoice'] ?? ''));
+		
+		$pExpiry = $_POST['purchase_expiry'] ?? '';
+		if (!empty($pExpiry) && strpos($pExpiry, "/") !== false) {
+			$pParts = explode("/", $pExpiry);
+			if (count($pParts) === 3) {
+				$pExpiry = $pParts[2] . "-" . $pParts[1] . "-" . $pParts[0] . " 00:00:00";
+			} else {
+				$pExpiry = date("Y-m-d H:i:s");
+			}
+		} else {
+			$pExpiry = date("Y-m-d H:i:s");
+		}
+		
+		$final_discount = floatval($_POST['final_discount'] ?? 0);
+		$totalAll = floatval($_POST['totalAll'] ?? 0);
+		$invoice = mysqli_real_escape_string($this->MySQL, trim($_POST['invoice'] ?? ''));
+		$thread = md5($invoice);
+		
+		$itemsArray = $_POST['barcode'] ?? [];
+		$atleastOne = 0;
+		if (is_array($itemsArray)) {
+			for ($i = 0; $i < count($itemsArray); $i++) {
+				$itemRaw = $itemsArray[$i] ?? '';
+				$parts = explode("@@", $itemRaw);
+				$itemId = $parts[1] ?? '';
+				$qty = $_POST['item_qty'][$i] ?? '';
+				$store = $_POST['store'][$i] ?? '';
+				if ($store != '' && $itemId != '' && $qty != '') {
+					$atleastOne = 1;
+					break;
+				}
+			}
+		}
+		
+		if (!$atleastOne) {
+			echo NO_ITEM_ENTERED;
+			return;
+		}
+		
+		if ($customer <= 0 || $invoiceSup == "") {
+			echo SUPPLIER_NAME_COMPULSORY . "<br>";
+			echo INVOICE_NUMBER_COMPULSORY;
+			return;
+		}
+		
+		$this->MySQL->begin_transaction();
+		try {
+			$query = "INSERT INTO quote (thread, invoicenumber, branch, supplier, supplier_invoice, purchase_date, dis_added, all_total, storeid) 
+			          VALUES ('$thread', '$invoice', '$branch', '$customer', '$invoiceSup', '$pExpiry', '$final_discount', '$totalAll', '$storeid')";
+			$exe = mysqli_query($this->MySQL, $query);
+			if (!$exe) {
+				throw new \Exception(mysqli_error($this->MySQL));
+			}
+			$insertid = mysqli_insert_id($this->MySQL);
+			
+			for ($i = 0; $i < count($itemsArray); $i++) {
+				$itemRaw = $itemsArray[$i] ?? '';
+				$parts = explode("@@", $itemRaw);
+				$itemId = intval($parts[1] ?? 0);
+				
+				$store = intval($_POST['store'][$i] ?? 0);
+				$qty = floatval($_POST['item_qty'][$i] ?? 0);
+				$price = floatval($_POST['item_price'][$i] ?? 0);
+				$disc = floatval($_POST['item_disc'][$i] ?? 0);
+				$tax = floatval($_POST['item_vat'][$i] ?? 0);
+				
+				if ($store > 0 && $itemId > 0 && $qty > 0 && $price >= 0) {
+					$query = "INSERT INTO quote_items (item_thread, itemid, quantity, cost, discount, tax, store, purchase_id, storeid) 
+					          VALUES ('$thread', '$itemId', '$qty', '$price', '$disc', '$tax', '$store', '$insertid', '$storeid')";
+					$insItem = mysqli_query($this->MySQL, $query);
+					if (!$insItem) {
+						throw new \Exception(mysqli_error($this->MySQL));
+					}
+				}
+			}
+			$this->MySQL->commit();
+			echo "1";
+		} catch (\Throwable $e) {
+			$this->MySQL->rollback();
+			echo $e->getMessage();
+		}
+	}
+	
+	function editQuote()
+	{
+		$this->checkAuthorized('admin');
+		$idcoming = intval($_POST['sd'] ?? 0);
+		$storeid = (int)($_SESSION['storeid'] ?? 0);
+		$branch = (int)($_POST['branch'] ?? 0);
+		$customer = (int)($_POST['customer'] ?? 0);
+		$invoiceSup = mysqli_real_escape_string($this->MySQL, trim($_POST['supplier_invoice'] ?? ''));
+		
+		$pExpiry = $_POST['purchase_expiry'] ?? '';
+		if (!empty($pExpiry) && strpos($pExpiry, "/") !== false) {
+			$pParts = explode("/", $pExpiry);
+			if (count($pParts) === 3) {
+				$pExpiry = $pParts[2] . "-" . $pParts[1] . "-" . $pParts[0] . " 00:00:00";
+			} else {
+				$pExpiry = date("Y-m-d H:i:s");
+			}
+		} else {
+			$pExpiry = date("Y-m-d H:i:s");
+		}
+		
+		$final_discount = floatval($_POST['final_discount'] ?? 0);
+		$totalAll = floatval($_POST['totalAll'] ?? 0);
+		$invoice = mysqli_real_escape_string($this->MySQL, trim($_POST['invoice'] ?? ''));
+		$thread = md5($invoice);
+		
+		$itemsArray = $_POST['barcode'] ?? [];
+		$atleastOne = 0;
+		if (is_array($itemsArray)) {
+			for ($i = 0; $i < count($itemsArray); $i++) {
+				$itemRaw = $itemsArray[$i] ?? '';
+				$parts = explode("@@", $itemRaw);
+				$itemId = $parts[1] ?? '';
+				$qty = $_POST['item_qty'][$i] ?? '';
+				$store = $_POST['store'][$i] ?? '';
+				if ($store != '' && $itemId != '' && $qty != '') {
+					$atleastOne = 1;
+					break;
+				}
+			}
+		}
+		
+		if (!$atleastOne) {
+			echo NO_ITEM_ENTERED;
+			return;
+		}
+		
+		if ($customer <= 0 || $invoiceSup == "") {
+			echo SUPPLIER_NAME_COMPULSORY . "<br>";
+			echo INVOICE_NUMBER_COMPULSORY;
+			return;
+		}
+		
+		$this->MySQL->begin_transaction();
+		try {
+			$query = "UPDATE quote SET branch='$branch', supplier='$customer', supplier_invoice='$invoiceSup', purchase_date='$pExpiry', dis_added='$final_discount', all_total='$totalAll' 
+			          WHERE storeid='$storeid' AND id='$idcoming'";
+			$exe = mysqli_query($this->MySQL, $query);
+			if (!$exe) {
+				throw new \Exception(mysqli_error($this->MySQL));
+			}
+			$insertid = $idcoming;
+			$idArray = [];
+			
+			for ($i = 0; $i < count($itemsArray); $i++) {
+				$itemRaw = $itemsArray[$i] ?? '';
+				$parts = explode("@@", $itemRaw);
+				$itemId = intval($parts[1] ?? 0);
+				
+				$store = intval($_POST['store'][$i] ?? 0);
+				$qty = floatval($_POST['item_qty'][$i] ?? 0);
+				$price = floatval($_POST['item_price'][$i] ?? 0);
+				$disc = floatval($_POST['item_disc'][$i] ?? 0);
+				$tax = floatval($_POST['item_vat'][$i] ?? 0);
+				
+				if ($store > 0 && $itemId > 0 && $qty > 0 && $price >= 0) {
+					$idArray[] = $itemId;
+					$query = "SELECT COUNT(id) AS cnt FROM quote_items WHERE storeid='$storeid' AND itemid='$itemId' AND purchase_id='$idcoming'";
+					$res23 = mysqli_query($this->MySQL, $query);
+					$data23 = mysqli_fetch_assoc($res23);
+					$num23 = intval($data23['cnt'] ?? 0);
+					if ($num23 == 0) {
+						$query = "INSERT INTO quote_items (item_thread, itemid, quantity, cost, discount, tax, store, purchase_id, storeid) 
+						          VALUES ('$thread', '$itemId', '$qty', '$price', '$disc', '$tax', '$store', '$insertid', '$storeid')";
+					} else {
+						$query = "UPDATE quote_items SET quantity='$qty', cost='$price', discount='$disc', tax='$tax', store='$store' 
+						          WHERE storeid='$storeid' AND itemid='$itemId' AND purchase_id='$idcoming'";
+					}
+					$subExe = mysqli_query($this->MySQL, $query);
+					if (!$subExe) {
+						throw new \Exception(mysqli_error($this->MySQL));
+					}
+				}
+			}
+			
+			$query = "SELECT * FROM quote_items WHERE purchase_id='$idcoming' AND storeid='$storeid'";
+			$res23 = mysqli_query($this->MySQL, $query);
+			while ($data23 = mysqli_fetch_assoc($res23)) {
+				$item = $data23['itemid'];
+				if (!in_array($item, $idArray)) {
+					mysqli_query($this->MySQL, "DELETE FROM quote_items WHERE itemid='$item' AND purchase_id='$idcoming' AND storeid='$storeid'");
+				}
+			}
+			$this->MySQL->commit();
+			echo "1";
+		} catch (\Throwable $e) {
+			$this->MySQL->rollback();
+			echo $e->getMessage();
+		}
+	}        
 
 function addOpenPalance()
         {
@@ -4451,26 +4558,30 @@ function addOpenPalance()
                 return;
             }
      
-            $this->insertJurnal($journalNo,$document,$disc,$branch,$cost,$totalDebit, $totalCredit,$date);
+            $this->beginTransaction();
+            try {
+                $this->insertJurnal($journalNo,$document,$disc,$branch,$cost,$totalDebit, $totalCredit,$date);
 
-            
-            for($i=0; $i<count($itemsArray); $i++)
-            {
-                $code       = $itemsArray[$i];
-                $debit      = $_POST['debit'][$i];
-                $credit     = $_POST['credit'][$i];
-                //echo "erte ".$qty;
-                $discItem   = $_POST['discItem'][$i];
-                $ref        = $_POST['ref'][$i];
-                $costItem   = $_POST['costItem'][$i];   
-                
-                if($code != '' )
+                for($i=0; $i<count($itemsArray); $i++)
                 {
-                  $this->insertJurnalItem($journalNo,$branch,$code,$credit,$debit,$discItem,$ref,$costItem,$date);
+                    $code       = $itemsArray[$i];
+                    $debit      = $_POST['debit'][$i];
+                    $credit     = $_POST['credit'][$i];
+                    $discItem   = $_POST['discItem'][$i];
+                    $ref        = $_POST['ref'][$i];
+                    $costItem   = $_POST['costItem'][$i];   
+                    
+                    if($code != '' )
+                    {
+                      $this->insertJurnalItem($journalNo,$branch,$code,$credit,$debit,$discItem,$ref,$costItem,$date);
+                    }
                 }
-                
+                $this->commit();
+                echo "1";
+            } catch (\Throwable $e) {
+                $this->rollback();
+                echo "ERROR: " . $e->getMessage();
             }
-            echo "1";
             
         }
 
@@ -4516,54 +4627,54 @@ function addOpenPalance()
                 echo "please choose branch";
                 return;
             }
-            $this->updateJurnal($journalNo,$document,$disc,$branch,$cost,$totalDebit, $totalCredit,$date);
-            
-            for($i=0; $i<count($itemsArray); $i++)
-            {
+            $this->beginTransaction();
+            try {
+                $this->updateJurnal($journalNo,$document,$disc,$branch,$cost,$totalDebit, $totalCredit,$date);
                 
-                $code       = $itemsArray[$i];
-                $debit      = $_POST['debit'][$i];
-                $credit     = $_POST['credit'][$i];
-                $discItem   = $_POST['discItem'][$i];
-                $ref        = $_POST['ref'][$i];
-                $costItem   = $_POST['costItem'][$i];   
-                
-                if($code != '' )
-                {                
-
-                   $codeArray[]  = $code; 
-                    $query      = "SELECT id FROM journal_items WHERE accCode='$code' AND journalNo='$journalNo'";
-                     $res = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-                    $num	= mysqli_num_rows($res);
-
-                    if($num > 0) 
-                    {
-                        $this->updateJurnalItem($journalNo,$branch,$code,$credit,$debit,$discItem,$ref,$costItem,$date);                        
-
-                    }
-                    else
-                    {
-                        $this->insertJurnalItem($journalNo,$branch,$code,$credit,$debit,$discItem,$ref,$costItem,$date);
-                    }
-                }
-            }
-            
-            $query      = "SELECT accCode FROM journal_items WHERE journalNo='$journalNo' ";  
-            $res23      = mysqli_query($this->MySQL,$query);
-            while($data23 = mysqli_fetch_assoc($res23))
-            {
-                $query  = "";
-                $item  = $data23['accCode'];
-                if(!in_array($item, $codeArray))
+                for($i=0; $i<count($itemsArray); $i++)
                 {
-                    echo $item.'del';
-                    $query      = "DELETE FROM journal_items WHERE accCode='$item' AND journalNo='$journalNo' ";
-                    $exe = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
+                    $code       = $itemsArray[$i];
+                    $debit      = $_POST['debit'][$i];
+                    $credit     = $_POST['credit'][$i];
+                    $discItem   = $_POST['discItem'][$i];
+                    $ref        = $_POST['ref'][$i];
+                    $costItem   = $_POST['costItem'][$i];   
+                    
+                    if($code != '' )
+                    {                
+                        $codeArray[]  = $code; 
+                        $query      = "SELECT id FROM journal_items WHERE accCode='$code' AND journalNo='$journalNo'";
+                        $res = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
+                        $num	= mysqli_num_rows($res);
+
+                        if($num > 0) 
+                        {
+                            $this->updateJurnalItem($journalNo,$branch,$code,$credit,$debit,$discItem,$ref,$costItem,$date);                        
+                        }
+                        else
+                        {
+                            $this->insertJurnalItem($journalNo,$branch,$code,$credit,$debit,$discItem,$ref,$costItem,$date);
+                        }
+                    }
                 }
+                
+                $query      = "SELECT accCode FROM journal_items WHERE journalNo='$journalNo' ";  
+                $res23      = mysqli_query($this->MySQL,$query);
+                while($data23 = mysqli_fetch_assoc($res23))
+                {
+                    $item  = $data23['accCode'];
+                    if(!empty($codeArray) && !in_array($item, $codeArray))
+                    {
+                        $query      = "DELETE FROM journal_items WHERE accCode='$item' AND journalNo='$journalNo' ";
+                        $exe = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
+                    }
+                }
+                $this->commit();
+                echo "1";
+            } catch (\Throwable $e) {
+                $this->rollback();
+                echo "ERROR: " . $e->getMessage();
             }
-            
-            
-            echo "1";
             
         }                
         function insertJurnal($journalNo,$document,$disc,$branch,$costCenter,$totalDebit, $totalCredit,$date)

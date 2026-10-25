@@ -9,7 +9,7 @@ $storeid	= $_SESSION['storeid'];
     $price      = $_POST['qty-price'];
     $barcode    = $_POST['qty-barcode'];
     $fill       = $_POST['qty-fill'];
-    $query      = "TRUNCATE TABLE report_barcode";
+    $query      = "DELETE FROM report_barcode";
     $res	= mysqli_query($adController->MySQL,$query);
 
     for($i=0 ; $i<count($id) ; $i++)

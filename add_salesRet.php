@@ -97,21 +97,23 @@ $storeid	= $_SESSION['storeid'];
                             <br>         
                             <?php
                            $custSearch='';
-                           if($_REQUEST["saleInvoice"]!='')
+                           if (!empty($_REQUEST["saleInvoice"]))
                            {
-                               $query           = "SELECT * FROM sales_ret WHERE salesInvoice='$_REQUEST[saleInvoice]'";
+                               $saleInvEsc = mysqli_real_escape_string($adController->MySQL, $_REQUEST["saleInvoice"]);
+                               $query = "SELECT * FROM sales_ret WHERE salesInvoice='$saleInvEsc'";
                                $resP            = mysqli_query($adController->MySQL,$query);
                                $num             = mysqli_num_rows($resP);
 
                                if(!$num)
                                { 
-                                $querySale      = "SELECT * FROM sales WHERE  invoicenumber= '$_REQUEST[saleInvoice]'";
+                                $querySale = "SELECT * FROM sales WHERE invoicenumber= '$saleInvEsc'";
                                 $resSale        = mysqli_query($adController->MySQL,$querySale) or die(mysqli_error($adController->MySQL));
                                 $dataSale = mysqli_fetch_assoc($resSale);
                                
                                ?>
                             <form class="form-horizontal" id="saleRet-form">
                               <input type="hidden" value="addSaleRet" name="f">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                                 <input type="hidden" value="<?=$_REQUEST["saleInvoice"]?>" name="saleInvoice">
                                 <fieldset>
                                     <div class="control-group">
@@ -156,9 +158,9 @@ $storeid	= $_SESSION['storeid'];
                                         <div class="salesOptions">
                                             <label class="control-label" for="typeahead"><?=CUSTOMER?> : </label>
                                             <div class="controls">
-                                                <input type="hidden" value="<?=$dataSale[customer]?>" name="customer">
+                                                <input type="hidden" value="<?=$dataSale['customer']?>" name="customer">
                                                 <?php
-                                                $query		  = "SELECT * FROM customers  WHERE id='$dataSale[customer]' ";
+                                                $query		  = "SELECT * FROM customers  WHERE id='" . intval($dataSale['customer'] ?? 0) . "' ";
                                                 $resSup		  = mysqli_query($adController->MySQL,$query);
                                                 $dataSup 	  = mysqli_fetch_assoc($resSup);
                                                 $customer	= $dataSup['name_'.$language];
@@ -181,9 +183,9 @@ $storeid	= $_SESSION['storeid'];
                                       <div class="salesOptions">
                                           <label class="control-label"><?=BRANCH?> :</label>
                                             <div class="controls">
-                                                <input type="hidden" value="<?=$dataSale[branch]?>" name="branch">
+                                                <input type="hidden" value="<?=$dataSale['branch']?>" name="branch">
                                                 <?php
-                                                $query		  = "SELECT * FROM branches  WHERE id='$dataSale[branch]' ";
+                                                $query		  = "SELECT * FROM branches  WHERE id='" . intval($dataSale['branch'] ?? 0) . "' ";
                                                 $resSup		  = mysqli_query($adController->MySQL,$query);
                                                 $dataSup 	  = mysqli_fetch_assoc($resSup);
                                                 $branch           = $dataSup['name_'.$language];
@@ -222,89 +224,69 @@ $storeid	= $_SESSION['storeid'];
                                                 <TH class="edit">&nbsp;</TH>
                                               </tr>
                                                 <?php
+                                                // Pre-cache sale items for the return form
+                                                $saleItemsCache = [];
+                                                $querySaleItems = "SELECT items.*, 
+                                                                          si.store, si.cost, si.quantity, si.tax, si.discount AS sdis,
+                                                                          s.name_ar AS store_name_ar, s.name_en AS store_name_en,
+                                                                          u.name_ar AS unit_name_ar, u.name_en AS unit_name_en
+                                                                   FROM sales_items si
+                                                                   INNER JOIN items ON items.id = si.itemid
+                                                                   LEFT JOIN stores s ON si.store = s.id
+                                                                   LEFT JOIN units u ON items.unit = u.id
+                                                                   WHERE si.invoice_No = '$saleInvEsc'";
+                                                $resSaleItems = mysqli_query($adController->MySQL, $querySaleItems);
+                                                if ($resSaleItems) {
+                                                    while ($siRow = mysqli_fetch_assoc($resSaleItems)) {
+                                                        $saleItemsCache[] = $siRow;
+                                                    }
+                                                }
+
                                                 for($i = 0 ;$i < 10 ; $i++)
                                                 {
-                    //										
                                                 ?>
-                                              <tr <?=$rowStyle?> id='row-v-<?=$i?>'>
-                                                  <td style="width:20%">
-                                                    <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select-Ret" style="width:100%" >
-                                                        <option value=''> </option>
-                                    <?php
-                                    $name     = "name_".$_SESSION['lang'];
-                                    $query   = "SELECT items.*,sales_items.store, sales_items.cost, sales_items.quantity, sales_items.tax, sales_items.discount AS sdis FROM items, sales_items WHERE  items.id = sales_items.itemid  AND sales_items.invoice_No='$_REQUEST[saleInvoice]'";
-                                   
-                                            $res        = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-                                            while($data = mysqli_fetch_assoc($res))
-                                            {
-                                                $barcode      = $data['barcode'];
-                                                if ($barcode == '') $barcode = "-----";
-                                                $itemName     = $data[$name];
-                                                if ($itemName == '' || $itemName =='`')
-                                                {
-                                                    if ($_SESSION['lang']=='en')                                                           
-                                                          $itemName     = $data['name_ar'];
-                                                    elseif($_SESSION['lang']=='ar')                                                           
-                                                          $itemName     = $data['name_en'];
-
-                                                }    
-                                                $store        = $data['store'];
-                                                $queryUnit    = "SELECT $name FROM stores WHERE id='$store' ";
-                                                $resUint      = mysqli_query($adController->MySQL,$queryUnit) or die(mysqli_error($adController->MySQL));
-                                                $dataUnit     = mysqli_fetch_assoc($resUint);
-                                                $storeName    = $dataUnit[$name];                                                
-
-                                                $unit         = $data['unit'];
-                                                $queryUnit    = "SELECT $name FROM units WHERE id='$unit' ";
-                                                $resUint      = mysqli_query($adController->MySQL,$queryUnit) or die(mysqli_error($adController->MySQL));
-                                                $dataUnit     = mysqli_fetch_assoc($resUint);
-                                                $unitName     = $dataUnit[$name];
-                                                if ($unitName == '') $unitName = "-----";
-                                                echo "<option value     = '$data[id]' "
-                                                            . "index    = '$i' "                                                   
-                                                            . "store    = '$store' "                                                                                                    
-                                                            . "storeName    = '$storeName' "
-                                                            . "qty      = '$data[quantity]' "
-                                                            . "cost     = '$data[cost]' "
-                                                            . "dis      = '$data[sdis]' "
-                                                            . "vat      = '$data[tax]'> $barcode | $itemName | $unitName</option>";
-                                            }
-                                    ?>
-                                                    </select>
-                                                </td>
-                                                <td style="width:10%">
-                                                    <input type="hidden" id='store-<?=$i?>' name='store[]'>
-                                                    <input type="text" id='storeName-<?=$i?>' class="store span12 typeahead" maxlength="100" readonly>
-                                                </td>                                
-                                                <td >
-                                                    <input type="text" id='item-qty-<?=$i?>' class="item-qty span12 typeahead" maxlength="100"  name='item_qty[]' >
-                                                </td>
-                                                <td >
-                                                    <input type="text" id='item-price-<?=$i?>' class="item-price span12 typeahead" maxlength="100"  name='item_price[]'readonly>
-                                                </td>
-                                                <td >
-                                                    <input type="text" id='item-discount-<?=$i?>' class="item-discount span12 typeahead" maxlength="100"  name='item_disc[]'style="width :75%; "readonly> 
-                                                </td>
-                                                <td >
-                                                    <input type="text" id='item-total-after-dis-<?=$i?>' class="item-total-after-dis span12 typeahead" maxlength="100"  name='item_total_after_dis[]' readonly>
-                                                </td>
-                                                <td >
-                                                    <input type="text" id='item-vat-<?=$i?>' class="item-vat span12 typeahead" maxlength="100"  name='item_vat[]' style="width :75%; " readonly> 
-                                                </td>
-                                                <td >
-                                                    <input type="text" id='item-vat-value-<?=$i?>' class="item-vat-value span12 typeahead" maxlength="100"  name='item_vat_value[]' readonly>
-                                                </td>
-                                                <td >
-                                                        <input type="text" id='item-total-<?=$i?>' class="item-total span12 typeahead" maxlength="100"  name='item-total[]'readonly>
-
-                                                </td>
-                                                <td class='del-parchaseRet-item mult-padding edit' prop='<?=$i?>'><label>x</label></td>
-                                                <td class='more-parchaseRet-item mult-padding edit' prop='<?=$i?>'><label>+</label></td>
-                                              </tr>
-                            <?php 
-                            
-                                                } ?>
-                                          </table>
+                                                <tr id='row-v-<?=$i?>'>
+                                                    <td style="width:20%">
+                                                        <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select-Ret" style="width:100%">
+                                                            <option value=''> </option>
+                                                            <?php
+                                                            foreach ($saleItemsCache as $data) {
+                                                                $barcode = $data['barcode'] ?: '-----';
+                                                                $itemName = $data['name_' . $language] ?? '';
+                                                                if ($itemName == '' || $itemName == '`') {
+                                                                    $itemName = ($language == 'en') ? ($data['name_ar'] ?? '') : ($data['name_en'] ?? '');
+                                                                }
+                                                                $store = $data['store'];
+                                                                $storeName = ($language == 'en') ? ($data['store_name_en'] ?? '-----') : ($data['store_name_ar'] ?? '-----');
+                                                                $unitName = ($language == 'en') ? ($data['unit_name_en'] ?? '-----') : ($data['unit_name_ar'] ?? '-----');
+                                                                if (!$unitName) $unitName = '-----';
+                                                                $optVal = htmlspecialchars($data['id'], ENT_QUOTES);
+                                                                $costVal = htmlspecialchars($data['cost'], ENT_QUOTES);
+                                                                $qtyVal = htmlspecialchars($data['quantity'], ENT_QUOTES);
+                                                                $disVal = htmlspecialchars($data['sdis'], ENT_QUOTES);
+                                                                $vatVal = htmlspecialchars($data['tax'], ENT_QUOTES);
+                                                                $label = htmlspecialchars("$barcode | $itemName | $unitName");
+                                                                echo "<option value='$optVal' index='$i' store='$store' storeName='$storeName' qty='$qtyVal' cost='$costVal' dis='$disVal' vat='$vatVal'>$label</option>";
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                    </td>
+                                                    <td style="width:10%">
+                                                        <input type="hidden" id='store-<?=$i?>' name='store[]'>
+                                                        <input type="text" id='storeName-<?=$i?>' class="store span12 typeahead" maxlength="100" readonly>
+                                                    </td>
+                                                    <td><input type="text" id='item-qty-<?=$i?>' class="item-qty span12 typeahead" maxlength="100" name='item_qty[]'></td>
+                                                    <td><input type="text" id='item-price-<?=$i?>' class="item-price span12 typeahead" maxlength="100" name='item_price[]'></td>
+                                                    <td><input type="text" id='item-discount-<?=$i?>' class="item-discount span12 typeahead" maxlength="100" name='item_disc[]' style="width:75%;"></td>
+                                                    <td><input type="text" id='item-total-after-dis-<?=$i?>' class="item-total-after-dis span12 typeahead" maxlength="100" name='item_total_after_dis[]' readonly></td>
+                                                    <td><input type="text" id='item-vat-<?=$i?>' class="item-vat span12 typeahead" maxlength="100" name='item_vat[]' style="width:75%;"></td>
+                                                    <td><input type="text" id='item-vat-value-<?=$i?>' class="item-vat-value span12 typeahead" maxlength="100" name='item_vat_value[]' readonly></td>
+                                                    <td><input type="text" id='item-total-<?=$i?>' class="item-total span12 typeahead" maxlength="100" name='item-total[]' readonly></td>
+                                                    <td class='del-sale-item mult-padding' prop='<?=$i?>'><label>x</label></td>
+                                                    <td class='more-sale-item mult-padding' prop='<?=$i?>'><label>+</label></td>
+                                                </tr>
+                                                <?php } ?>
+                                                </table>
                                       </div>
                                   </div>                                  				
                 <div class="control-group">

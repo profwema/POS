@@ -6,10 +6,10 @@ require_once("controller.php");
 
 $storeid	= $_SESSION['storeid'];
 $language	= $_SESSION['lang'];
-$query      = "TRUNCATE TABLE report_saleInvoice";
-$res    = mysqli_query($adController->MySQL,$query);
-$query      = "TRUNCATE TABLE report_saleInvoice_all";
-$res    = mysqli_query($adController->MySQL,$query);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    mysqli_query($adController->MySQL, "DELETE FROM report_saleInvoice");
+    mysqli_query($adController->MySQL, "DELETE FROM report_saleInvoice_all");
+}
 ?>
 
 

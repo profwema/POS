@@ -1,17 +1,18 @@
 <?php
 require_once("top.php");
 require_once("redirection.php");
+require_once("controller.php");
 
-$language 	= $_SESSION['lang'];
-$storeid	= $_SESSION['storeid'];
-$enableNegative	= $_SESSION['enableNegative']
+$language       = $_SESSION['lang'] ?? 'ar';
+$storeid        = (int)($_SESSION['storeid'] ?? 0);
+$enableNegative = $_SESSION['enableNegative'] ?? 0;
 
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>WAM Tech Soft</title>
+    <title>WAM Tech Soft - <?=SALES?> >> <?=ADD_NEW?></title>
     <?php require_once("script_php_variables.php");?>
     <?php require_once("header.php");?>	
 </head>
@@ -29,40 +30,28 @@ $enableNegative	= $_SESSION['enableNegative']
                                 <a href="saleInvoice.php"><?=SALES?></a> >> <?=ADD_NEW?>
                             </h2>
                         </div>
-			<?php
-                        require_once("controller.php");
-						    
-			?>
                         <div class="box-content" id="printed">
-                            <form class="form-horizontal" id="sales-form" method='POST'action="#">
+                            <form class="form-horizontal" id="sales-form" method='POST' action="#" autocomplete="off">
                                 <input type="hidden" name="f" value="addSale" >
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                                 <fieldset>
                                     <div class="control-group">
                                         <div class="salesOptions">
                                             <label class="control-label" for="typeahead"><?=INVOICE_NUMBER?> : </label>
                                             <div class="controls">
                                            <?php
-                                           $query   = "SELECT invoicenumber
-                                                    FROM sales
- 
-                                                    ORDER BY SUBSTRING(invoicenumber, -4) DESC
-                                                    LIMIT 1";
-                                            $res	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-                                            $num	= mysqli_num_rows($res);
-                                            $data	= mysqli_fetch_assoc($res);
-                                            if($num)
-                                            {
-                                                $rest = substr($data['invoicenumber'], -4);  
-                                                $invoice = intval($rest)+1;
-                                            }
-                                            else 
-                                                $invoice = 1; 
-                                            ?>
+                                           $defBranch = 1;
+                                           $resBr = mysqli_query($adController->MySQL, "SELECT id FROM branches WHERE status='1' LIMIT 1");
+                                           if ($resBr && $brRow = mysqli_fetch_assoc($resBr)) {
+                                               $defBranch = (int)$brRow['id'];
+                                           }
+                                           $invoice = $adController->getNewInvoiceNo("sales", "invoicenumber", '11', $defBranch);
+                                           ?>
                                                 <input type="text" 
                                                  class=" typeahead"  
                                                  name='invoice' 
                                                  id='invoice' 
-                                                 value ='<?php echo $invoice ?>'
+                                                 value ='<?php echo htmlspecialchars($invoice) ?>'
                                                  readonly>
                                                 <span class="help-inline email-un">&nbsp;</span>
                                             </div>
@@ -147,55 +136,56 @@ $enableNegative	= $_SESSION['enableNegative']
                                                     <TH>&nbsp;</TH>
                                                     <TH>&nbsp;</TH>
                                                 </tr>
-                                            <?php
-                                            for($i = 0 ;$i < 10 ; $i++)
-                                            {
-//										
-                                            ?>                                                    
-                                                <tr <?=$rowStyle?> id='row-v-<?=$i?>'>
-                                                    <td style="width:10%">
-                                                        <select name="store[]" id='store-<?=$i?>' class="store" data-rel="chosen" style="width:100%">
-                                                            <option value=''><?=SELECT_STORE?></option>
-                                                        </select>
-                                                    </td>  
-                                                    <td style="width:20%">
-                                                        
-                                                        <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select-sale" style="width:100%" >
-                                                            <option value=''> </option>
-                                                            <?php
-                                                            $name     = "name_".$_SESSION['lang'];
-                                                            $query   = "SELECT * FROM items  ";
-                                                            $res        = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-                                                            while($data = mysqli_fetch_assoc($res))
-                                                            {
-                                                                $barcode      = $data['barcode'];
-                                                                if ($barcode == '') $barcode = "-----";
-                                                                $itemName     = $data[$name];
-                                                                if ($itemName == '' || $itemName =='`')
-                                                                {
-                                                                    if ($_SESSION['lang']=='en')                                                           
-                                                                          $itemName     = $data['name_ar'];
-                                                                    elseif($_SESSION['lang']=='ar')                                                           
-                                                                          $itemName     = $data['name_en'];
-                                                                }    
-                                                                $unit         = $data['unit'];
-                                                                $queryUnit    = "SELECT $name FROM units WHERE id='$unit' ";
-                                                                $resUint      = mysqli_query($adController->MySQL,$queryUnit) or die(mysqli_error($adController->MySQL));
-                                                                $dataUnit     = mysqli_fetch_assoc($resUint);
-                                                                $unitName     = $dataUnit[$name];
-                                                                if ($unitName == '') $unitName = "-----";
-                                                                echo "<option value = '$data[id]' "
-                                                                           . "index = '$i' "
-                                                                           . "enableNegative = '$enableNegative' "
-                                                                           . "type  = '$data[item_type]' "
-                                                                           . "vat   = '$data[vat]' "
-                                                                           . "price = '$data[price]' "
-                                                                           . "disc  = '$data[discount]' "
-                                                                           . "> $barcode | $itemName | $unitName</option>";
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </td>
+                                             <?php
+                                             // Pre-fetch items and units once to eliminate N+1 query loop
+                                             $queryItemsFast = "SELECT i.id, i.barcode, i.name_ar, i.name_en, i.item_type, i.vat, i.price, i.discount, u.name_ar AS unit_ar, u.name_en AS unit_en 
+                                                                FROM items i 
+                                                                LEFT JOIN units u ON i.unit = u.id 
+                                                                WHERE i.storeid = '$storeid' OR i.storeid = '0' 
+                                                                ORDER BY i.name_ar ASC";
+                                             $resItemsFast = mysqli_query($adController->MySQL, $queryItemsFast) or die(mysqli_error($adController->MySQL));
+                                             $itemsCache = [];
+                                             while ($row = mysqli_fetch_assoc($resItemsFast)) {
+                                                 $bcode = !empty($row['barcode']) ? $row['barcode'] : "-----";
+                                                 $iName = !empty($row['name_ar']) ? $row['name_ar'] : (!empty($row['name_en']) ? $row['name_en'] : '---');
+                                                 $uName = !empty($row['unit_ar']) ? $row['unit_ar'] : (!empty($row['unit_en']) ? $row['unit_en'] : "-----");
+                                                 $itemsCache[] = [
+                                                     'id' => (int)$row['id'],
+                                                     'barcode' => $bcode,
+                                                     'name' => $iName,
+                                                     'unit' => $uName,
+                                                     'type' => $row['item_type'] ?? '0',
+                                                     'vat' => $row['vat'] ?? '0',
+                                                     'price' => $row['price'] ?? '0',
+                                                     'disc' => $row['discount'] ?? '0'
+                                                 ];
+                                             }
+
+                                             for ($i = 0; $i < 10; $i++) {
+                                             ?>                                                    
+                                                 <tr id='row-v-<?=$i?>'>
+                                                     <td style="width:10%">
+                                                         <select name="store[]" id='store-<?=$i?>' class="store" data-rel="chosen" style="width:100%">
+                                                             <option value=''><?=SELECT_STORE?></option>
+                                                         </select>
+                                                     </td>  
+                                                     <td style="width:20%">
+                                                         <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select-sale" style="width:100%">
+                                                             <option value=''> </option>
+                                                             <?php
+                                                             foreach ($itemsCache as $itemData) {
+                                                                 echo "<option value='{$itemData['id']}' "
+                                                                      . "index='$i' "
+                                                                      . "enableNegative='$enableNegative' "
+                                                                      . "type='{$itemData['type']}' "
+                                                                      . "vat='{$itemData['vat']}' "
+                                                                      . "price='{$itemData['price']}' "
+                                                                      . "disc='{$itemData['disc']}' "
+                                                                      . ">{$itemData['barcode']} | {$itemData['name']} | {$itemData['unit']}</option>";
+                                                             }
+                                                             ?>
+                                                         </select>
+                                                     </td>
   
                                                 <script type="text/javascript">
 //                                                    $(document).ready(function()

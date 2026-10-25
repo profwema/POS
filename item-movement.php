@@ -6,12 +6,11 @@
 
    $storeid	= $_SESSION['storeid'];
    $language	= $_SESSION['lang'];
-      $query      = "TRUNCATE TABLE report_item_move_sam";
-$res    = mysqli_query($adController->MySQL,$query);
-$query      = "TRUNCATE TABLE report_item_move_sam";
-$res    = mysqli_query($adController->MySQL,$query);
-$query      = "TRUNCATE TABLE report_item_move_all";
-$res    = mysqli_query($adController->MySQL,$query);   
+   if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+       mysqli_query($adController->MySQL, "DELETE FROM report_item_move");
+       mysqli_query($adController->MySQL, "DELETE FROM report_item_move_sam");
+       mysqli_query($adController->MySQL, "DELETE FROM report_item_move_all");
+   }   
 
    ?>
 <!DOCTYPE html>

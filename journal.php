@@ -35,7 +35,7 @@ require_once("controller.php");
                                                     <thead>
                                                       <tr>
                                                               <th><?=JOURNAL_NUMBER?></th>
-                                                              <th><?=DECUMENT?></th>                                                              
+                                                              <th><?=DOCUMENT?></th>                                                              
                                                               <th><?=DISCRIPTION?></th>
                                                               <th><?=BRANCH?></th>
                                                               <th><?=DEBIT?></th>

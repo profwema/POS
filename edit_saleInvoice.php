@@ -2,27 +2,25 @@
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
-$language 	= $_SESSION['lang'];
-$storeid	= $_SESSION['storeid'];
-$enableNegative	= $_SESSION['enableNegative'];
+$language       = $_SESSION['lang'] ?? 'ar';
+$storeid        = (int)($_SESSION['storeid'] ?? 0);
+$enableNegative = $_SESSION['enableNegative'] ?? 0;
 
-
-$invoice        = $_REQUEST['sd'];
-$query          = "SELECT * FROM sales WHERE invoicenumber='$invoice'";
+$invoice        = mysqli_real_escape_string($adController->MySQL, (string)($_REQUEST['sd'] ?? ''));
+$query          = "SELECT * FROM sales WHERE invoicenumber='$invoice' LIMIT 1";
 $resP           = mysqli_query($adController->MySQL,$query);
 $dataPur        = mysqli_fetch_assoc($resP);
 
 $query		= "SELECT * FROM sales_items WHERE storeid='$storeid' AND invoice_No='$invoice'";
 $ress		= mysqli_query($adController->MySQL,$query);
-//$dataCat	= mysqli_fetch_assoc($ress);
-$numRowss        = mysqli_num_rows($ress);
-$numAlready     = $numRowss;
-$numAlready     = $numAlready - 1; 
-if($numAlready < 0)
-    $numAlready = 0;
-while($dataItemsList	= mysqli_fetch_assoc($ress))
-{
-        $itemsListArray[count($itemsListArray)] = $dataItemsList;
+$numRowss       = $ress ? mysqli_num_rows($ress) : 0;
+$numAlready     = max(0, $numRowss - 1);
+$itemsListArray = [];
+if ($ress) {
+    while($dataItemsList = mysqli_fetch_assoc($ress))
+    {
+        $itemsListArray[] = $dataItemsList;
+    }
 }
 ?>
 
@@ -30,12 +28,10 @@ while($dataItemsList	= mysqli_fetch_assoc($ress))
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>WAM Tech Soft</title>
+	<title>WAM Tech Soft - <?=SALES?> >> <?=EDIT?></title>
 	<?php require_once("script_php_variables.php");?>
 	<?php require_once("header.php");?>	
         <script type="text/javascript">
-//            var itemsAlready    = "<?=mysqli_escape_string(json_encode($arrayPi))?>";
-//            itemsAlready        = $.parseJSON(itemsAlready);
             numAlready          = <?=$numAlready?>;
         </script>    
          
@@ -55,8 +51,9 @@ while($dataItemsList	= mysqli_fetch_assoc($ress))
                             </h2>	
                         </div>
                         <div class="box-content">
-                            <form class="form-horizontal" id="sales-form">
+                            <form class="form-horizontal" id="sales-form" autocomplete="off">
                                 <input type="hidden" value="editSale" name="f">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                                 <fieldset>                                    
                                     <div class="control-group">
                                         <div class="salesOptions">
@@ -155,73 +152,76 @@ while($dataItemsList	= mysqli_fetch_assoc($ress))
                                                     <TH>&nbsp;</TH>
                                                     <TH>&nbsp;</TH>
                                                 </tr>
-                                                <?php
-                                                for($i = 0 ;$i < 10 ; $i++)
-                                                {
-										
-                                                        ?>
-                                                <tr id='row-v-<?=$i?>'>
-                                                    <td style="width:10%">
-                                                        <select id='store-<?=$i?>'name="store[]" class="store" data-rel="chosen" style="width:100%" >
-                                                      
-                                                            <option value=''><?=SELECT_STORE?></option>
-                                                            <?php
-                                                        $query= "SELECT * FROM stores WHERE storeid='$storeid' AND branch ='$dataPur[branch]'";// id IN ( SELECT catid FROM items WHERE id IN (SELECT DISTINCT itemid FROM orders  $condition))";
-                                                        $resSt        = mysqli_query($adController->MySQL,$query);
-                                                        while($dataSt     = mysqli_fetch_assoc($resSt))
-                                                        {
-                                                            $store_id   = $dataSt['id'];
-                                                            $name = $dataSt['name_'.$language];
-                                                            if($store_id == $itemsListArray[$i]['store'])
-                                                               echo "<option value='$store_id' selected>$name</option>"; 
-                                                            elseif($dataSt['default']=='1')
-                                                                echo "<option value='$store_id' selected >$name</option>";
-                                                           else 
-                                                               echo "<option value='$store_id' >$name</option>";
-                                                           }
-                                                        ?>
-                                                    </select>
-                                                    </td>                                                    
-                                                    <td style="width:25%">
-                                                        <input type="hidden" id='item-old-<?=$i?>' name='item-old[]' value="<?=$itemsListArray[$i]['quantity']?>">                                                        
-                                                        <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select-sale" style="width:100%" >
-                                                            <option value=''> </option>
-                                                            <?php
-                                                            $name     = "name_".$_SESSION['lang'];
-                                                            $queryIt   = "SELECT * FROM items WHERE items.storeid='$storeid' ";
-                                                            $resIt        = mysqli_query($adController->MySQL,$queryIt) or die(mysqli_error($adController->MySQL));
-                                                            while($dataIt = mysqli_fetch_assoc($resIt))
-                                                            {
-                                                                $barcode      = $dataIt['barcode'];
-                                                                if ($barcode == '') $barcode = "-----";
-                                                                $itemName     = $dataIt[$name];
-                                                                if ($itemName == '' || $itemName =='`')
-                                                                {
-                                                                    if ($_SESSION['lang']=='en')                                                           
-                                                                          $itemName     = $dataIt['name_ar'];
-                                                                    elseif($_SESSION['lang']=='ar')                                                           
-                                                                          $itemName     = $dataIt['name_en'];
-                                                                }    
-                                                                $unit         = $dataIt['unit'];
-                                                                $queryUnit    = "SELECT $name FROM units WHERE id='$unit' ";
-                                                                $resUint      = mysqli_query($adController->MySQL,$queryUnit) or die(mysqli_error($adController->MySQL));
-                                                                $dataUnit     = mysqli_fetch_assoc($resUint);
-                                                                $unitName     = $dataUnit[$name];
-                                                                if ($unitName == '') $unitName = "-----";
-                                                                    if($dataIt['id'] == $itemsListArray[$i]['itemid'])
-                                                                        $sel='selected';
-                                                                    else $sel='';      
-                                                                echo "<option value = '$dataIt[id]' "
-                                                                           . "index = '$i' "
-                                                                           . "enableNegative = '$enableNegative' "
-                                                                           . "type  = '$dataIt[item_type]' "
-                                                                           . "vat   = '$dataIt[vat]' "
-                                                                           . "price = '$dataIt[price]' "
-                                                                           . "disc  = '$dataIt[discount]' $sel> $barcode | $itemName | $unitName</option>";
-                                                                   }
-                                                            ?>
-                                                        </select>
-                                                    </td>                                                    
+                                                 <?php
+                                                 // Pre-cache stores
+                                                 $branchId = mysqli_real_escape_string($adController->MySQL, (string)($dataPur['branch'] ?? ''));
+                                                 $queryStores = "SELECT id, name_ar, name_en, `default` FROM stores WHERE storeid='$storeid' AND branch='$branchId'";
+                                                 $resStores = mysqli_query($adController->MySQL, $queryStores);
+                                                 $storesCache = [];
+                                                 if ($resStores) {
+                                                     while ($dataSt = mysqli_fetch_assoc($resStores)) {
+                                                         $storesCache[] = [
+                                                             'id' => $dataSt['id'],
+                                                             'name' => !empty($dataSt['name_ar']) ? $dataSt['name_ar'] : ($dataSt['name_en'] ?? ''),
+                                                             'default' => $dataSt['default'] ?? '0'
+                                                         ];
+                                                     }
+                                                 }
+
+                                                 // Pre-cache items with units via single JOIN
+                                                 $queryIt = "SELECT i.id, i.barcode, i.name_ar, i.name_en, i.item_type, i.vat, i.price, i.discount, u.name_ar AS unit_ar, u.name_en AS unit_en 
+                                                             FROM items i 
+                                                             LEFT JOIN units u ON i.unit = u.id 
+                                                             WHERE i.storeid='$storeid' OR i.storeid='0' 
+                                                             ORDER BY i.name_ar ASC";
+                                                 $resIt = mysqli_query($adController->MySQL, $queryIt);
+                                                 $itemsCache = [];
+                                                 if ($resIt) {
+                                                     while ($dataIt = mysqli_fetch_assoc($resIt)) {
+                                                         $bcode = !empty($dataIt['barcode']) ? $dataIt['barcode'] : "-----";
+                                                         $iName = !empty($dataIt['name_ar']) ? $dataIt['name_ar'] : (!empty($dataIt['name_en']) ? $dataIt['name_en'] : '---');
+                                                         $uName = !empty($dataIt['unit_ar']) ? $dataIt['unit_ar'] : (!empty($dataIt['unit_en']) ? $dataIt['unit_en'] : "-----");
+                                                         $itemsCache[] = [
+                                                             'id' => (int)$dataIt['id'],
+                                                             'barcode' => $bcode,
+                                                             'name' => $iName,
+                                                             'unit' => $uName,
+                                                             'type' => $dataIt['item_type'] ?? '0',
+                                                             'vat' => $dataIt['vat'] ?? '0',
+                                                             'price' => $dataIt['price'] ?? '0',
+                                                             'disc' => $dataIt['discount'] ?? '0'
+                                                         ];
+                                                     }
+                                                 }
+
+                                                 for ($i = 0; $i < 10; $i++) {
+                                                 ?>
+                                                 <tr id='row-v-<?=$i?>'>
+                                                     <td style="width:10%">
+                                                         <select id='store-<?=$i?>' name="store[]" class="store" data-rel="chosen" style="width:100%">
+                                                             <option value=''><?=SELECT_STORE?></option>
+                                                             <?php
+                                                             $curRowStore = $itemsListArray[$i]['store'] ?? '';
+                                                             foreach ($storesCache as $st) {
+                                                                 $sel = ($st['id'] == $curRowStore) ? 'selected' : (($curRowStore === '' && $st['default'] == '1') ? 'selected' : '');
+                                                                 echo "<option value='{$st['id']}' $sel>{$st['name']}</option>";
+                                                             }
+                                                             ?>
+                                                         </select>
+                                                     </td>                                                    
+                                                     <td style="width:25%">
+                                                         <input type="hidden" id='item-old-<?=$i?>' name='item-old[]' value="<?=$itemsListArray[$i]['quantity'] ?? 0?>">                                                        
+                                                         <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select-sale" style="width:100%">
+                                                             <option value=''> </option>
+                                                             <?php
+                                                             $curItemId = $itemsListArray[$i]['itemid'] ?? '';
+                                                             foreach ($itemsCache as $itemData) {
+                                                                 $sel = ($itemData['id'] == $curItemId) ? 'selected' : '';
+                                                                 echo "<option value='{$itemData['id']}' index='$i' enableNegative='$enableNegative' type='{$itemData['type']}' vat='{$itemData['vat']}' price='{$itemData['price']}' disc='{$itemData['disc']}' $sel>{$itemData['barcode']} | {$itemData['name']} | {$itemData['unit']}</option>";
+                                                             }
+                                                             ?>
+                                                         </select>
+                                                     </td>
 
                                                                                                             
                                                 <script type="text/javascript">

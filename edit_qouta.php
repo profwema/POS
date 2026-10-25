@@ -5,22 +5,31 @@ require_once("controller.php");
 $language 	= $_SESSION['lang'];
 $storeid	= $_SESSION['storeid'];
 
-$id             = intval($_REQUEST['sd']);
-$query          = "SELECT * FROM quote WHERE id='$id'";
-$resP           = mysqli_query($adController->MySQL,$query);
-$dataPur        = mysqli_fetch_assoc($resP);
+$rawId = $_REQUEST['sd'] ?? '';
+if (!is_numeric($rawId)) {
+    $decrypted = $adController->encrypt_decrypt(2, urldecode($rawId), 0);
+    if (!is_numeric($decrypted)) {
+        $decrypted = $adController->encrypt_decrypt(2, urldecode($decrypted), 0);
+    }
+    $id = (int)$decrypted;
+} else {
+    $id = (int)$rawId;
+}
 
-$query		= "SELECT * FROM quote_items WHERE storeid='$storeid' AND purchase_id='$id'";
-$ress		= mysqli_query($adController->MySQL,$query);
-//$dataCat	= mysqli_fetch_assoc($ress);
-$numRowss        = mysqli_num_rows($ress);
-$numAlready     = $numRowss;
-$numAlready     = $numAlready - 1; 
-if($numAlready < 0)
+$query = "SELECT * FROM quote WHERE id='$id'";
+$resP = mysqli_query($adController->MySQL, $query);
+$dataPur = mysqli_fetch_assoc($resP);
+
+$itemsListArray = [];
+$query = "SELECT * FROM quote_items WHERE storeid='$storeid' AND purchase_id='$id'";
+$ress = mysqli_query($adController->MySQL, $query);
+$numRowss = mysqli_num_rows($ress);
+$numAlready = $numRowss - 1;
+if ($numAlready < 0) {
     $numAlready = 0;
-while($dataItemsList	= mysqli_fetch_assoc($ress))
-{
-        $itemsListArray[count($itemsListArray)] = $dataItemsList;
+}
+while ($dataItemsList = mysqli_fetch_assoc($ress)) {
+    $itemsListArray[] = $dataItemsList;
 }
 ?>
 
@@ -32,7 +41,7 @@ while($dataItemsList	= mysqli_fetch_assoc($ress))
 	<?php require_once("script_php_variables.php");?>
 	<?php require_once("header.php");?>	
         <script type="text/javascript">
-//            var itemsAlready    = "<?=mysqli_escape_string(json_encode($arrayPi))?>";
+//            var itemsAlready    = "";
 //            itemsAlready        = $.parseJSON(itemsAlready);
             numAlready          = <?=$numAlready?>;
         </script>    
@@ -57,6 +66,7 @@ while($dataItemsList	= mysqli_fetch_assoc($ress))
 						<form class="form-horizontal" id="quote-form">
                                                     <input type="hidden" value="<?=$id?>" name='sd'>
 						  <input type="hidden" value="editQuote" name="f">
+						  <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 						  <fieldset>
                                                       
 							<div class="control-group">
@@ -191,115 +201,86 @@ while($dataItemsList	= mysqli_fetch_assoc($ress))
                                                     <TH>&nbsp;</TH>
                                                 </tr>
                                                 <?php
+                                                $storesCache = [];
+                                                $resStores = mysqli_query($adController->MySQL, "SELECT * FROM stores WHERE storeid='$storeid'");
+                                                while ($st = mysqli_fetch_assoc($resStores)) {
+                                                    $storesCache[] = $st;
+                                                }
+                                                $itemsCache = [];
+                                                $resItems = mysqli_query($adController->MySQL, "SELECT i.*, u.name_ar AS unit_name_ar, u.name_en AS unit_name_en FROM items i LEFT JOIN units u ON i.unit = u.id WHERE i.storeid='$storeid' ORDER BY i.name_ar ASC");
+                                                while ($it = mysqli_fetch_assoc($resItems)) {
+                                                    $itemsCache[] = $it;
+                                                }
+
                                                 for($i = 0 ;$i < 10 ; $i++)
                                                 {
-//                                                            if($i == 0 )
-//                                                                $rowStyle = "";
-//                                                            else
-//                                                            {
-//                                                    if($i < $numRowss )
-//                                                        //if($itemsListArray[$i]['qty_en'] != "")
-//                                                        $rowStyle = "style='display:block";
-//                                                    else
-//                                                        $rowStyle = "";											
-                                                        ?>
+                                                    $curItem = $itemsListArray[$i] ?? [];
+                                                    $curStore = $curItem['store'] ?? '';
+                                                    $curItemId = $curItem['itemid'] ?? '';
+                                                    $curQty = htmlspecialchars($curItem['quantity'] ?? '');
+                                                    $curCost = htmlspecialchars($curItem['cost'] ?? '');
+                                                    $curDisc = htmlspecialchars($curItem['discount'] ?? '');
+                                                    $curTax = htmlspecialchars($curItem['tax'] ?? '');
+                                                ?>
                                                 <tr id='row-v-<?=$i?>'>
                                                     <td style="width:10%">
-                                                        <select id='store-<?=$i?>'name="store[]" data-rel="chosen" style="width:100%" >
-                                                      
-                                                        <option value=""> </option><?php
-                                                        $query= "SELECT * FROM stores WHERE storeid='$storeid'";// id IN ( SELECT catid FROM items WHERE id IN (SELECT DISTINCT itemid FROM orders  $condition))";
-                                                        $resSt        = mysqli_query($adController->MySQL,$query);
-                                                        while($dataSt     = mysqli_fetch_assoc($resSt))
-                                                        {
-                                                            $store_id   = $dataSt['id'];
-                                                            $name = $dataSt['name_'.$language];
-                                                            if($store_id == $itemsListArray[$i]['store'])
-                                                               echo "<option value='$store_id' selected>$name</option>"; 
-                                                            elseif($dataSt['default']=='1')
-                                                                echo "<option value='$store_id' selected >$name</option>";
-                                                           else 
-                                                               echo "<option value='$store_id' >$name</option>";
-                                                           }
-                                                        ?>
-                                                    </select>
-                                                    </td>
-                                                    
-                                                    
-                                                    <td style="width:20%">
-                                                        <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select" style="width:100%" >
-                                                            <option value=''> </option>
-                                        <?php
-                                        $name     = "name_".$_SESSION['lang'];
-                                        $queryIt   = "SELECT * FROM items WHERE items.storeid='$storeid' ";
-                                                $resIt        = mysqli_query($adController->MySQL,$queryIt) or die(mysqli_error($adController->MySQL));
-                                                while($dataIt = mysqli_fetch_assoc($resIt))
-                                                {
-
-                                                        $barcode      = $dataIt['barcode'];
-                                                        
-                                                        if ($barcode == '') $barcode = "-----";
-                                                        $itemName     = $dataIt[$name];
-                                                        if ($itemName == '' || $itemName =='`')
-                                                        {
-                                                            if ($_SESSION['lang']=='en')                                                           
-                                                                  $itemName     = $dataIt['name_ar'];
-                                                            elseif($_SESSION['lang']=='ar')                                                           
-                                                                  $itemName     = $dataIt['name_en'];
-
-                                                        }    
-                                                            
-                                                        $unit         = $dataIt['unit'];
-                                                        $queryUnit    = "SELECT $name FROM units WHERE id='$unit' ";
-                                                        $resUint      = mysqli_query($adController->MySQL,$queryUnit) or die(mysqli_error($adController->MySQL));
-                                                        $dataUnit     = mysqli_fetch_assoc($resUint);
-                                                        $unitName     = $dataUnit[$name];
-                                                        if ($unitName == '') $unitName = "-----";
-                                                            if($dataIt['id'] == $itemsListArray[$i]['itemid'])
-                                                                echo "<option value='$i@@$dataIt[id]@@$dataIt[vat]@@$barcode@@$itemName@@$unitName' selected> $barcode | $itemName | $unitName</option>";
-                                                            else
-                                                                echo "<option value='$i@@$dataIt[id]@@$dataIt[vat]@@$barcode@@$itemName@@$unitName'> $barcode | $itemName | $unitName</option>";
-                                                           }
-                                                
-                                        ?>
+                                                        <select id='store-<?=$i?>' name="store[]" data-rel="chosen" style="width:100%">
+                                                            <option value=""></option>
+                                                            <?php
+                                                            foreach ($storesCache as $st) {
+                                                                $stId = $st['id'];
+                                                                $stName = htmlspecialchars($st["name_" . $language] ?? $st["name_ar"]);
+                                                                $selected = '';
+                                                                if ($stId == $curStore) {
+                                                                    $selected = 'selected';
+                                                                } elseif ($curStore == '' && $st['default'] == '1') {
+                                                                    $selected = 'selected';
+                                                                }
+                                                                echo "<option value='$stId' $selected>$stName</option>";
+                                                            }
+                                                            ?>
                                                         </select>
                                                     </td>
-
-                                                    <td >
-                                                        <input type="text" id='item-qty-<?=$i?>' class="item-qty span12 typeahead" maxlength="100"  name='item_qty[]' value="<?=$itemsListArray[$i]['quantity']?>">
+                                                    <td style="width:20%">
+                                                        <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select" style="width:100%">
+                                                            <option value=''> </option>
+                                                            <?php
+                                                            foreach ($itemsCache as $it) {
+                                                                $barcode = $it['barcode'] ?: '-----';
+                                                                $itemName = $it['name_' . $language] ?? '';
+                                                                if ($itemName == '' || $itemName == '`') {
+                                                                    $itemName = ($language == 'en') ? ($it['name_ar'] ?? '') : ($it['name_en'] ?? '');
+                                                                }
+                                                                $unitName = ($language == 'en') ? ($it['unit_name_en'] ?? '-----') : ($it['unit_name_ar'] ?? '-----');
+                                                                if (!$unitName) $unitName = '-----';
+                                                                $valStr = htmlspecialchars("$i@@{$it['id']}@@{$it['vat']}@@$barcode@@$itemName@@$unitName", ENT_QUOTES);
+                                                                $labelStr = htmlspecialchars("$barcode | $itemName | $unitName");
+                                                                $selected = ($it['id'] == $curItemId) ? 'selected' : '';
+                                                                echo "<option value='$valStr' $selected>$labelStr</option>";
+                                                            }
+                                                            ?>
+                                                        </select>
                                                     </td>
-                                                    <td >
-                                                            <input type="text" id='item-qty-after-<?=$i?>' class="item-qty-after span12 typeahead" maxlength="100"  name='item_qty_after[]' readonly>
-                                                    </td>
-                                                    <td >
-                                                            <input type="text" id='item-price-<?=$i?>' class="item-price span12 typeahead" maxlength="100"  name='item_price[]'value="<?=$itemsListArray[$i]['cost']?>">
-                                                    </td>
-                                                    <td >
-                                                            <input type="text" id='item-discount-<?=$i?>' class="item-discount span12 typeahead" maxlength="100"  name='item_disc[]'style="width :75%; "value="<?=$itemsListArray[$i]['discount']?>"> 
-                                                    </td>
-                                                    <td >
-                                                            <input type="text" id='item-total-after-dis-<?=$i?>' class="item-total-after-dis span12 typeahead" maxlength="100"  name='item_total_after_dis[]' readonly>
-                                                    </td>
-                                                    <td >
-                                                        <input type="text" id='item-vat-<?=$i?>' class="item-vat span12 typeahead" maxlength="100"  name='item_vat[]' style="width :75%; "value="<?=$itemsListArray[$i]['tax']?>" > 
-                                                    </td>
-                                                    <td >
-                                                        <input type="text" id='item-vat-value-<?=$i?>' class="item-vat-value span12 typeahead" maxlength="100"  name='item_vat_value[]' readonly>
-                                                    </td>
-                                                    <td >
-                                                            <input type="text" id='item-total-<?=$i?>' class="item-total span12 typeahead" maxlength="100"  name='item-total[]'readonly>
-                                                                                                                        <script type="text/javascript">
-                                                                $(document).ready(function()
-                                                                   {
-                                                                       totalParshase(<?=$i?>);
-                                                                    });   
-                                                            </script>
+                                                    <td><input type="text" id='item-qty-<?=$i?>' class="item-qty span12 typeahead" maxlength="100" name='item_qty[]' value="<?=$curQty?>"></td>
+                                                    <td><input type="text" id='item-qty-after-<?=$i?>' class="item-qty-after span12 typeahead" maxlength="100" name='item_qty_after[]' readonly></td>
+                                                    <td><input type="text" id='item-price-<?=$i?>' class="item-price span12 typeahead" maxlength="100" name='item_price[]' value="<?=$curCost?>"></td>
+                                                    <td><input type="text" id='item-discount-<?=$i?>' class="item-discount span12 typeahead" maxlength="100" name='item_disc[]' style="width:75%;" value="<?=$curDisc?>"></td>
+                                                    <td><input type="text" id='item-total-after-dis-<?=$i?>' class="item-total-after-dis span12 typeahead" maxlength="100" name='item_total_after_dis[]' readonly></td>
+                                                    <td><input type="text" id='item-vat-<?=$i?>' class="item-vat span12 typeahead" maxlength="100" name='item_vat[]' style="width:75%;" value="<?=$curTax?>"></td>
+                                                    <td><input type="text" id='item-vat-value-<?=$i?>' class="item-vat-value span12 typeahead" maxlength="100" name='item_vat_value[]' readonly></td>
+                                                    <td>
+                                                        <input type="text" id='item-total-<?=$i?>' class="item-total span12 typeahead" maxlength="100" name='item-total[]' readonly>
+                                                        <script type="text/javascript">
+                                                            $(document).ready(function() {
+                                                                totalParshase(<?=$i?>);
+                                                            });
+                                                        </script>
                                                     </td>
                                                     <td class='del-parchase-item mult-padding' prop='<?=$i?>'><label>x</label></td>
                                                     <td class='more-parchase-item mult-padding' prop='<?=$i?>'><label>+</label></td>
-                                            </tr>
+                                                </tr>
                                                 <?php } ?>
-                                          </table>
+                                                </table>
                                         </div>
                                     </div>                                  				
                                     <hr>

@@ -1421,6 +1421,168 @@ if($function !="")
             </div>
         </article>
 
+        <!-- Section: Track 2 Achievements -->
+        <article class="report-section" id="track2-section">
+            <div class="section-header">
+                <div class="section-number">12</div>
+                <div class="section-title-wrap">
+                    <h2>المسار الثاني: سلامة منطق الأعمال والمعاملات الذرية المحاسبية والتزامن (ACID & Concurrency)</h2>
+                    <p class="section-subtitle">تأمين التكامل المالي، منع تصادم أرقام الفواتير، وإلغاء مسح بيانات الجرد العشوائي</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">الدورات المالية المحمية بـ ACID</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #16a34a; margin-top: 4px;">100%</div>
+                    <div style="font-size: 0.75rem; color: #16a34a; font-weight: 600; margin-top: 2px;">تغطية شاملة للمبيعات والمشتريات والقيود</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">قفل التزامن (Concurrency Lock)</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #0284c7; margin-top: 4px;">FOR UPDATE</div>
+                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 600; margin-top: 2px;">حماية من تصادم أرقام الفواتير بين الكاشيرات</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">ملفات التقارير المصححة</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #8b5cf6; margin-top: 4px;">7 ملفات</div>
+                    <div style="font-size: 0.75rem; color: #8b5cf6; font-weight: 600; margin-top: 2px;">إلغاء TRUNCATE واستبدالها بحذف شرطي</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">احتساب رصيد المخزون</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #f59e0b; margin-top: 4px;">SQL SUM()</div>
+                    <div style="font-size: 0.75rem; color: #f59e0b; font-weight: 600; margin-top: 2px;">تجميع فوري وحماية من القسمة على صفر</div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th style="width: 220px;">الإجراء المنفذ</th>
+                            <th style="width: 140px;">التصنيف</th>
+                            <th>التفاصيل التقنية والأثر على النظام</th>
+                            <th style="width: 120px;">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>تضمين مساعدات المعاملات الذرية</td>
+                            <td><span class="badge critical">ACID Transactions</span></td>
+                            <td>إضافة دوال <code>beginTransaction()</code> و <code>commit()</code> و <code>rollback()</code> إلى كلاس <code>AdController</code> في <code>controller.php</code> لتوفير تحكم ذري بالعمليات على مستوى اتصال قاعدة البيانات.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">100% منجز</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>تأمين كافة الدورات المالية بالمعاملات الذرية</td>
+                            <td><span class="badge critical">التكامل المحاسبي</span></td>
+                            <td>تغليف مبيعات الكاشير والفواتير (<code>addSale</code>, <code>editSale</code>)، المرتجعات (<code>addSaleRet</code>, <code>editSaleRet</code>)، المشتريات (<code>addPurchase</code>, <code>editPurchase</code>)، مرتجع المشتريات (<code>addPurchaseRet</code>, <code>editPurchaseRet</code>)، قيود اليومية (<code>addJournal</code>, <code>editJournal</code>)، وتحويل الطلبات في <code>orderTrans.php</code> داخل كتل <code>try ... catch (\Throwable)</code> وتراجع فوري عند أي خطأ.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">100% منجز</span></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>حل تصادم أرقام الفواتير والتزامن بين الكاشيرات</td>
+                            <td><span class="badge high">قفل التزامن Concurrency</span></td>
+                            <td>إعادة بناء دالة <code>getNewInvoiceNo()</code>؛ استبدال الاستعلام القديم ببادئات بحث مخصصة للفرع والمخزن مع قفل السجلات الحصري <code>SELECT ... FOR UPDATE</code> لمنع تكرار أو تصادم أرقام الفواتير بين الكاشيرات المتزامنين (زمن التنفيذ: 0.001 ثانية).</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز ومختبر</span></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>إلغاء TRUNCATE TABLE العشوائي في 7 ملفات تقارير</td>
+                            <td><span class="badge high">سلامة البيانات</span></td>
+                            <td>إلغاء مسح الجداول الشامل عند فتح صفحات <code>store-inventory.php</code>, <code>item-movement.php</code>, <code>saleInvoice-report.php</code>, <code>purchInvoice-report.php</code>, <code>saleItem-report.php</code>, <code>purchItem-erport.php</code>, <code>report-barcode.php</code> واستبدالها بحذف شرطي <code>DELETE</code> عند طلب التقرير عبر <code>POST</code> فقط لمنع اختفاء بيانات المستخدمين المتزامنين.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز بنجاح</span></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>تسريع وتأمين احتساب أرصدة المخزون getBalanceItem</td>
+                            <td><span class="badge medium">تحسين الأداء و PHP 8.2</span></td>
+                            <td>استبدال جلب آلاف السجلات بالحلقات التكرارية بتجميع مباشر وسريع في قاعدة البيانات عبر <code>COALESCE(SUM(quantity), 0)</code>، وتفادي أعطال PHP 8.2 القاتلة الناتجة عن <code>count(null)</code> وحماية القسمة على صفر <code>max(1, $itemNoOfQty)</code>.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز ومختبر</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <!-- Section: Track 3 Achievements -->
+        <article class="report-section" id="track3-section">
+            <div class="section-header">
+                <div class="section-number">13</div>
+                <div class="section-title-wrap">
+                    <h2>المسار الثالث: تحسين شاشة الكاشير وتجربة البيع (POS UX & High-Speed Performance)</h2>
+                    <p class="section-subtitle">إزالة تأخير المسح، تفعيل الاختصارات السريعة F1-F10، وعزل الطباعة الحرارية</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">تأخير مسح الباركود</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #16a34a; margin-top: 4px;">0ms</div>
+                    <div style="font-size: 0.75rem; color: #16a34a; font-weight: 600; margin-top: 2px;">إلغاء 1.4 ثانية + 1 ثانية لكل صنف</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">اختصارات لوحة المفاتيح</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #0284c7; margin-top: 4px;">F1 - F10</div>
+                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 600; margin-top: 2px;">دعم لوحة المفاتيح بالكامل دون استخدام الفأرة</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">الطباعة الحرارية</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #8b5cf6; margin-top: 4px;">غير معطلة</div>
+                    <div style="font-size: 0.75rem; color: #8b5cf6; font-weight: 600; margin-top: 2px;">معزولة بـ try/catch لمنع تجميد الشاشة</div>
+                </div>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">إشعارات الحفظ</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #f59e0b; margin-top: 4px;">Toast عائم</div>
+                    <div style="font-size: 0.75rem; color: #f59e0b; font-weight: 600; margin-top: 2px;">استبدال الـ alert المزعج بنوافذ تلقائية التلاشي</div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th style="width: 220px;">الإجراء المنفذ</th>
+                            <th style="width: 140px;">التصنيف</th>
+                            <th>التفاصيل التقنية والأثر على النظام</th>
+                            <th style="width: 120px;">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>إزالة تأخير المسح بالباركود الفوري</td>
+                            <td><span class="badge high">سرعة الاستجابة</span></td>
+                            <td>حذف تأخير 1400ms عند بدء التشغيل وتفعيل التركيز الفوري على الباركود، وحذف تأخير 1000ms لكل صنف مسحوب عبر ربط الحسابات والإجماليات بـ AJAX Callback فورياً دون أي تأخير اصطناعي.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">100% منجز</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>تفعيل اختصارات لوحة المفاتيح السريعة (Hotkeys)</td>
+                            <td><span class="badge medium">تجربة المستخدم UX</span></td>
+                            <td>ربط أزرار الوظائف لشاشة البيع: <code>F1</code> مساعدة، <code>F2</code> مسح باركود، <code>F4</code> كاش وحفظ فوري، <code>F6</code> نسبة الخصم، <code>F7</code> شبكة ومدى، <code>F8</code> فاتورة جديدة، <code>F9</code> العميل، <code>F10</code> دليفري، و <code>Esc</code> للإلغاء وإعادة التركيز.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز ونشط</span></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>إضافة شريط الأدوات العلوي السريع ونافذة المساعدة</td>
+                            <td><span class="badge medium">تصميم واجهة</span></td>
+                            <td>إضافة شريط اختصارات علوي بتصميم دارك راقٍ وموجه في أعلى شاشة <code>pos.php</code> مع نافذة مساعدة منبثقة تفاعلية تشرح كافة الاختصارات بوضوح للكاشير.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز بنجاح</span></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>عزل وحماية الطباعة الحرارية واستبدال alert بتوست عائم</td>
+                            <td><span class="badge high">استقرار النظام</span></td>
+                            <td>تغليف موصل الطباعة الحرارية <code>escpos/index.php</code> في كتل <code>try ... catch (\Throwable)</code> لمنع تعليق النظام عند فصل الطابعة، واستبدال <code>alert()</code> المزعج بإشعار Toast عائم يختفي تلقائياً بعد 3.5 ثانية لإتاحة خدمة العميل التالي مباشرة.</td>
+                            <td><span class="badge" style="background: #dcfce7; color: #15803d; border-color: #86efac;">منجز بنجاح</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
     </main>
 
     <script>

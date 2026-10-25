@@ -6,10 +6,10 @@
    
 $storeid	= $_SESSION['storeid'];
 $language	= $_SESSION['lang'];
-$query      = "TRUNCATE TABLE report_saleitem";
-$res    = mysqli_query($adController->MySQL,$query);
-$query      = "TRUNCATE TABLE report_saleitem_all";
-$res    = mysqli_query($adController->MySQL,$query);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    mysqli_query($adController->MySQL, "DELETE FROM report_saleitem");
+    mysqli_query($adController->MySQL, "DELETE FROM report_saleitem_all");
+}
 
 
    ?>
