@@ -17,8 +17,18 @@
 ├── [x] المسار 3: تحسين شاشة الكاشير، إزالة تأخير المسح، اختصارات لوحة المفاتيح F1-F10، وعزل الطباعة (100% مكتمل)
 ├── [x] المسار 4 - قسم المبيعات (9 صفحات كاملة مكتملة ومختبرة 100%):
 │       add_saleInvoice, edit_saleInvoice, saleInvoice, quotations, add_qouta, edit_qouta, salesRet, add_salesRet, edit_salesRet.
-└── [🔄] المرحلة النشطة الآن: [المسار الرابع - قسم المشتريات (6 صفحات)]
-        نقطة البداية: purchase.php (فواتير المشتريات).
+├── [x] المسار 4 - قسم المشتريات (6 صفحات كاملة مكتملة ومختبرة 100%):
+│       purchase, add_purchase, edit_purchase, purchaseRet, add_purchaseRet, edit_purchaseRet.
+├── [x] المسار 4 - قسم المخازن (9 صفحات كاملة مكتملة ومختبرة 100%):
+│       item-movement, store-inventory, open-palance, add_open_palance, incoming-entry, outgoing-entry, stores-transfer, add_storeTrans, edit_storeTrans.
+├── [x] المسار 4 - قسم الحسابات والمالية (13 صفحة كاملة مكتملة ومختبرة 100%):
+│       accounts, budget, journal, add_journal, edit_journal, account-statement, expenditure, new_expenditure, edit_exp, add_income, edit_income, add_outgo, edit_outgo.
+├── [x] المسار 4 - قسم التقارير (6 صفحات كاملة مكتملة ومختبرة 100%):
+│       saleInvoice-report, saleItem-report, purchInvoice-report, purchItem-erport, detail-sales, report-barcode.
+├── [x] المسار 4 - قسم الإعدادات (7 صفحات كاملة مكتملة ومختبرة 100%):
+│       settings, quote_settings, current_discounts, add_discount, edit_discount, new_user, updates.
+└── [🔄] المرحلة النشطة الآن: [المسار الرابع - قسم العمليات ونقطة البيع (6 صفحات)]
+        نقطة البداية: pos.php و services.php.
 ```
 
 ---

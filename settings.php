@@ -1,152 +1,211 @@
 <?php
+error_reporting(E_ALL);
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
-$language 	= $_SESSION['lang'];
-$storeid	= $_SESSION['storeid'];
 
+$storeid  = intval($_SESSION['storeid'] ?? 1);
+$language = $_SESSION['lang'] ?? 'ar';
 
+$query   = "SELECT * FROM main_settings WHERE storeid='$storeid' LIMIT 1";
+$res     = mysqli_query($adController->MySQL, $query);
+$dataCat = $res ? mysqli_fetch_assoc($res) : null;
 
-$query		= "SELECT * FROM main_settings WHERE storeid='$storeid' ";
-$res		= mysqli_query($adController->MySQL,$query);
-$dataCat	= mysqli_fetch_assoc($res);
-
-
+$compName       = htmlspecialchars(!empty($dataCat['name_ar']) ? $dataCat['name_ar'] : ($dataCat['name_en'] ?? ''));
+$activity       = htmlspecialchars($dataCat['activity'] ?? '');
+$logo           = htmlspecialchars($dataCat['logo'] ?? '');
+$site           = htmlspecialchars($dataCat['site'] ?? '');
+$smoking        = intval($dataCat['smoking'] ?? 0);
+$enableNegative = intval($dataCat['enableNegative'] ?? 0);
+$tax_no         = htmlspecialchars($dataCat['tax_no'] ?? '');
+$phone          = htmlspecialchars($dataCat['phone'] ?? '');
+$email          = htmlspecialchars($dataCat['email'] ?? '');
+$address        = htmlspecialchars($dataCat['address'] ?? '');
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-	<meta charset="utf-8">
-	<title>WAM Tech Soft</title>
-	<?php require_once("script_php_variables.php");?>
-	<?php require_once("header.php");?>	
+    <meta charset="utf-8">
+    <title>WAM Tech Soft - الإعدادات العامة</title>
+    <?php require_once("script_php_variables.php"); ?>
+    <?php require_once("header.php"); ?>	
+    <style>
+        .settings-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .settings-card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #1e293b;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 13px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-top: 25px;
+        }
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .logo-preview {
+            max-height: 80px;
+            max-width: 150px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 4px;
+            margin-top: 8px;
+            background: #f8fafc;
+        }
+    </style>
 </head>
-
 <body>
-		<?php require_once("header_top.php");?>
-	
-		<div class="container-fluid-full">
-		<div class="row-fluid">
-			<?php require_once("left_menu.php");?>
-			<div id="content" class="span10">
-			<div>
-				<div class="box span12">
-					<div class="box-header" data-original-title>
-						<h2><i class="halflings-icon edit"></i><span class="break"></span><?=MAIM_SETTINGS?></h2>
-					</div>
-					<div class="box-content">                                                                                        
-						<form class="form-horizontal" id="settings">
-						  <input type="hidden" value="updateSettings" name="f">
-<!--                                                  <input type="hidden" value="<?=$dataCat['id']?>" name="nd">-->
+    <?php require_once("header_top.php"); ?>
+    
+    <div class="container-fluid-full">
+        <div class="row-fluid">
+            <?php require_once("left_menu.php"); ?>
+            <div id="content" class="span10">
+                <div class="box span12">
+                    <div class="box-header" data-original-title>
+                        <h2>
+                            <i class="halflings-icon cogs"></i>
+                            <span class="break"></span>
+                            الإعدادات العامة للنظام والمنشأة
+                        </h2>
+                    </div>
+                    <div class="box-content">
+                        <form id="settings">
+                            <input type="hidden" name="f" value="updateSettings">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+                            
+                            <!-- 1. بيانات المنشأة -->
+                            <div class="settings-card">
+                                <h3><i class="halflings-icon home"></i> بيانات المنشأة الأساسية</h3>
+                                <div class="form-row">
+                                    <div class="form-group" style="flex:2;">
+                                        <label for="name"><?=CUMPANY_NAME ?? 'اسم المنشأة / الشركة'?> <span style="color:#ef4444;">*</span></label>
+                                        <input type="text" name="name_ar" id="name" value="<?=$compName?>" placeholder="مثال: مطعم ومطبخ السعادة" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tax_no"><?=TAX_NO ?? 'الرقم الضريبي'?> <span style="color:#ef4444;">*</span></label>
+                                        <input type="text" name="tax_no" id="tax_no" value="<?=$tax_no?>" placeholder="300000000000003" onkeypress="return isNumber(event)" required>
+                                    </div>
+                                </div>
 
-                                                  <fieldset>
-							<div class="control-group">
-							  <label class="control-label" for="name"><?=CUMPANY_NAME?> : </label>
-							  <div class="controls">
-								<?php $compName = htmlspecialchars(!empty($dataCat['name_ar']) ? $dataCat['name_ar'] : ($dataCat['name_en'] ?? '')); ?>
-								<input type="text" class="span6 typeahead" name='name_ar' id='name' value="<?=$compName?>" placeholder="اسم المنشأة / الشركة" required>
-								<span class="help-inline">&nbsp;</span>
-							  </div>
-							</div> 
-                                                        <br>
-                                                        <div class="control-group"> 
-                                                            <div class="salesOptions"style="width:45%">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="activity"><?=CUMPANY_ACTIVITY ?? 'النشاط التجاري'?></label>
+                                        <textarea name="activity" id="activity" rows="3" placeholder="وصف نشاط المنشأة التجاري"><?=$activity?></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="logo"><?=CUMPANY_LOGO ?? 'رابط الشعار (URL)'?></label>
+                                        <input type="url" name="logo" id="logo" value="<?=$logo?>" placeholder="https://example.com/logo.png">
+                                        <?php if (!empty($logo)): ?>
+                                            <div>
+                                                <img src="<?=$logo?>" class="logo-preview" alt="الشعار">
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
 
-                                                            <label class="control-label" for="typeahead"><?=CUMPANY_ACTIVITY?> : </label>
-                                                            <div class="controls">
-                                                                <textarea class="span6 typeahead"  
-                                                                          style="width: 90%" 
-                                                                          name="activity" 
-                                                                          id="activity" rows="10"><?=$dataCat['activity']?></textarea>                                            
-                                                            </div>                                  
-                                                        </div>  
-                                                            <div class="salesOptions"style="width:45%">
-                                                            <label class="control-label" for="typeahead"><?=CUMPANY_LOGO?> : </label>
-                                                            <div class="controls">
-                                                                <input type="url" class="span6 typeahead"  name='logo'  id='logo' value="<?=$dataCat['logo']?>">
-                                                            </div>                                  
-                                                            <div class="controls">
-<!--                                                                <input type="hidden" value="<?=$dataCat['logo']?>" name="logo">-->
-                                                                <img src='<?=$dataCat['logo']?>' class='image'>       
-                                                            </div>                                  
-                                                        </div>
+                            <!-- 2. بيانات التواصل والعنوان -->
+                            <div class="settings-card">
+                                <h3><i class="halflings-icon phone"></i> بيانات التواصل والعنوان</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="phone"><?=PHONE ?? 'رقم الهاتف / الجوال'?> <span style="color:#ef4444;">*</span></label>
+                                        <input type="text" name="phone" id="phone" value="<?=$phone?>" maxlength="15" onkeypress="return isNumber(event)" placeholder="0500000000" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email"><?=EMAIL ?? 'البريد الإلكتروني'?> <span style="color:#ef4444;">*</span></label>
+                                        <input type="email" name="email" id="email" value="<?=$email?>" placeholder="info@example.com" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="site"><?=WEB_SITE ?? 'الموقع الإلكتروني'?></label>
+                                        <input type="text" name="site" id="site" value="<?=$site?>" placeholder="www.example.com">
+                                    </div>
+                                </div>
 
-                                                        </div>  
-                                                        <div class="control-group">
-                                                            <div class="salesOptions">
-                                                                <label class="control-label" for="typeahead"><?=SMOKING?> : </label>
-                                                                <div class="controls">
-                                                                    <input type="checkbox"  value="1" name="smoking" <?php if(intval($dataCat['smoking']) == 1) echo "checked='true'";?>>
-                                                                </div>
-                                                            </div>
-                                                            <div class="salesOptions">
-                                                                <label class="control-label" for="typeahead"><?=ENABLE_NEGTIVE?> : </label>
-                                                                <div class="controls">
-                                                                    <input type="checkbox"  value="1" name="enableNegative" <?php if(intval($dataCat['enableNegative']) == 1) echo "checked='true'";?>>
-                                                                </div>
-                                                            </div>                                                            
-							</div>                                                        
-							<div class="control-group">
-							  <label class="control-label"><?=WEB_SITE?> :</label>
-							  <div class="controls">
-								<input type="text"  name='site' class="span6 typeahead" value="<?=$dataCat['site']?>" >
-							  </div>
-                                                        </div >                                                       
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="address"><?=ADDRESS ?? 'العنوان الوطني / التفصيلي'?></label>
+                                        <input type="text" name="address" id="address" value="<?=$address?>" placeholder="المدينة، الحي، اسم الشارع">
+                                    </div>
+                                </div>
+                            </div>
 
-							<div class="control-group">
-							  <label class="control-label"><?=TAX_NO?> :</label>
-							  <div class="controls">
-								<input type="text"  name='tax_no' class="span6 typeahead" onkeypress="return isNumber(event)" value="<?=$dataCat['tax_no']?>" >&nbsp; *
-							  </div>
-							</div> 
-                                                        
+                            <!-- 3. خيارات النظام العامة -->
+                            <div class="settings-card">
+                                <h3><i class="halflings-icon wrench"></i> خيارات وسياسات النظام العامة</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" value="1" id="enableNegative" name="enableNegative" <?=$enableNegative === 1 ? "checked" : ""?>>
+                                            <label for="enableNegative" style="margin-bottom:0; cursor:pointer;"><?=ENABLE_NEGTIVE ?? 'السماح بالبيع بالسالب (تجاوز رصيد المخزن)'?></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" value="1" id="smoking" name="smoking" <?=$smoking === 1 ? "checked" : ""?>>
+                                            <label for="smoking" style="margin-bottom:0; cursor:pointer;"><?=SMOKING ?? 'تطبيق ضريبة التبغ / المشتقات الخاصة'?></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                                                        
-                                                        <div class="control-group">
-							  <label class="control-label"><?=PHONE?> :</label>
-							  <div class="controls">
-								<input type="text"  name='phone' class="span6 typeahead" onkeypress="return isNumber(event)" id='phone'   maxlength="15" value="<?=$dataCat['phone']?>">&nbsp; *
-							  </div>
-							</div>
-                                                        <div class="control-group">
-							  <label class="control-label" for="typeahead"><?=EMAIL?> : </label>
-							  <div class="controls">
-                                                              <input type="email" class="span6 typeahead"  name='email' id='email' value="<?=$dataCat['email']?>"> &nbsp; *
-								 <span class="help-inline">&nbsp;</span>
-							  </div>
-							</div>      
-							<div class="control-group">
-							  <label class="control-label"><?=ADDRESS?> :</label>
-							  <div class="controls">
-                                                              <input type="text" class="span6 typeahead"  name='address' id='address' value="<?=$dataCat['address']?>">
-							  </div>
-							</div>                                                        
-                                
-							<div class="form-actions">
-							  <button type="button" id='submit-settings' class="btn btn-primary"><?=SAVE?></button>
-							  <button type="reset" class="btn"><?=CANCEL?></button>
-							</div>
-							<p>&nbsp;</p>
-							<p class='error-red'>
-								&nbsp;
-								
-							</p>
+                            <p class="error-red" style="font-weight:bold; color:#ef4444; margin-bottom:15px;"></p>
 
-						  </fieldset>
-						</form>  
-					</div>
-				</div>
-			</div>
-
-			
-
-		</div>
-		</div>
-		</div>
-		
-	
-	<div class="clearfix"></div>
-	
-	<?php require_once("footer.php");?>
+                            <div class="form-actions" style="background:none; border:none; padding:0;">
+                                <button type="button" id="submit-settings" class="btn btn-primary" style="padding:8px 24px; font-weight:bold;">
+                                    <i class="halflings-icon white ok"></i> <?=SAVE ?? 'حفظ الإعدادات'?>
+                                </button>
+                                <button type="reset" class="btn" style="padding:8px 18px;"><?=CANCEL ?? 'إلغاء'?></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="clearfix"></div>
+    
+    <?php require_once("footer.php"); ?>
 </body>
 </html>

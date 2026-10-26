@@ -1315,18 +1315,24 @@ $("#email").change(function(){
 //                                }
                                 success:function(result){
                                         $("#overlay").hide(300);
-                                        var jsonParse = $.parseJSON(result);
-                                        if($.trim(jsonParse['success']) == "1")
+                                        if($.trim(result) == "1")
                                         {
                                                 alert(success);
-                                                var invoice =jsonParse['invoice'];
-                                                window.open('reports/incoming.php?sd='+invoice, '_blank')  
                                                 location.replace("incoming-entry.php");
+                                                return;
                                         }
-                                        else
-                                        {
-                                            var error =jsonParse['error'];
-                                            $(".error-red").html(error);
+                                        try {
+                                                var jsonParse = $.parseJSON(result);
+                                                if(jsonParse && $.trim(jsonParse['success']) == "1")
+                                                {
+                                                        alert(success);
+                                                        location.replace("incoming-entry.php");
+                                                        return;
+                                                }
+                                                var error = (jsonParse && jsonParse['error']) ? jsonParse['error'] : result;
+                                                $(".error-red").html(error);
+                                        } catch(e) {
+                                                $(".error-red").html(result);
                                         }
                                 }                                
 
@@ -1426,18 +1432,24 @@ $("#email").change(function(){
 //                                }	
                                 success:function(result){
                                         $("#overlay").hide(300);
-                                        var jsonParse = $.parseJSON(result);
-                                        if($.trim(jsonParse['success']) == "1")
+                                        if($.trim(result) == "1")
                                         {
                                                 alert(success);
-                                                var invoice =jsonParse['invoice'];
-                                                window.open('reports/outgoing.php?sd='+invoice, '_blank')  
                                                 location.replace("outgoing-entry.php");
+                                                return;
                                         }
-                                        else
-                                        {
-                                            var error =jsonParse['error'];
-                                            $(".error-red").html(error);
+                                        try {
+                                                var jsonParse = $.parseJSON(result);
+                                                if(jsonParse && $.trim(jsonParse['success']) == "1")
+                                                {
+                                                        alert(success);
+                                                        location.replace("outgoing-entry.php");
+                                                        return;
+                                                }
+                                                var error = (jsonParse && jsonParse['error']) ? jsonParse['error'] : result;
+                                                $(".error-red").html(error);
+                                        } catch(e) {
+                                                $(".error-red").html(result);
                                         }
                                 }
 
@@ -1527,8 +1539,7 @@ $("#email").change(function(){
                 
     $("#submit-journal").click(function()
     {
-        alert($("#difference").val ());
-       if( $("#difference").val ()==='0.00')
+       if( $("#difference").val ()==='0.00' || parseFloat($("#difference").val()) === 0)
        {
         var formValues 	= $("#journal-form").serialize();
         $.ajax({

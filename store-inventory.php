@@ -1,409 +1,322 @@
 <?php
-   error_reporting(E_ALL);
-   require_once("top.php");
-   require_once("redirection.php");
-   require_once("controller.php");
+error_reporting(E_ALL);
+require_once("top.php");
+require_once("redirection.php");
+require_once("controller.php");
 
-   $storeid	= $_SESSION['storeid'];
-   $language	= $_SESSION['lang'];
-   if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-       mysqli_query($adController->MySQL, "DELETE FROM report_inventory_sam");
-       mysqli_query($adController->MySQL, "DELETE FROM report_inventory");
-   }
-   
+$storeid   = (int)($_SESSION['storeid'] ?? 0);
+$language  = defined('LANG') ? LANG : ($_SESSION['lang'] ?? 'ar');
+$pgName    = basename(__FILE__);
 
-   ?>
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    safe_query($adController->MySQL, "DELETE FROM report_inventory_sam");
+    safe_query($adController->MySQL, "DELETE FROM report_inventory");
+}
+
+$selectedBr    = htmlspecialchars((string)($_REQUEST['br'] ?? ''));
+$selectedStore = htmlspecialchars((string)($_REQUEST['store'] ?? ''));
+$selectedCat   = htmlspecialchars((string)($_REQUEST['catid'] ?? ''));
+?>
 <!DOCTYPE html>
-<html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <title>WAM Tech Soft</title>
-      <?php require_once("header.php");?>	
-      <style>
-         @media (max-width: 700px) {
-         #mobile 
-         {
-         display:block;
-         }
-         #mobile .row-fluid
-         {
-         display:none;
-         }
-         #desktop
-         {
-         display:none;
-         }
-         }
-         @media (min-width: 701px) {
-         #mobile 
-         {
-         display:none;
-         }
-         #desktop
-         {
-         display:block;
-         }
-         }
-
-      </style>
-   </head>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>WAM Tech Soft - <?=STORES_INVENTORY?></title>
+    <?php require_once("header.php");?>	
+</head>
 <body>
-      <?php require_once("header_top.php");?>
-<div class="container-fluid-full">
-         <div class="row-fluid">
+    <?php require_once("header_top.php");?>
+    <div class="container-fluid-full">
+        <div class="row-fluid">
             <?php require_once("left_menu.php");?>
             <div id="content" class="span10">
-               <div>
-                  <div class="box span12">
-                     <div class="box-header" data-original-title>
-                        <h2><i class="halflings-icon edit"></i><span class="break"></span><?=STORES_INVENTORY?></h2>
-                        <div class="box-icon">
-                           <a href="#" class="btn-minimize"><i class="halflings-icon chevron-up"></i></a>
+                <div>
+                    <div class="box span12">
+                        <div class="box-header" data-original-title>
+                            <h2><i class="halflings-icon edit"></i><span class="break"></span><?=STORES_INVENTORY?></h2>
+                            <div class="box-icon">
+                                <a href="#" class="btn-minimize"><i class="halflings-icon chevron-up"></i></a>
+                            </div>
                         </div>
-                     </div>
-                     <div class="box-content">
-                        <form class="form-horizontal"  action="<?=$pgName?>" id='form' method="POST">
-                           <fieldset>
-
-                                       <div class="control-group">
-                                           <div class="salesOptions">
-                                               <label class="control-label" for="typeahead3">
-                                          <?=BRANCH?>
-                                               </label>
-                                               <div class="controls">
-                                                   <select onchange="this.form.submit()"  class='span3' name="br">
-                                                       <option value="">&nbsp;</option>
-                                                <?php
-                                                   $query 		= "SELECT name_en,name_ar,id FROM branches WHERE storeid='$storeid'";
-                                                   $res		= mysqli_query($adController->MySQL,$query);
-                                                   while($data 	= mysqli_fetch_assoc($res))
-                                                   {
-                                                       $name	= $data['name_'.$language];
-                                                       if($name == "")
-                                                           $name	= $data['name_en'];
-                                                       $sel	= "";
-                                                       if($_REQUEST['br'] == $data['id'])
-                                                       {                                                                            
-                                                           $sel = " selected='true' ";
-//                                                           $str2  = "<tr>";
-//                                                           $str2 .= "<td><strong>".BRANCH."</strong></td>";
-//                                                           $str2 .= "<td  colspan='$colspan'>$name</td>";                                                   
-//                                                           $str2 .= "</tr>";                                                                            
-//                                                           $searchCondition[] = $str2;
-                                                       }
-                                                       echo "<option value='$data[id]' $sel>$name</option>";
-                                                   }
-                                                   ?>
--->                                                   </select>
-                                               </div>
-                                           </div>
-                                           <?php
-
-                                          ?>
-                                          <div class="salesOptions">
-                                               <label class="control-label" for="typeahead2">
-                                          <?=STORES?>
-                                       </label>
-                                                  <div class="controls">
-                                                      <select class='span3' name="store">
-                                                          <option value="">&nbsp;</option>
-                                                          
-                                                        <?php
-                                                  if(isset($_REQUEST["br"]))
-                                                  {
-                                                      if ($_REQUEST["br"]!='')
-                                                      {
-                                                           $query 	= "SELECT name_en,name_ar,id FROM stores WHERE storeid='$storeid'AND branch = ".$_REQUEST["br"]."";
-                                                           $res		= mysqli_query($adController->MySQL,$query);
-                                                           while($data 	= mysqli_fetch_assoc($res))
-                                                           {
-                                                               $name	= $data['name_'.$language];
-                                                               if($name == "")
-                                                                   $name	= $data['name_en'];
-                                                               $sel	= "";
-                                                               if($_REQUEST['store'] == $data['id'])
-                                                               {                                                                            
-                                                                   $sel = " selected='true' ";
-                                                               }
-                                                               echo "<option value='$data[id]' $sel>$name</option>";
-                                                           }
-                                                      }
-                                                  }
-                                                           ?>
-                                                     </select>
-                                                  </div>
-                                           </div>
-                                       </div>
-                               <div class="clearfix"></div>
-                                       <div class="control-group">
-                                            <div class="salesOptions">
-                                          <label class="control-label" for="typeahead"><?=CATEGORY?></label>
-                                          <div class="controls">
-                                             <select onchange="this.form.submit()"  class='span3' name="catid">
-                                                <option value="">&nbsp;</option>
-                                                <?php
-                                                   $query= "SELECT * FROM categories WHERE storeid='$storeid'";// id IN ( SELECT catid FROM items WHERE id IN (SELECT DISTINCT itemid FROM orders  $condition))";
-                                                   $res		= mysqli_query($adController->MySQL,$query);
-                                                   while($data 	= mysqli_fetch_assoc($res))
-                                                   {
-                                                       $name	= $data["name_".$language];
-                                                   
-                                                       $sel	= "";                                                                
-                                                   
-                                                       if(isset($_REQUEST["catid"]) && $_REQUEST["catid"] == $data['id'])
-                                                               {
-                                                                       $sel = " selected='true' ";
-                                                               }
-                                                               echo "<option value='$data[id]' $sel>$name</option>";
-                                                               }
-                                                   ?>											
-                                          </select>
-                                          </div>
+                        <div class="box-content">
+                            <form class="form-horizontal" action="<?=$pgName?>" id="form" method="POST" autocomplete="off">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                <fieldset>
+                                    <div class="control-group">
+                                        <div class="salesOptions">
+                                            <label class="control-label" for="br"><?=BRANCH?></label>
+                                            <div class="controls">
+                                                <select onchange="this.form.submit()" class="span3" name="br" id="br">
+                                                    <option value="">-- كل الفروع --</option>
+                                                    <?php
+                                                    $query = "SELECT name_en, name_ar, id FROM branches WHERE storeid='$storeid' OR storeid='0'";
+                                                    $res   = mysqli_query($adController->MySQL, $query);
+                                                    if ($res) {
+                                                        while($data = mysqli_fetch_assoc($res))
+                                                        {
+                                                            $name = !empty($data['name_'.$language]) ? $data['name_'.$language] : ($data['name_en'] ?? '');
+                                                            $sel  = ($selectedBr !== '' && $selectedBr == $data['id']) ? "selected" : "";
+                                                            echo "<option value='{$data['id']}' $sel>" . htmlspecialchars($name) . "</option>";
+                                                        }
+                                                    }
+                                                    ?>
+                                                </select>
                                             </div>
-                                       </div>
+                                        </div>
 
-                               <button type="submit" class="btn btn-primary btn-lg" name="Submit" onclick="loadReport()"><?=LOAD_FORM?></button>
+                                        <div class="salesOptions">
+                                            <label class="control-label" for="store"><?=STORES?></label>
+                                            <div class="controls">
+                                                <select class="span3" name="store" id="store">
+                                                    <option value="">-- كل المخازن --</option>
+                                                    <?php
+                                                    if ($selectedBr !== '')
+                                                    {
+                                                        $brEsc = (int)$selectedBr;
+                                                        $query = "SELECT name_en, name_ar, id FROM stores WHERE (storeid='$storeid' OR storeid='0') AND branch='$brEsc'";
+                                                        $res   = mysqli_query($adController->MySQL, $query);
+                                                        if ($res) {
+                                                            while($data = mysqli_fetch_assoc($res))
+                                                            {
+                                                                $name = !empty($data['name_'.$language]) ? $data['name_'.$language] : ($data['name_en'] ?? '');
+                                                                $sel  = ($selectedStore !== '' && $selectedStore == $data['id']) ? "selected" : "";
+                                                                echo "<option value='{$data['id']}' $sel>" . htmlspecialchars($name) . "</option>";
+                                                            }
+                                                        }
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="clearfix"></div>
-                           </fieldset>
-                        </form>
-                     </div>
-                  </div>
-               </div>
- <?php
- if(isset($_POST['Submit']))
- {
-     $conditionItemArray    = array();
-//     $itemId                = $_POST['iid'];
-     $catid                 = $_POST['catid'];
-//     if($itemId != '')
-      $conditionItemArray[]  = " storeid='$storeid'";
-    if(intval($catid) > 0)   
-    {
-       $conditionItemArray[]   = " catid = '$catid' ";  
+                                    <div class="control-group">
+                                        <div class="salesOptions">
+                                            <label class="control-label" for="catid"><?=CATEGORY?></label>
+                                            <div class="controls">
+                                                <select onchange="this.form.submit()" class="span3" name="catid" id="catid">
+                                                    <option value="">-- كل الفئات --</option>
+                                                    <?php
+                                                    $query = "SELECT id, name_ar, name_en FROM categories WHERE storeid='$storeid' OR storeid='0'";
+                                                    $res   = mysqli_query($adController->MySQL, $query);
+                                                    if ($res) {
+                                                        while($data = mysqli_fetch_assoc($res))
+                                                        {
+                                                            $name = !empty($data["name_".$language]) ? $data["name_".$language] : ($data['name_ar'] ?? '');
+                                                            $sel  = ($selectedCat !== '' && $selectedCat == $data['id']) ? "selected" : "";
+                                                            echo "<option value='{$data['id']}' $sel>" . htmlspecialchars($name) . "</option>";
+                                                        }
+                                                    }
+                                                    ?>											
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
 
-         $query         = "SELECT * FROM categories WHERE id='$catid' AND storeid='$storeid'";
-         $resStore      = mysqli_query($adController->MySQL,$query);
-         $dataStore     = mysqli_fetch_assoc($resStore);
-         $catName         = $dataStore['name_ar'];       
-    }
-    else $catName = 'كل الفئات';
-    $conditionItem = implode(" AND ",$conditionItemArray);
-    
-    $conditionSearchArray   = "";    
-    $branchid               = $_POST['br'];
-    $store                  = $_POST['store'];
-//    $fromDateV              = $_POST['from_date'];
-//    $toDateV                = $_POST['to_date'];   
-//   $conditionArray[]        = " storeid ='$storeid' ";
-   if(intval($store) > 0)
-   {
-   	$conditionSearchArray.= " AND o.store ='$store' ";
-        
-         $query         = "SELECT * FROM stores WHERE id='$store' AND storeid='$storeid'";
-         $resStore      = mysqli_query($adController->MySQL,$query);
-         $dataStore     = mysqli_fetch_assoc($resStore);
-         $storeName     = $dataStore['name_ar'];              
-   }
-       else $storeName = 'كل المخازن';
+                                    <button type="submit" class="btn btn-primary btn-lg" name="Submit"><?=LOAD_FORM?></button>
+                                    <div class="clearfix"></div>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
 
-   if(intval($branchid) > 0)
-   {
-   	$conditionSearchArray .= " AND b.id = '$branchid' ";  
-        
-         $query         = "SELECT * FROM branches WHERE id='$branchid' AND storeid='$storeid'";
-         $resStore      = mysqli_query($adController->MySQL,$query);
-         $dataStore     = mysqli_fetch_assoc($resStore);
-         $branchName     = $dataStore['name_ar'];       
-   }
-          else $branchName = 'كل الفروع';
+                <?php
+                if (isset($_POST['Submit']))
+                {
+                    $conditionItemArray = [" (storeid='$storeid' OR storeid='0') "];
+                    $catid = (int)($_POST['catid'] ?? 0);
+                    $catName = 'كل الفئات';
+                    if ($catid > 0)   
+                    {
+                        $conditionItemArray[] = " catid = '$catid' ";  
+                        $query = "SELECT name_ar, name_en FROM categories WHERE id='$catid' LIMIT 1";
+                        $resStore = mysqli_query($adController->MySQL, $query);
+                        if ($resStore && $dataStore = mysqli_fetch_assoc($resStore)) {
+                            $catName = !empty($dataStore['name_ar']) ? $dataStore['name_ar'] : ($dataStore['name_en'] ?? 'فئة');
+                        }
+                    }
+                    $conditionItem = implode(" AND ", $conditionItemArray);
+                    
+                    $conditionSearch = "";    
+                    $branchid = (int)($_POST['br'] ?? 0);
+                    $store    = (int)($_POST['store'] ?? 0);
 
-   
+                    $storeName = 'كل المخازن';
+                    if ($store > 0)
+                    {
+                        $conditionSearch .= " AND o.store = '$store' ";
+                        $query = "SELECT name_ar, name_en FROM stores WHERE id='$store' LIMIT 1";
+                        $resStore = mysqli_query($adController->MySQL, $query);
+                        if ($resStore && $dataStore = mysqli_fetch_assoc($resStore)) {
+                            $storeName = !empty($dataStore['name_ar']) ? $dataStore['name_ar'] : ($dataStore['name_en'] ?? 'مخزن');
+                        }
+                    }
 
-//   if($fromDateV!='')
-//   {
-//        $fDate              = explode("/",$fromDateV);
-//        $fDate              = $fDate[2]."-".$fDate[1]."-".$fDate[0]." 00:00:00"; 
-//        $conditionSearchArray[]   = "o.date >= '$fDate' ";
-//    }
-//
-//    if($toDateV!='')
-//    {
-//        $tDate              = explode("/",$toDateV);
-//        $tDate              = $tDate[2]."-".$tDate[1]."-".$tDate[0]." 00:00:00"; 
-//        $conditionSearchArray[]   = "o.date <='$tDate' ";    
-//    }
-    $conditionSearch =     $conditionSearchArray;
-//    if ($condition) $condition = "AND ".$condition;
-    ?>
+                    $branchName = 'كل الفروع';
+                    if ($branchid > 0)
+                    {
+                        $conditionSearch .= " AND b.id = '$branchid' ";  
+                        $query = "SELECT name_ar, name_en FROM branches WHERE id='$branchid' LIMIT 1";
+                        $resBr = mysqli_query($adController->MySQL, $query);
+                        if ($resBr && $dataBr = mysqli_fetch_assoc($resBr)) {
+                            $branchName = !empty($dataBr['name_ar']) ? $dataBr['name_ar'] : ($dataBr['name_en'] ?? 'فرع');
+                        }
+                    }
+                ?>
                 <div>
                     <div class="box span12">  
-                        <a  href='reports/storeInvestory.php' target='_blank'>
-                          <img src='img/print.png' style='width:50px'>
-                         </a> 
+                        <a href="reports/storeInvestory.php" target="_blank" title="طباعة الجرد">
+                            <img src="img/print.png" style="width:40px; margin-bottom: 15px;" alt="طباعة">
+                        </a> 
                         <div class="clearfix"></div>
 
-                        <table class="table table-striped table-bordered bootstrap-datatable ">
-                          <thead>
-                              <tr>    
-                                  <th><?=BARCODE?></th>
-                                  <th><?=ITEM_NAME?></th>
-                                  <th><?=UNITS?></th>
-                                  <th><?=FILLING?></th>
-                                  <th><?=PALANCE?>  </th>
-                                  <th><?=COST?>  </th>
-                                  <th><?=TOTALS?>  </th>
-
-
-                              </tr>
-                          </thead>
-                          <tbody>
-                <?php
-
-    $queryThread          = "SELECT item_thread, name_".$language." AS name "
-                            . "FROM items WHERE $conditionItem  "
-                            . "GROUP BY item_thread " ;
-    $resThread            = mysqli_query($adController->MySQL,$queryThread);    
-    
-    while($dataThread = mysqli_fetch_assoc($resThread))
-    {
-        $total =0;
-        $itemThread      = $dataThread['item_thread'];   
-        $itemname      = $dataThread['name'];  
-         
-
-         
-        $queryItems   = "SELECT i.id AS id ,i.name_$language AS name, i.barcode AS barcode ,i.intimate_stock AS noOfQty ,"
-                . " u.name_$language AS unit "
-                . "FROM items i, units u "
-                . "WHERE i.item_thread = '$itemThread' "
-                . "AND i.unit = u.id ORDER BY i.intimate_stock DESC" ;
-        $resItem      = mysqli_query($adController->MySQL,$queryItems);        //echo $queryAll."<br>";hhh
-        while($dataItem = mysqli_fetch_assoc($resItem))
-        {
-            $itemsListArray[count($itemsListArray)] = $dataItem;
-            $itemId = $dataItem['id'];                      //get from open palance
-            $query  = "SELECT o.quantity AS qty, o.date AS date, o.store, s.name_$language AS store "
-                . "FROM open_palance o , stores s, branches b "
-                . "WHERE  o.itemid = '$itemId' $conditionSearch"
-                . "AND o.store = s.id AND s.branch = b.id AND o.storeid='$storeid'";
-//       echo $query."<br> ";
-           
-            $res    = mysqli_query($adController->MySQL,$query);
-            while($data = mysqli_fetch_assoc($res))
-            {
-               $noOfQty = $dataItem['noOfQty'];
-               $qty     = $data['qty'];
-               $total   += $qty*$noOfQty;
-            }       //get from open imcome items
-      
-            $query = "SELECT o.quantity AS qty, o.date AS date, o.store, o.invoice_Type AS type, s.name_$language AS store "
-                . "FROM income_items o, stores s, branches b "
-                . "WHERE  o.itemid = '$itemId' $conditionSearch"
-                . "AND o.store = s.id AND s.branch = b.id AND o.state = '1' AND o.storeid='$storeid'";
-//       echo $query."<br> ";
-       $res = mysqli_query($adController->MySQL,$query);
-           //echo $num."<br>";
-           while($data = mysqli_fetch_assoc($res))
-           {
-               $noOfQty = $dataItem['noOfQty'];
-               $qty     = $data['qty'];
-               $total   += $qty*$noOfQty;
-           }  
-    //get from open outgo items
-           $query = "SELECT o.quantity AS qty, o.date AS date, o.store, o.invoice_Type AS type, s.name_$language AS store "
-                    . "FROM outgo_items o, stores s, branches b "
-                    . "WHERE  o.itemid = '$itemId'  $conditionSearch"
-                    . "AND o.store = s.id AND s.branch = b.id AND o.state = '1' AND o.storeid='$storeid'";
-//       echo $query."--------------------------------------------------------<br> ";
-           $res = mysqli_query($adController->MySQL,$query);
-           //echo $num."<br>";
-           while($data = mysqli_fetch_assoc($res))
-           {
-               $noOfQty = $dataItem['noOfQty'];
-               $qty     = $data['qty']*-1;
-               $total   += $qty*$noOfQty;
-           }                                     
-        }
-        
-        for($i=0; $i<count($itemsListArray); $i++)
-        {          
-            $palance = intval($total/$itemsListArray[$i]['noOfQty']);
-            $total = $total % $itemsListArray[$i]['noOfQty'];
-            if ($palance!=0)
-            {
-                $barcode = $itemsListArray[$i]['barcode'];
-                $itemName = $itemsListArray[$i]['name'];
-                $unitName = $itemsListArray[$i]['unit'];
-                $count = $itemsListArray[$i]['noOfQty'];
-                $cost = 0;
-                $totals = $palance * $cost; 
-                $allTotal += $totals;
-                $query   = "INSERT INTO `report_inventory`"
-                        . "( `barcode`, `item`,    `unit`,  `count`,   `quantity`, `cost`, `total`) VALUES "
-                        . "('$barcode',  '$itemName','$unitName','$count', '$palance','$cost','$totals')";
-                mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));  
-                ?>
-                          <tr>
-                              <td> 
-                                  <div><?=$barcode?></div>
-                              </td>
-                              <td>
-                                  <div><?=$itemName?></div>
-                              </td>  
-                              <td>
-                                  <div><?=$unitName?></div>
-                              </td> 
-                              <td>
-                                  <div><?=$count?></div>
-                              </td>      
-                              <td>
-                                  <div><?=$palance;?></div>
-                              </td>                              
-                              <td>
-                                  <div><?=$cost;?></div>
-                              </td>
-                              <td>
-                                  <div><?=$totals;?></div>
-                              </td>
-
-                          </tr>
-                          
+                        <table class="table table-striped table-bordered bootstrap-datatable">
+                            <thead>
+                                <tr>    
+                                    <th><?=BARCODE?></th>
+                                    <th><?=ITEM_NAME?></th>
+                                    <th><?=UNITS?></th>
+                                    <th><?=FILLING?></th>
+                                    <th><?=PALANCE?></th>
+                                    <th><?=COST?></th>
+                                    <th><?=TOTALS?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
                             <?php
-            }
-        }
-                                   
-        unset($itemsListArray);
-   }
-             ?>
-                          </tbody>
+                            $allTotal = 0;
+                            $queryThread = "SELECT item_thread, name_" . $language . " AS name FROM items WHERE $conditionItem GROUP BY item_thread";
+                            $resThread   = mysqli_query($adController->MySQL, $queryThread);    
+                            
+                            if ($resThread)
+                            {
+                                while($dataThread = mysqli_fetch_assoc($resThread))
+                                {
+                                    $total = 0;
+                                    $itemThread = mysqli_real_escape_string($adController->MySQL, (string)$dataThread['item_thread']);   
+                                    $itemname   = $dataThread['name'] ?? '';  
+                                    $itemsListArray = [];
+                                     
+                                    $queryItems = "SELECT i.id AS id, i.name_$language AS name, i.barcode AS barcode, i.intimate_stock AS noOfQty, u.name_$language AS unit 
+                                                   FROM items i 
+                                                   LEFT JOIN units u ON i.unit = u.id 
+                                                   WHERE i.item_thread = '$itemThread' 
+                                                   ORDER BY i.intimate_stock DESC";
+                                    $resItem = mysqli_query($adController->MySQL, $queryItems);
+                                    if ($resItem)
+                                    {
+                                        while($dataItem = mysqli_fetch_assoc($resItem))
+                                        {
+                                            $itemsListArray[] = $dataItem;
+                                            $itemId = (int)$dataItem['id'];
+
+                                            // 1. Open Balance
+                                            $query = "SELECT o.quantity AS qty, o.date AS date, o.store, s.name_$language AS store 
+                                                      FROM open_palance o 
+                                                      INNER JOIN stores s ON o.store = s.id 
+                                                      INNER JOIN branches b ON s.branch = b.id 
+                                                      WHERE o.itemid = '$itemId' $conditionSearch AND (o.storeid='$storeid' OR o.storeid='0')";
+                                            $res = mysqli_query($adController->MySQL, $query);
+                                            if ($res) {
+                                                while($data = mysqli_fetch_assoc($res)) {
+                                                    $noOfQty = (float)($dataItem['noOfQty'] ?? 1);
+                                                    $qty     = (float)($data['qty'] ?? 0);
+                                                    $total   += $qty * $noOfQty;
+                                                }
+                                            }
+
+                                            // 2. Income items
+                                            $query = "SELECT o.quantity AS qty, o.date AS date, o.store, o.invoice_Type AS type, s.name_$language AS store 
+                                                      FROM income_items o 
+                                                      INNER JOIN stores s ON o.store = s.id 
+                                                      INNER JOIN branches b ON s.branch = b.id 
+                                                      WHERE o.itemid = '$itemId' $conditionSearch AND o.state = '1' AND (o.storeid='$storeid' OR o.storeid='0')";
+                                            $res = mysqli_query($adController->MySQL, $query);
+                                            if ($res) {
+                                                while($data = mysqli_fetch_assoc($res)) {
+                                                    $noOfQty = (float)($dataItem['noOfQty'] ?? 1);
+                                                    $qty     = (float)($data['qty'] ?? 0);
+                                                    $total   += $qty * $noOfQty;
+                                                }
+                                            }
+
+                                            // 3. Outgo items
+                                            $query = "SELECT o.quantity AS qty, o.date AS date, o.store, o.invoice_Type AS type, s.name_$language AS store 
+                                                      FROM outgo_items o 
+                                                      INNER JOIN stores s ON o.store = s.id 
+                                                      INNER JOIN branches b ON s.branch = b.id 
+                                                      WHERE o.itemid = '$itemId' $conditionSearch AND o.state = '1' AND (o.storeid='$storeid' OR o.storeid='0')";
+                                            $res = mysqli_query($adController->MySQL, $query);
+                                            if ($res) {
+                                                while($data = mysqli_fetch_assoc($res)) {
+                                                    $noOfQty = (float)($dataItem['noOfQty'] ?? 1);
+                                                    $qty     = (float)($data['qty'] ?? 0) * -1;
+                                                    $total   += $qty * $noOfQty;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    for($i = 0; $i < count($itemsListArray); $i++)
+                                    {          
+                                        $divisor = max(1, (int)($itemsListArray[$i]['noOfQty'] ?? 1));
+                                        $palance = intval($total / $divisor);
+                                        $total   = $total % $divisor;
+
+                                        if ($palance != 0)
+                                        {
+                                            $barcode  = $itemsListArray[$i]['barcode'] ?? '---';
+                                            $itemName = $itemsListArray[$i]['name'] ?? '---';
+                                            $unitName = $itemsListArray[$i]['unit'] ?? '---';
+                                            $count    = $divisor;
+                                            $cost     = 0;
+                                            $totals   = $palance * $cost; 
+                                            $allTotal += $totals;
+
+                                            safe_query($adController->MySQL, 
+                                                "INSERT INTO `report_inventory` (`barcode`, `item`, `unit`, `count`, `quantity`, `cost`, `total`) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                                [$barcode, $itemName, $unitName, $count, $palance, $cost, $totals]);
+                                            ?>
+                                            <tr>
+                                                <td><div><?=htmlspecialchars((string)$barcode)?></div></td>
+                                                <td><div><?=htmlspecialchars((string)$itemName)?></div></td>  
+                                                <td><div><?=htmlspecialchars((string)$unitName)?></div></td> 
+                                                <td><div><?=htmlspecialchars((string)$count)?></div></td>      
+                                                <td><div><?=htmlspecialchars((string)$palance)?></div></td>                              
+                                                <td><div><?=htmlspecialchars((string)$cost)?></div></td>
+                                                <td><div><?=htmlspecialchars((string)$totals)?></div></td>
+                                            </tr>
+                                            <?php
+                                        }
+                                    }
+                                }
+                            }
+                            ?>
+                            </tbody>
                         </table>
                     </div>
                 </div>
-                 <?php
-                 
-              $query   = "INSERT INTO `report_inventory_sam`"
-               . "( `pranch`, `store`, `category`, `totals`) VALUES "
-               . "('$branchName','$storeName','$catName','$allTotal')";
-       mysqli_query($adController->MySQL,$query);          
- }
- 
- ?>
-            </div>
-         </div>
-         <div class="clearfix"></div>
-         <?php require_once("footer.php");?>
-         <script type="text/javascript">
-             $(document).ready(function()
-             {
-               var config = {
-              '.span3'     : { width: '80%' }
-             }
-                for (var selector in config) 
-                {
-                  $(selector).chosen(config[selector]);
+                <?php
+                    safe_query($adController->MySQL, 
+                        "INSERT INTO `report_inventory_sam` (`pranch`, `store`, `category`, `totals`) VALUES (?, ?, ?, ?)",
+                        [$branchName, $storeName, $catName, $allTotal]);
                 }
-            })
-            </script>
-      </div>
-   </body>
+                ?>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <?php require_once("footer.php");?>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var config = {
+                    '.span3': { width: '80%' }
+                };
+                for (var selector in config) {
+                    $(selector).chosen(config[selector]);
+                }
+            });
+        </script>
+    </div>
+</body>
 </html>

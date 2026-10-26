@@ -616,7 +616,9 @@ function getStates()
 	function delete_journal()
 	{
 		$this->checkAuthorized('accounting');
-		$invoice = $this->encrypt_decrypt(2,urldecode($_REQUEST['no'] ?? ''),0);               
+		$rawNo = $_REQUEST['no'] ?? '';
+		$decrypted = $this->encrypt_decrypt(2, urldecode($rawNo), 0);
+		$invoice = (!empty($decrypted) && $decrypted !== false) ? $decrypted : $rawNo;               
 
 		safe_query($this->MySQL, "UPDATE `journal` SET `state` = '0' WHERE journalNo = ?", [$invoice]);
 		safe_query($this->MySQL, "UPDATE `journal_items` SET `state` = '0' WHERE journalNo = ?", [$invoice]); 
@@ -1693,46 +1695,37 @@ function getStates()
 
 	function discountAdd()
 	{
-		$discount	= $_POST['amount'];
-		$branch		= $_POST['branch'];
-		$storeid	= $_SESSION['storeid'];
-		$minamount	= $_POST['minamt'];
+		$this->checkAuthorized('admin');
+		$discount	= floatval($_POST['amount'] ?? 0);
+		$branch		= intval($_POST['branch'] ?? 0);
+		$storeid	= intval($_SESSION['storeid'] ?? 1);
+		$minamount	= floatval($_POST['minamt'] ?? 0);
 
-		$obj = new validation();
-		$obj->add_fields($discount, 'req',AMOUNT_CANNOT_BE_BLANK);
-		$obj->add_fields($minamount, 'req',MIN_AMOUNT_CANNOT_BE_BLANK);
+		if ($discount <= 0 && $minamount <= 0) {
+			echo AMOUNT_CANNOT_BE_BLANK;
+			return;
+		}
 
-		if(intval($discount) > intval($minamount))
-		{
+		if ($discount > $minamount && $minamount > 0) {
 			echo DISCOUNT_GR8R_THN_MIN;
-			exit();
+			return;
 		}
 
-		if(!$error)
-		{
-			$query	 	= "SELECT * FROM discount WHERE branchid='$branch' ";
-			$res		= mysqli_query($this->MySQL,$query);
-			$dataDiscount	= mysqli_fetch_assoc($res);
-			$num		= mysqli_num_rows($res);
-			if(!$num)
-				$query = "INSERT INTO discount(amount,branchid,minamount) VALUES('$discount','$branch','$minamount')";
-			else
-				$query = "UPDATE discount SET amount='$discount',minamount='$minamount' WHERE branchid='$branch' ";
-
-			$exe   = mysqli_query($this->MySQL,$query);
-			if($exe)
-				echo DISCOUNT_UPDATED_SUCCESSFULLY;
-
-			else
-				echo ERROR_IN_UPDATING_DISCOUNT;
-				
-
-
-
+		$query = "SELECT * FROM discount WHERE branchid='$branch' AND storeid='$storeid'";
+		$res   = mysqli_query($this->MySQL, $query);
+		$num   = $res ? mysqli_num_rows($res) : 0;
+		if (!$num) {
+			$qSave = "INSERT INTO discount (amount, branchid, minamount, storeid) VALUES ('$discount', '$branch', '$minamount', '$storeid')";
+		} else {
+			$qSave = "UPDATE discount SET amount='$discount', minamount='$minamount' WHERE branchid='$branch' AND storeid='$storeid'";
 		}
-		else
-			echo $error;
 
+		$exe = mysqli_query($this->MySQL, $qSave);
+		if ($exe) {
+			echo DISCOUNT_UPDATED_SUCCESSFULLY;
+		} else {
+			echo ERROR_IN_UPDATING_DISCOUNT;
+		}
 	}
         
 	function updateDelivery()
@@ -1803,39 +1796,36 @@ function getStates()
 
 	function discountUpdate()
 	{
-		$discount	= $_POST['amount'];
-		$branch		= $_POST['branch'];
-		$storeid	= $_SESSION['storeid'];
-		$minamount	= $_POST['minamt'];
-		$idval		= $this->encrypt_decrypt(2,urldecode($_POST['vd']),0);
+		$this->checkAuthorized('admin');
+		$discount	= floatval($_POST['amount'] ?? 0);
+		$branch		= intval($_POST['branch'] ?? 0);
+		$storeid	= intval($_SESSION['storeid'] ?? 1);
+		$minamount	= floatval($_POST['minamt'] ?? 0);
+		$vd         = $_POST['vd'] ?? '';
+		$idval      = intval($this->encrypt_decrypt(2, urldecode($vd), 0));
 
-		$obj = new validation();
-		$obj->add_fields($discount, 'req',AMOUNT_CANNOT_BE_BLANK);
-		$obj->add_fields($minamount, 'req',MIN_AMOUNT_CANNOT_BE_BLANK);
-	
-		if(intval($discount) > intval($minamount))
-		{
+		if ($discount <= 0 && $minamount <= 0) {
+			echo AMOUNT_CANNOT_BE_BLANK;
+			return;
+		}
+
+		if ($discount > $minamount && $minamount > 0) {
 			echo DISCOUNT_GR8R_THN_MIN;
-			exit();
+			return;
 		}
 
-		if(!$error)
-		{
-			$query = "UPDATE discount SET amount='$discount',branchid='$branch',minamount='$minamount' WHERE id='$idval'";
-			$exe   = mysqli_query($this->MySQL,$query);
-			if($exe)
-				echo DISCOUNT_UPDATED_SUCCESSFULLY;
-
-			else
-				echo ERROR_IN_UPDATING_DISCOUNT;
-
-
-				
-
+		if ($idval > 0) {
+			$query = "UPDATE discount SET amount='$discount', branchid='$branch', minamount='$minamount' WHERE id='$idval' AND storeid='$storeid'";
+		} else {
+			$query = "UPDATE discount SET amount='$discount', minamount='$minamount' WHERE branchid='$branch' AND storeid='$storeid'";
 		}
-		else
-			echo $error;
 
+		$exe = mysqli_query($this->MySQL, $query);
+		if ($exe) {
+			echo DISCOUNT_UPDATED_SUCCESSFULLY;
+		} else {
+			echo ERROR_IN_UPDATING_DISCOUNT;
+		}
 	}
 
 
@@ -2389,96 +2379,111 @@ function storesUpdate()
         function updateSettings()
 	{
 		$this->checkAuthorized('admin');
-	    $setid	    = $_POST['nd'];
-            $name_ar        = trim($_REQUEST['name_ar'] ?? $_REQUEST['name'] ?? '');
-            $name_en        = $name_ar;
-            $tax_no         = $_REQUEST['tax_no'];
-            $smoking        = $_REQUEST['smoking'];     
-            $enableNegative        = $_REQUEST['enableNegative'];     
-            $address        = $_REQUEST['address'];
-            $phone          = $_REQUEST['phone'];
-            $email          = $_REQUEST['email'];
-            $activity       = $_REQUEST['activity'];
-            $logo           = $_REQUEST['logo'];
-            $site           = $_REQUEST['site'];
-            $storeid        = $_SESSION['storeid'];
+		$storeid   = intval($_SESSION['storeid'] ?? 1);
+		$name_ar   = trim($_REQUEST['name_ar'] ?? $_REQUEST['name'] ?? '');
+		$name_en   = $name_ar;
+		$tax_no    = trim($_REQUEST['tax_no'] ?? '');
+		$smoking   = isset($_REQUEST['smoking']) ? '1' : '0';
+		$enableNegative = isset($_REQUEST['enableNegative']) ? '1' : '0';
+		$address   = trim($_REQUEST['address'] ?? '');
+		$phone     = trim($_REQUEST['phone'] ?? '');
+		$email     = trim($_REQUEST['email'] ?? '');
+		$activity  = trim($_REQUEST['activity'] ?? '');
+		$logo      = trim($_REQUEST['logo'] ?? '');
+		$site      = trim($_REQUEST['site'] ?? '');
 
-            if($this->isExsist('main_settings','tax_no',$tax_no,'',0)>0)
-            {
-                    echo TAXNO_UNAVAILABLE;
-                    exit();
-            } 
-            if($this->isExsist('main_settings','phone',$phone,'',0)>0)
-            {
-                    echo PHONE_UNAVAILABLE;
-                    exit();
-            } 
-            if($this->isExsist('main_settings','email',$email,'',0)>0)
-            {
-                    echo 'EMAIL_UNAVAILABLE';
-                    exit();
-            } 
-            $query		= "SELECT * FROM main_settings WHERE storeid='$storeid' ";
-            $res	= mysqli_query($this->MySQL,$query);
-            $num	= mysqli_num_rows($res);
-            if($num)
-            $query ="UPDATE `main_settings`  SET 
-                    `name_en` ='$name_en' ,
-                    `name_ar` ='$name_ar' ,  
-                    `address` ='$address' , 
-                    `tax_no`  ='$tax_no' , 
-                    `phone`   ='$phone' , 
-                    `email`   ='$email', 
-                    `activity`='$activity',
-                    `logo`    ='$logo',
-                    `smoking` ='$smoking',     
-                    `enableNegative` ='$enableNegative',     
-                    `site`    ='$site'
-                    WHERE `storeid`='$storeid'";
-            else
-            $query  = "INSERT INTO main_settings 
-                    (  name_en ,  name_ar ,  address ,  tax_no ,  phone ,  email ,  activity ,  logo ,smoking,  site ,  storeid) 
-                    VALUES
-                    ('$name_en','$name_ar','$address','$tax_no','$phone','$email','$activity','$logo','$smoking','$site','$storeid')"; 
-            
-            $exe = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-                        if($exe) echo '1';
-                        else echo ERROR_IN_ADDING_ITEM;
-        }
-        function updateQSettings()
+		$currSetQ = "SELECT id FROM main_settings WHERE storeid='$storeid' LIMIT 1";
+		$currRes  = mysqli_query($this->MySQL, $currSetQ);
+		$currData = $currRes ? mysqli_fetch_assoc($currRes) : null;
+		$currId   = $currData ? intval($currData['id']) : 0;
+
+		if ($tax_no !== '') {
+			$checkTax = $currId > 0 
+				? "SELECT id FROM main_settings WHERE tax_no = '" . mysqli_real_escape_string($this->MySQL, $tax_no) . "' AND id != '$currId'"
+				: "SELECT id FROM main_settings WHERE tax_no = '" . mysqli_real_escape_string($this->MySQL, $tax_no) . "'";
+			$rTax = mysqli_query($this->MySQL, $checkTax);
+			if ($rTax && mysqli_num_rows($rTax) > 0) {
+				echo TAXNO_UNAVAILABLE;
+				exit();
+			}
+		}
+
+		$escNameAr  = mysqli_real_escape_string($this->MySQL, $name_ar);
+		$escNameEn  = mysqli_real_escape_string($this->MySQL, $name_en);
+		$escAddress = mysqli_real_escape_string($this->MySQL, $address);
+		$escTaxNo   = mysqli_real_escape_string($this->MySQL, $tax_no);
+		$escPhone   = mysqli_real_escape_string($this->MySQL, $phone);
+		$escEmail   = mysqli_real_escape_string($this->MySQL, $email);
+		$escAct     = mysqli_real_escape_string($this->MySQL, $activity);
+		$escLogo    = mysqli_real_escape_string($this->MySQL, $logo);
+		$escSite    = mysqli_real_escape_string($this->MySQL, $site);
+
+		if ($currId > 0) {
+			$query = "UPDATE `main_settings` SET 
+						`name_en` = '$escNameEn',
+						`name_ar` = '$escNameAr',
+						`address` = '$escAddress',
+						`tax_no`  = '$escTaxNo',
+						`phone`   = '$escPhone',
+						`email`   = '$escEmail',
+						`activity`= '$escAct',
+						`logo`    = '$escLogo',
+						`smoking` = '$smoking',
+						`enableNegative` = '$enableNegative',
+						`site`    = '$escSite'
+					  WHERE `storeid` = '$storeid'";
+		} else {
+			$query = "INSERT INTO main_settings 
+					  (name_en, name_ar, address, tax_no, phone, email, activity, logo, smoking, enableNegative, site, storeid) 
+					  VALUES
+					  ('$escNameEn', '$escNameAr', '$escAddress', '$escTaxNo', '$escPhone', '$escEmail', '$escAct', '$escLogo', '$smoking', '$enableNegative', '$escSite', '$storeid')";
+		}
+
+		$exe = mysqli_query($this->MySQL, $query);
+		if ($exe) {
+			echo '1';
+		} else {
+			echo ERROR_IN_ADDING_ITEM;
+		}
+	}
+
+	function updateQSettings()
 	{
 		$this->checkAuthorized('admin');
-	    //$setid	    = $_POST['nd'];
-            $barcode        = intval($_REQUEST['barcode']);
-            $unit           = intval($_REQUEST['unit']);
-            $disc           = intval($_REQUEST['disc']);
-            $img            = intval($_REQUEST['img']);
-            $vatV           = intval($_REQUEST['vatValue']);
-            $vatR           = intval($_REQUEST['vatRate']);
-            $storeid        = $_SESSION['storeid'];
+		$storeid = intval($_SESSION['storeid'] ?? 1);
+		$barcode = isset($_REQUEST['barcode']) ? 1 : 0;
+		$unit    = isset($_REQUEST['unit']) ? 1 : 0;
+		$disc    = isset($_REQUEST['disc']) ? 1 : 0;
+		$img     = isset($_REQUEST['img']) ? 1 : 0;
+		$vatV    = isset($_REQUEST['vatValue']) ? 1 : 0;
+		$vatR    = isset($_REQUEST['vatRate']) ? 1 : 0;
 
-            $query		= "SELECT * FROM quote_settings WHERE storeid='$storeid' ";
-            $res	= mysqli_query($this->MySQL,$query);
-            $num	= mysqli_num_rows($res);
-            if($num)
-            $query ="UPDATE `quote_settings`  SET 
-                    `barcode` ='$barcode' ,
-                    `unit` ='$unit' ,  
-                    `disc` ='$disc' , 
-                    `img`  ='$img' , 
-                    `vat_rate`   ='$vatR' , 
-                    `vat_value`   ='$vatV'
-                    WHERE `storeid`='$storeid'";
-            else
-            $query  = "INSERT INTO quote_settings 
-                    (  barcode ,  unit ,  disc ,  img ,  vat_rate ,  vat_value ,  storeid) 
-                    VALUES
-                    ('$barcode','$unit','$disc','$img','$vatR','$vatV' ,'$storeid')"; 
-            
-            $exe = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-                        if($exe) echo '1';
-                        else echo ERROR_IN_ADDING_ITEM;
-        }        
+		$query = "SELECT id FROM quote_settings WHERE storeid='$storeid' LIMIT 1";
+		$res   = mysqli_query($this->MySQL, $query);
+		$num   = ($res && mysqli_num_rows($res) > 0);
+		if ($num) {
+			$qSave = "UPDATE `quote_settings` SET 
+						`barcode`   = '$barcode',
+						`unit`      = '$unit',
+						`disc`      = '$disc',
+						`img`       = '$img',
+						`vat_rate`  = '$vatR',
+						`vat_value` = '$vatV'
+					  WHERE `storeid` = '$storeid'";
+		} else {
+			$qSave = "INSERT INTO quote_settings 
+					  (barcode, unit, disc, img, vat_rate, vat_value, storeid) 
+					  VALUES
+					  ('$barcode', '$unit', '$disc', '$img', '$vatR', '$vatV', '$storeid')";
+		}
+
+		$exe = mysqli_query($this->MySQL, $qSave);
+		if ($exe) {
+			echo '1';
+		} else {
+			echo ERROR_IN_ADDING_ITEM;
+		}
+	}        
         
         function getQtyOfItems()
         {
@@ -4272,11 +4277,12 @@ function addOpenPalance()
         }
         function fitch()
         {
-            $language 	= $_SESSION['lang'];
-            $pairent	= $_REQUEST['p'];
-            $sql = "SELECT * FROM `accounts` WHERE  `parent` = $pairent ";
+            $language 	= $_SESSION['lang'] ?? 'ar';
+            $pairent	= intval($_REQUEST['p'] ?? 0);
+            $output     = '';
+            $sql = "SELECT * FROM `accounts` WHERE `parent` = $pairent ORDER BY code ASC, id ASC";
             $query = mysqli_query($this->MySQL,$sql);
-            if (mysqli_num_rows($query) > 0) 
+            if ($query && mysqli_num_rows($query) > 0) 
             {
                  while ($row = mysqli_fetch_assoc($query)) 
                 {

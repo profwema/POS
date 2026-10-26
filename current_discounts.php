@@ -3,89 +3,89 @@ error_reporting(E_ALL);
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
+
+$language = $_SESSION['lang'] ?? 'ar';
+$storeid  = intval($_SESSION['storeid'] ?? 1);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-	<meta charset="utf-8">
-	<title>WAM Tech Soft</title>
-	<?php require_once("header.php");?>	
+    <meta charset="utf-8">
+    <title>WAM Tech Soft - خصومات الفروع</title>
+    <?php require_once("header.php"); ?>	
 </head>
-
 <body>
-		<?php require_once("header_top.php");?>
-	
-		<div class="container-fluid-full">
-		<div class="row-fluid">
-			<?php require_once("left_menu.php");?>
-			<div id="content" class="span10">
-			<div class="row-fluid sortable">
-				<div class="box span12">
-					<div class="box-header" data-original-title>
-						<h2><i class="halflings-icon money"></i><span class="break"></span><?=DISCOUNT?></h2>
-					</div>
-					<div class="box-content">
-						<p align="right">
-							<a class="btn btn-success" href="add_discount.php">
-								<i class="icon-plus"></i>
-							</a>
-						</p>
-						<table class="table table-striped table-bordered bootstrap-datatable datatable">
-						  	<thead>
-							  <tr>
-								  <th><?=BRANCH?></th>
-								  <th><?=DISCOUNT?></th>
-								  <th><?=MIN_AMOUNT?></th>
-								  <th><?=EDITING?></th>
-							  </tr>
-						  	</thead>   
-						  	<tbody>
-								<?php
-									$language 	= LANG;
-									$storeid	= $_SESSION['storeid'];
-									$query	 	= "SELECT * FROM discount  WHERE storeid='$storeid'";
-									$res 	 	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-									while($data 	= mysqli_fetch_assoc($res))
-									{
-										$query		= "SELECT * FROM branches WHERE id='$data[branchid]' AND storeid='$storeid'";
-										$resBranch	= mysqli_query($adController->MySQL,$query);
-										$dataBranch 	= mysqli_fetch_assoc($resBranch);
-										$branchName	= $dataBranch['name_'.$language];			
-										$idval		= urlencode($adController->encrypt_decrypt(1,$data['id'],0));
-				
-										$tableName	= urlencode($adController->encrypt_decrypt(1,'discount',0));
+    <?php require_once("header_top.php"); ?>
+    
+    <div class="container-fluid-full">
+        <div class="row-fluid">
+            <?php require_once("left_menu.php"); ?>
+            <div id="content" class="span10">
+                <div class="row-fluid">
+                    <div class="box span12">
+                        <div class="box-header" data-original-title>
+                            <h2>
+                                <i class="halflings-icon tags"></i>
+                                <span class="break"></span>
+                                سياسات الخصم للفروع
+                            </h2>
+                            <div class="box-icon">
+                                <a href="add_discount.php" class="btn-add">
+                                    <i class="halflings-icon plus"></i> <?=ADD_NEW ?? 'إضافة خصم جديد'?>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <table class="table table-striped table-bordered bootstrap-datatable datatable">
+                                <thead>
+                                    <tr>
+                                        <th><?=BRANCH ?? 'الفرع'?></th>
+                                        <th><?=DISCOUNT ?? 'قيمة الخصم'?></th>
+                                        <th><?=MIN_AMOUNT ?? 'الحد الأدنى للفاتورة'?></th>
+                                        <th><?=EDITING ?? 'الإجراءات'?></th>
+                                    </tr>
+                                </thead>   
+                                <tbody>
+                                    <?php
+                                    $query = "SELECT d.id, d.amount, d.minamount, b.name_ar, b.name_en
+                                              FROM discount d
+                                              LEFT JOIN branches b ON b.id = d.branchid AND b.storeid = '$storeid'
+                                              WHERE d.storeid = '$storeid'
+                                              ORDER BY d.id DESC";
+                                    $res = mysqli_query($adController->MySQL, $query);
+                                    if ($res) {
+                                        while ($data = mysqli_fetch_assoc($res)) {
+                                            $bName     = ($language == 'ar' ? $data['name_ar'] : $data['name_en']) ?: ($data['name_ar'] ?? 'كافة الفروع');
+                                            $idval     = urlencode($adController->encrypt_decrypt(1, $data['id'], 0));
+                                            $tableName = urlencode($adController->encrypt_decrypt(1, 'discount', 0));
 
-										echo "<tr>";
-											echo "<td>$branchName</td>";
-											echo "<td>$data[amount]</td>";
-											echo "<td>$data[minamount]</td>";
-											echo "<td class='center'>
-													<a class='btn btn-info' href='edit_discount.php?d=$idval'>
-														<i class='halflings-icon white edit'></i>  
-													</a>
-													<a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteData(\"$tableName\",\"$idval\",\"\");'>
-														<i class='halflings-icon white trash'></i> 
-													</a>
-												</td>";
-										echo "</tr>";
-									}
-								?>
-							</tbody>
-					  </table>            
-					</div>
-				</div>
-
-			</div>
-
-			
-
-		</div>
-		</div>
-		</div>
-		
-	
-	<div class="clearfix"></div>
-	
-	<?php require_once("footer.php");?>
+                                            echo "<tr>";
+                                            echo "<td><strong>" . htmlspecialchars($bName) . "</strong></td>";
+                                            echo "<td style='text-align:left; direction:ltr; font-weight:bold; color:#059669;'>" . number_format(floatval($data['amount']), 2) . "</td>";
+                                            echo "<td style='text-align:left; direction:ltr;'>" . number_format(floatval($data['minamount']), 2) . "</td>";
+                                            echo "<td class='center' style='white-space:nowrap;'>
+                                                    <a class='btn btn-info' title='تعديل' href='edit_discount.php?d=$idval'>
+                                                        <i class='halflings-icon white edit'></i>  
+                                                    </a>
+                                                    <a class='btn btn-danger' title='حذف' href='javascript:void(0)' onclick='javascript:deleteData(\"$tableName\",\"$idval\",\"\");'>
+                                                        <i class='halflings-icon white trash'></i> 
+                                                    </a>
+                                                  </td>";
+                                            echo "</tr>";
+                                        }
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="clearfix"></div>
+    
+    <?php require_once("footer.php"); ?>
 </body>
 </html>
