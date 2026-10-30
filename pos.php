@@ -30,7 +30,7 @@ $delcost  = floatval($data['amount'] ?? 0);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
     <meta charset="utf-8">
     <title>WAM Tech Soft</title>
@@ -160,6 +160,7 @@ $delcost  = floatval($data['amount'] ?? 0);
         <div class='error-red'></div>
 	<div class="pos-popup">
 	    <form  id="add-customer" autocomplete="off">
+		<?= csrf_input() ?>
 		
 		<input type="hidden" value="addCustomer" name="f">
 		
@@ -275,6 +276,7 @@ else
 
 
 <form class="form-horizontal" id="sales-form" method='POST'action="#" style="display: block;" autocomplete="off">
+        <?= csrf_input() ?>
                    
         <input type="hidden" value="addSale" name="f">	
         <input type="hidden" name="purchase_expiry" value='<?php echo date("Y-m-d")?>'>
@@ -288,7 +290,7 @@ else
         
         <div class="barcode-side">
 
-                            <input type="text" id="search-items"    placeholder="Search item by name or by barcode">
+                            <input type="text" id="search-items" placeholder="البحث بالاسم أو مسح الباركود (F2)...">
                             <input type="text" id="search-items22"  disabled="true">
 
         </div>
@@ -356,7 +358,7 @@ $(document).ready(function()
        delItem(id);
     });
     
-    $("#search-items").live("keypress", function(e) 
+    $(document).on("keypress", "#search-items", function(e) 
     {   
         var wight   = 1 ;          
         if (e.keyCode === 13) 

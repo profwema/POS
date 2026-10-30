@@ -40,6 +40,7 @@ $storeid	= $_SESSION['storeid'];
 					</div>
 					<div class="card-body-pro">
 						<form id="add-service">
+							<?= csrf_input() ?>
 							<input type="hidden" value="addService" name="f">
 							
 							<div class="mb-4">

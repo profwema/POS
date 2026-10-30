@@ -20,6 +20,14 @@
       </a>
     </div>
 
+    <!-- POS Direct Link -->
+    <div class="nav-item">
+      <a href="pos.php" class="nav-link" style="background: rgba(16, 185, 129, 0.1); border-right: 3px solid #10b981; font-weight: 600;">
+        <i class="fas fa-cash-register nav-icon text-success"></i>
+        <span class="nav-text">نقطة البيع السريعة (POS)</span>
+      </a>
+    </div>
+
     <!-- Section: البيانات الأساسية -->
     <div class="nav-section-title">البيانات الأساسية</div>
 
@@ -42,6 +50,10 @@
         <li><a href="items.php" class="nav-link">
             <i class="fas fa-cube nav-icon"></i>
             <span class="nav-text"><?= ITEMS ?></span>
+          </a></li>
+        <li><a href="services.php" class="nav-link">
+            <i class="fas fa-concierge-bell nav-icon"></i>
+            <span class="nav-text"><?= SERVICES ?></span>
           </a></li>
         <li><a href="customers.php" class="nav-link">
             <i class="fas fa-users nav-icon"></i>
@@ -67,9 +79,13 @@
             <i class="fas fa-briefcase nav-icon"></i>
             <span class="nav-text"><?= JOPTITLE ?></span>
           </a></li>
-        <li><a href="delivery_cost.php" class="nav-link">
+        <li><a href="delivery.php" class="nav-link">
             <i class="fas fa-shipping-fast nav-icon"></i>
             <span class="nav-text"><?= DELIVERY_COST ?></span>
+          </a></li>
+        <li><a href="current_discounts.php" class="nav-link">
+            <i class="fas fa-percent nav-icon"></i>
+            <span class="nav-text"><?= DISCOUNT ?></span>
           </a></li>
         <li><a href="shifts.php" class="nav-link">
             <i class="fas fa-clock nav-icon"></i>
@@ -101,6 +117,10 @@
             <i class="fas fa-undo nav-icon"></i>
             <span class="nav-text"><?= RETURNED_SALES ?></span>
           </a></li>
+        <li><a href="all_orders.php" class="nav-link">
+            <i class="fas fa-shopping-basket nav-icon"></i>
+            <span class="nav-text">سجل كافة الطلبات</span>
+          </a></li>
         <li><a href="saleInvoice-report.php" class="nav-link">
             <i class="fas fa-chart-line nav-icon"></i>
             <span class="nav-text"><?= INVOICE_REPORT ?></span>
@@ -108,6 +128,10 @@
         <li><a href="saleItem-report.php" class="nav-link">
             <i class="fas fa-chart-bar nav-icon"></i>
             <span class="nav-text"><?= ITEMS_REPORT ?></span>
+          </a></li>
+        <li><a href="detail-sales.php" class="nav-link">
+            <i class="fas fa-file-invoice-dollar nav-icon"></i>
+            <span class="nav-text">المبيعات التفصيلية</span>
           </a></li>
       </ul>
     </div>
@@ -171,6 +195,10 @@
             <i class="fas fa-truck-moving nav-icon"></i>
             <span class="nav-text"><?= STORE_TRANSFAIR ?></span>
           </a></li>
+        <li><a href="report-barcode.php" class="nav-link">
+            <i class="fas fa-barcode nav-icon"></i>
+            <span class="nav-text">طباعة الباركود</span>
+          </a></li>
       </ul>
     </div>
 
@@ -201,6 +229,10 @@
             <i class="fas fa-file-alt nav-icon"></i>
             <span class="nav-text"><?= ACCOUNT_STATEMENT ?></span>
           </a></li>
+        <li><a href="expenditure.php" class="nav-link">
+            <i class="fas fa-receipt nav-icon"></i>
+            <span class="nav-text"><?= EXPENDITURE ?></span>
+          </a></li>
       </ul>
     </div>
 
@@ -218,6 +250,10 @@
         <li><a href="settings.php" class="nav-link">
             <i class="fas fa-sliders-h nav-icon"></i>
             <span class="nav-text"><?= GENERALSET ?></span>
+          </a></li>
+        <li><a href="quote_settings.php" class="nav-link">
+            <i class="fas fa-file-invoice nav-icon"></i>
+            <span class="nav-text"><?= QUOTE_SETTINGS ?></span>
           </a></li>
         <li><a href="permissions.php" class="nav-link">
             <i class="fas fa-user-lock nav-icon"></i>

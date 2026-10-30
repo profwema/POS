@@ -22,7 +22,7 @@ class AdController
     var $MySQLupdate;
    	public function __construct()
 	{
-	       include ("db.conn.php");
+	       require(__DIR__ . "/db.conn.php");
 		$this->MySQL	    = $MySQL;
 		$this->MySQLupdate  = $mysqli_Handle;
 		
@@ -489,7 +489,7 @@ function getStates()
 		$allowedTables = [
 			'items', 'services', 'customers', 'suppliers', 'employees',
 			'branches', 'units', 'stores', 'categories', 'jobTitle',
-			'delivery_cost', 'shifts', 'discounts', 'expenditure', 'open_palance', 'quote_settings'
+			'delivery', 'delivery_cost', 'shifts', 'discounts', 'discount', 'expenditure', 'open_palance', 'quote_settings'
 		];
 
 		if (!in_array($table, $allowedTables, true)) {

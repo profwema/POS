@@ -2,13 +2,16 @@
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
-$language 	= $_SESSION['lang'];
-$storeid	= $_SESSION['storeid'];
+$language 	= $_SESSION['lang'] ?? 'ar';
+$storeid	= $_SESSION['storeid'] ?? 1;
 
-$service_id = isset($_REQUEST['sd']) ? mysqli_real_escape_string($adController->MySQL, $_REQUEST['sd']) : '';
+$raw_sd     = $_REQUEST['sd'] ?? '';
+$dec_sd     = $adController->encrypt_decrypt(2, urldecode($raw_sd), 0);
+$service_id = (!empty($dec_sd) && is_numeric($dec_sd)) ? intval($dec_sd) : (is_numeric($raw_sd) ? intval($raw_sd) : 0);
+
 $query      = "SELECT * FROM services WHERE storeid='$storeid' AND id='$service_id'";
 $res        = mysqli_query($adController->MySQL, $query);
-$data       = mysqli_fetch_assoc($res);
+$data       = $res ? mysqli_fetch_assoc($res) : null;
 $servName   = htmlspecialchars(!empty($data['name_ar']) ? $data['name_ar'] : ($data['name_en'] ?? ''));
 ?>
 <!DOCTYPE html>
@@ -46,8 +49,9 @@ $servName   = htmlspecialchars(!empty($data['name_ar']) ? $data['name_ar'] : ($d
 					</div>
 					<div class="card-body-pro">
 						<form id="add-service">
+							<?= csrf_input() ?>
 							<input type="hidden" value="updateService" name="f">
-							<input type="hidden" value="<?= htmlspecialchars($_REQUEST['sd'] ?? '') ?>" name="id">
+							<input type="hidden" value="<?= $service_id ?>" name="id">
 							
 							<div class="mb-4">
 								<div class="form-group-pro">

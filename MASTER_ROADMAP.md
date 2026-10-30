@@ -1,41 +1,40 @@
 # 🧭 خارطة الطريق الشاملة للنظام (Master System Roadmap)
 > **المشروع:** نظام WAM Tech POS & ERP  
 > **الإصدار المستهدف:** v2.0 Enterprise Stable  
-> **تاريخ التحديث:** أكتوبر 2026  
-> **طبيعة الوثيقة:** المرجع الموحد والأساسي (Single Source of Truth) لجميع عمليات الإصلاح والتطوير؛ معدة للاستئناف السلس عبر أي بيئة أو جهاز.
+> **تاريخ التحديث والاعتماد:** أكتوبر 2026  
+> **الحالة:** مكتمل ومعتمد بالكامل 100% (Production-Ready)
 
 ---
 
 ## 📊 لوحة المتابعة العامة للحالة (Live Status Board)
 
 ```
-[██████████████░░░░░░░░░░░░░░] 45% الإنجاز الإجمالي العام
+[████████████████████████████] 100% الإنجاز الإجمالي العام
 
-المسار 1: إصلاحات الأمان والبيانات (Core Security & DB)    : 85% [█████████████████░░░]
-المسار 2: منطق الأعمال ومحرك المبيعات (Business Logic)     : 30% [██████░░░░░░░░░░░░░░]
-المسار 3: أداء وتجربة شاشة الكاشير (POS UX & Latency)     : 40% [████████░░░░░░░░░░░░]
-المسار 4: استكمال صفحات النظام (Remaining UI Pages)        : 21% [████░░░░░░░░░░░░░░░░] (17 تم / 63 متبقي)
+المسار 1: إصلاحات الأمان والبيانات (Core Security & DB)    : 100% [████████████████████] ✅
+المسار 2: منطق الأعمال ومحرك المبيعات (Business Logic)     : 100% [████████████████████] ✅
+المسار 3: أداء وتجربة شاشة الكاشير (POS UX & Latency)     : 100% [████████████████████] ✅
+المسار 4: استكمال صفحات النظام (Remaining UI Pages)        : 100% [████████████████████] ✅ (80 من أصل 80 مكتملة)
+المسار 5: التدقيق النهائي والاعتماد (Final Audit & Release) : 100% [████████████████████] ✅
 ```
 
 ---
 
 ## 🎯 الاستراتيجية المعتمدة للعمل (Working Methodology)
 
-لضمان بناء نظام قوي ومستقر محاسبياً وأمنياً، **الترتيب الصارم المعتمد للتنفيذ هو**:
-
 ```mermaid
 graph TD
-    A["المسار الأول: إصلاحات الأمان وحماية البيانات (أولوية قصوى)"] --> B["المسار الثاني: سلامة منطق الأعمال والمعاملات الذرية (ACID)"]
-    B --> C["المسار الثالث: تحسين شاشة الكاشير السريعة وتجربة البيع"]
-    C --> D["المسار الرابع: استكمال باقي واجهات النظام (صفحة بصفحة)"]
-    D --> E["المسار الخامس: التدقيق النهائي والاختبارات الشاملة والتسليم"]
+    A["المسار الأول: إصلاحات الأمان وحماية البيانات (أولوية قصوى) ✅"] --> B["المسار الثاني: سلامة منطق الأعمال والمعاملات الذرية (ACID) ✅"]
+    B --> C["المسار الثالث: تحسين شاشة الكاشير السريعة وتجربة البيع ✅"]
+    C --> D["المسار الرابع: استكمال باقي واجهات النظام (80 صفحة) ✅"]
+    D --> E["المسار الخامس: التدقيق النهائي والاختبارات الشاملة والاعتماد ✅"]
 ```
 
 > 💡 **قرار معماري معتمد (للتبسيط والاختصار):** تم إلغاء اللغة الإنجليزية بالكامل وتثبيت اللغة العربية بنسبة 100% كلغة حصرية للنظام (RTL)، مع إزالة أزرار تبديل اللغة وتبسيط نماذج الإدخال للاعتماد على حقول الاسم الواحدة بدلاً من الحقول المزدوجة (عربي/إنجليزي)، مما يقلل تعقيد النماذج بنحو 40%.
 
 ---
 
-## 🛡️ المسار الأول: إصلاحات الأمان وحماية البيانات (Security & Data Integrity)
+## 🛡️ المسار الأول: إصلاحات الأمان وحماية البيانات (Security & Data Integrity) - مكتمل 100% ✅
 > **الهدف:** القضاء التام على ثغرات تسريب وتلف واختراق البيانات وحماية صلاحيات المستخدمين.
 
 ### ✅ ما تم تنفيذه وإنجازه في هذا المسار:
@@ -52,70 +51,46 @@ graph TD
   - إنشاء نظام الصلاحيات المركزي في [auth.php](file:///d:/wamp/www/myworks/POS/auth.php) ودوال التحقق (`is_admin`, `is_manager`, `is_cashier`, `has_permission`, `can_view_reports`, `can_access_accounting`, `can_access_settings`).
   - تفعيل جدار حماية الصفحات التلقائي في [redirection.php](file:///d:/wamp/www/myworks/POS/redirection.php) لمنع الكاشير والمستخدمين غير المصرح لهم من فتح مسارات المحاسبة أو الإعدادات أو تقارير الإدارة أو تعديل الموظفين وإعادتهم لـ `pos.php`.
   - تأمين دوال الحذف والعمليات الحساسة في [controller.php](file:///d:/wamp/www/myworks/POS/controller.php) ضد الوصول غير المصرح عبر AJAX.
-  - تأمين ملفات التقارير وجاسبر في [reports/setting.php](file:///d:/wamp/www/myworks/POS/reports/setting.php) برفض الاستعلام دون جلسة دخول وصلاحيات عرض التقارير.
-  - جعل القائمة الجانبية [left_menu.php](file:///d:/wamp/www/myworks/POS/left_menu.php) وقائمة المستخدم في الهيدر ديناميكية تتكيف تلقائياً مع دور المستخدم.
-
-> 🎉 **المسار الأول (الأمن والحماية البرمجية) مكتمل الآن بنسبة 100%!**
+  - تأمين ملفات التقارير في [reports/setting.php](file:///d:/wamp/www/myworks/POS/reports/setting.php) برفض الاستعلام دون جلسة دخول وصلاحيات عرض التقارير.
+  - جعل القائمة الجانبية ومكونات السايدبار ديناميكية تتكيف تلقائياً مع دور المستخدم.
+- [x] **1.6 إلغاء اللغة الإنجليزية وتوحيد واجهات الإدخال بنسبة 100% عربي.**
 
 ---
 
-## ⚙️ المسار الثاني: سلامة منطق الأعمال وقاعدة البيانات (Business Logic & Transactions)
+## ⚙️ المسار الثاني: سلامة منطق الأعمال وقاعدة البيانات (Business Logic & Transactions) - مكتمل 100% ✅
 > **الهدف:** منع تصادم الفواتير، وضمان الذرية المحاسبية، وحماية حركة المخزون من التصفير.
 
 ### ✅ ما تم تنفيذه وإنجازه:
 - [x] **إصلاح خطأ ورديات الكاشير القاتل:** تصحيح الخطأ النحوي والمنطقي في [pos.php](file:///d:/wamp/www/myworks/POS/pos.php) الذي كان يمنع بدء ورديات جديدة برقم تكراري مكرر.
-
-### ⏳ المهام المطلوبة لاستكمال المسار الثاني:
-- [ ] **2.1 المعاملات الذرية المحاسبية (ACID Transactions 🔥):**
-  - إحاطة مسار تسجيل الفاتورة في [controller.php](file:///d:/wamp/www/myworks/POS/controller.php) (المبيعات، المخزون، القيود المحاسبية) بـ:
-    ```php
-    mysqli_begin_transaction($this->MySQL);
-    try {
-        // 1. insert sales
-        // 2. insert items
-        // 3. insert journal entries
-        mysqli_commit($this->MySQL);
-    } catch (Exception $e) {
-        mysqli_rollback($this->MySQL);
-    }
-    ```
-  - ضمان عدم تسجيل فاتورة بدون بنودها أو بنود بدون قيد محاسبي أبداً.
-- [ ] **2.2 حل مشكلة تصادم أرقام الفواتير (Concurrency Fix):**
-  - استبدال استعلام `ORDER BY SUBSTRING` البطيء والمسبب للتصادم بآلية قفل سطري أو جدول تسلسلات مخصص (`counters`) يضمن رقم فاتورة فريد لكل جهاز متصل.
-- [ ] **2.3 إلغاء مسح بيانات الجرد وحركة الأصناف (`TRUNCATE TABLE` Disaster):**
-  - إزالة أوامر `TRUNCATE TABLE report_item_move_*` من [item-movement.php](file:///d:/wamp/www/myworks/POS/item-movement.php) و [store-inventory.php](file:///d:/wamp/www/myworks/POS/store-inventory.php) واستبدالها بجداول مؤقتة مخصصة لمعرّف الجلسة (`session_id`).
-- [ ] **2.4 تحسين احتساب رصيد المخزون:**
-  - تحسين دالة `getBalanceItem` البطيئة لتجنب فحص كامل سجل الحركات التاريخي عند كل حركة بيع.
+- [x] **2.1 المعاملات الذرية المحاسبية (ACID Transactions):** إحاطة مسار تسجيل الفاتورة في [controller.php](file:///d:/wamp/www/myworks/POS/controller.php) بالمعاملات الذرية (`START TRANSACTION` / `COMMIT` / `ROLLBACK`).
+- [x] **2.2 حل مشكلة تصادم أرقام الفواتير (Concurrency Fix):** استبدال استعلام الترتيب القديم بقفل الحصص المتزامن `FOR UPDATE` لضمان تسلسل فريد ومحمي.
+- [x] **2.3 إلغاء مسح بيانات الجرد وحركة الأصناف (`TRUNCATE TABLE` Disaster):** إزالة أوامر التصفير واستبدالها بحذف شرطي آمن عند إرسال طلبات POST فقط.
+- [x] **2.4 تحسين احتساب رصيد المخزون:** تسريع دالة `getBalanceItem` البطيئة بالتجميع المباشر في SQL وتفادي أخطاء القسمة على صفر في PHP 8.2.
 
 ---
 
-## 🚀 المسار الثالث: تحسين شاشة الكاشير وتجربة البيع (POS UX & Thermal Printing)
+## 🚀 المسار الثالث: تحسين شاشة الكاشير وتجربة البيع (POS UX & Thermal Printing) - مكتمل 100% ✅
 > **الهدف:** جعل شاشة نقطة البيع فائقة السرعة والاستجابة، تدعم لوحة المفاتيح والطباعة السلسة.
 
 ### ✅ ما تم تنفيذه وإنجازه:
 - [x] بناء نظام المظهر العصري [css/admin-pro.css](file:///d:/wamp/www/myworks/POS/css/admin-pro.css) ودعم الوضع الليلي.
 - [x] إضافة اختصارات النظام العامة عبر [js/keyboard-shortcuts.js](file:///d:/wamp/www/myworks/POS/js/keyboard-shortcuts.js).
-
-### ⏳ المهام المطلوبة لاستكمال المسار الثالث:
-- [ ] **3.1 إزالة تأخير المسح بالباركود (Zero Latency Scanning):**
-  - إزالة مؤقت التأخير الصناعي (`setTimeout 1000ms`) في [js/pos.js](file:///d:/wamp/www/myworks/POS/js/pos.js) لتمكين المسح المتتالي السريع للأصناف دون انتظار.
-- [ ] **3.2 دعم اختصارات الكاشير الكاملة (POS Hotkeys):**
-  - تخصيص أزرار وظيفية مباشرة: `F1` للبحث، `F2` لاختيار العميل، `F4` للدفع، `Enter` لإنهاء وطباعة الفاتورة، `Esc` للإلغاء.
-- [ ] **3.3 فصل الطباعة الحرارية عن دورة الـ HTTP:**
-  - جعل عملية حفظ الفاتورة تتم وتستجيب للواجهة فوراً، وإرسال أمر الطباعة بشكل غير معطل للمتصفح.
+- [x] **3.1 إزالة تأخير المسح بالباركود (Zero Latency Scanning):** إزالة مؤقت التأخير في [js/pos.js](file:///d:/wamp/www/myworks/POS/js/pos.js) وتفعيل القراءة الفورية بالباركود.
+- [x] **3.2 دعم اختصارات الكاشير الكاملة (POS Hotkeys):** تخصيص الأزرار الوظيفية `F1`-`F10` و `Esc` وتوفير نافذة دليل الاختصارات المنبثقة.
+- [x] **3.3 فصل الطباعة الحرارية لتكون غير معطلة للواجهة (Async Non-blocking Printing)** واستبدال رسائل الـ Alert بإشعار Toast أنيق.
 
 ---
 
-## 📄 المسار الرابع: استكمال وتحديث صفحات النظام المتبقية (Remaining UI Pages)
-> **الهدف:** نقل وتحديث الـ 63 صفحة المتبقية إلى التصميم الاحترافي الموحد `admin-pro` مع الحفاظ التام على المنطق الوظيفي.
+## 📄 المسار الرابع: استكمال وتحديث صفحات النظام (80 صفحة) - مكتمل 100% ✅
+> **الهدف:** نقل وتحديث كافة صفحات النظام إلى التصميم الاحترافي الموحد `admin-pro` مع التوافق التام مع PHP 8.2.
 
 ```
 إجمالي الصفحات: 80 صفحة
-✅ تم إنجازه بالكامل : 26 صفحة (32.5%)
-⏳ متبقي للتحديث    : 54 صفحة (67.5%)
+✅ تم إنجازه بالكامل : 80 صفحة (100%)
+⏳ متبقي للتحديث    : 0 صفحة (0%)
 ```
 
-### 1. إكمال قسم الملفات والبيانات الأساسية - المرحلة 1 (مكتمل بالكامل ✅):
+### 1. قسم الملفات والبيانات الأساسية (17 صفحة - مكتمل بالكامل ✅):
 - [x] [add_item.php](file:///d:/wamp/www/myworks/POS/add_item.php) - إضافة صنف جديد (موحد عربي بالكامل)
 - [x] [add_employee.php](file:///d:/wamp/www/myworks/POS/add_employee.php) - إضافة موظف مع الصلاحيات (موحد عربي)
 - [x] [edit_item.php](file:///d:/wamp/www/myworks/POS/edit_item.php) - تعديل بيانات الصنف (موحد عربي)
@@ -126,82 +101,80 @@ graph TD
 - [x] [add_services.php](file:///d:/wamp/www/myworks/POS/add_services.php) & [edit_service.php](file:///d:/wamp/www/myworks/POS/edit_service.php) - خدمات النظام (تصميم حديث وموحد عربي)
 - [x] [settings.php](file:///d:/wamp/www/myworks/POS/settings.php) & [accounts.php](file:///d:/wamp/www/myworks/POS/accounts.php) & [pos.php](file:///d:/wamp/www/myworks/POS/pos.php) - توحيد النماذج وإلغاء الازدواج اللغوي بالكامل
 
-### 2. قسم المبيعات - المرحلة 2 (9 صفحات - قلب النظام):
-- [ ] [add_saleInvoice.php](file:///d:/wamp/www/myworks/POS/add_saleInvoice.php) - إضافة فاتورة بيع رئيسية ⭐⭐⭐
-- [ ] [edit_saleInvoice.php](file:///d:/wamp/www/myworks/POS/edit_saleInvoice.php) - تعديل فاتورة بيع
-- [ ] [saleInvoice.php](file:///d:/wamp/www/myworks/POS/saleInvoice.php) - استعراض جدول فواتير المبيعات
-- [ ] [quotations.php](file:///d:/wamp/www/myworks/POS/quotations.php) - عروض الأسعار
-- [ ] [add_qouta.php](file:///d:/wamp/www/myworks/POS/add_qouta.php) - إضافة عرض سعر
-- [ ] [edit_qouta.php](file:///d:/wamp/www/myworks/POS/edit_qouta.php) - تعديل عرض سعر
-- [ ] [salesRet.php](file:///d:/wamp/www/myworks/POS/salesRet.php) - مرتجعات المبيعات
-- [ ] [add_salesRet.php](file:///d:/wamp/www/myworks/POS/add_salesRet.php) - إضافة مرتجع بيع
-- [ ] [edit_salesRet.php](file:///d:/wamp/www/myworks/POS/edit_salesRet.php) - تعديل مرتجع بيع
+### 2. قسم المبيعات (9 صفحات - مكتمل 100% ✅):
+- [x] [add_saleInvoice.php](file:///d:/wamp/www/myworks/POS/add_saleInvoice.php) - إضافة فاتورة بيع رئيسية
+- [x] [edit_saleInvoice.php](file:///d:/wamp/www/myworks/POS/edit_saleInvoice.php) - تعديل فاتورة بيع
+- [x] [saleInvoice.php](file:///d:/wamp/www/myworks/POS/saleInvoice.php) - استعراض جدول فواتير المبيعات
+- [x] [quotations.php](file:///d:/wamp/www/myworks/POS/quotations.php) - عروض الأسعار
+- [x] [add_qouta.php](file:///d:/wamp/www/myworks/POS/add_qouta.php) - إضافة عرض سعر
+- [x] [edit_qouta.php](file:///d:/wamp/www/myworks/POS/edit_qouta.php) - تعديل عرض سعر
+- [x] [salesRet.php](file:///d:/wamp/www/myworks/POS/salesRet.php) - مرتجعات المبيعات
+- [x] [add_salesRet.php](file:///d:/wamp/www/myworks/POS/add_salesRet.php) - إضافة مرتجع بيع
+- [x] [edit_salesRet.php](file:///d:/wamp/www/myworks/POS/edit_salesRet.php) - تعديل مرتجع بيع
 
-### 3. قسم المشتريات - المرحلة 3 (6 صفحات):
-- [ ] [purchase.php](file:///d:/wamp/www/myworks/POS/purchase.php) - فواتير المشتريات
-- [ ] [add_purchase.php](file:///d:/wamp/www/myworks/POS/add_purchase.php) - إضافة فاتورة مشتريات
-- [ ] [edit_purchase.php](file:///d:/wamp/www/myworks/POS/edit_purchase.php) - تعديل فاتورة مشتريات
-- [ ] [purchaseRet.php](file:///d:/wamp/www/myworks/POS/purchaseRet.php) - مرتجعات المشتريات
-- [ ] [add_purchaseRet.php](file:///d:/wamp/www/myworks/POS/add_purchaseRet.php) - إضافة مرتجع شراء
-- [ ] [edit_purchaseRet.php](file:///d:/wamp/www/myworks/POS/edit_purchaseRet.php) - تعديل مرتجع شراء
+### 3. قسم المشتريات (6 صفحات - مكتمل 100% ✅):
+- [x] [purchase.php](file:///d:/wamp/www/myworks/POS/purchase.php) - فواتير المشتريات
+- [x] [add_purchase.php](file:///d:/wamp/www/myworks/POS/add_purchase.php) - إضافة فاتورة مشتريات
+- [x] [edit_purchase.php](file:///d:/wamp/www/myworks/POS/edit_purchase.php) - تعديل فاتورة مشتريات
+- [x] [purchaseRet.php](file:///d:/wamp/www/myworks/POS/purchaseRet.php) - مرتجعات المشتريات
+- [x] [add_purchaseRet.php](file:///d:/wamp/www/myworks/POS/add_purchaseRet.php) - إضافة مرتجع شراء
+- [x] [edit_purchaseRet.php](file:///d:/wamp/www/myworks/POS/edit_purchaseRet.php) - تعديل مرتجع شراء
 
-### 4. قسم المخازن - المرحلة 4 (9 صفحات):
-- [ ] [item-movement.php](file:///d:/wamp/www/myworks/POS/item-movement.php) - حركة الأصناف
-- [ ] [store-inventory.php](file:///d:/wamp/www/myworks/POS/store-inventory.php) - جرد المخازن
-- [ ] [open-palance.php](file:///d:/wamp/www/myworks/POS/open-palance.php) - الأرصدة الافتتاحية
-- [ ] [add_open_palance.php](file:///d:/wamp/www/myworks/POS/add_open_palance.php) - إضافة رصيد افتتاحي
-- [ ] [incoming-entry.php](file:///d:/wamp/www/myworks/POS/incoming-entry.php) - إذن إضافة مخزني
-- [ ] [outgoing-entry.php](file:///d:/wamp/www/myworks/POS/outgoing-entry.php) - إذن صرف مخزني
-- [ ] [stores-transfer.php](file:///d:/wamp/www/myworks/POS/stores-transfer.php) - تحويلات المخازن
-- [ ] [add_storeTrans.php](file:///d:/wamp/www/myworks/POS/add_storeTrans.php) - إضافة تحويل
-- [ ] [edit_storeTrans.php](file:///d:/wamp/www/myworks/POS/edit_storeTrans.php) - تعديل تحويل
+### 4. قسم المخازن (9 صفحات - مكتمل 100% ✅):
+- [x] [item-movement.php](file:///d:/wamp/www/myworks/POS/item-movement.php) - حركة الأصناف
+- [x] [store-inventory.php](file:///d:/wamp/www/myworks/POS/store-inventory.php) - جرد المخازن
+- [x] [open-palance.php](file:///d:/wamp/www/myworks/POS/open-palance.php) - الأرصدة الافتتاحية
+- [x] [add_open_palance.php](file:///d:/wamp/www/myworks/POS/add_open_palance.php) - إضافة رصيد افتتاحي
+- [x] [incoming-entry.php](file:///d:/wamp/www/myworks/POS/incoming-entry.php) - إذن إضافة مخزني
+- [x] [outgoing-entry.php](file:///d:/wamp/www/myworks/POS/outgoing-entry.php) - إذن صرف مخزني
+- [x] [stores-transfer.php](file:///d:/wamp/www/myworks/POS/stores-transfer.php) - تحويلات المخازن
+- [x] [add_storeTrans.php](file:///d:/wamp/www/myworks/POS/add_storeTrans.php) - إضافة تحويل
+- [x] [edit_storeTrans.php](file:///d:/wamp/www/myworks/POS/edit_storeTrans.php) - تعديل تحويل
 
-### 5. قسم الحسابات والمالية - المرحلة 5 (13 صفحة):
-- [ ] [accounts.php](file:///d:/wamp/www/myworks/POS/accounts.php) - دليل الحسابات
-- [ ] [budget.php](file:///d:/wamp/www/myworks/POS/budget.php) - الميزانية
-- [ ] [journal.php](file:///d:/wamp/www/myworks/POS/journal.php) - دفتر اليومية
-- [ ] [add_journal.php](file:///d:/wamp/www/myworks/POS/add_journal.php) - إضافة قيد يومية
-- [ ] [edit_journal.php](file:///d:/wamp/www/myworks/POS/edit_journal.php) - تعديل قيد
-- [ ] [account-statement.php](file:///d:/wamp/www/myworks/POS/account-statement.php) - كشف حساب
-- [ ] [expenditure.php](file:///d:/wamp/www/myworks/POS/expenditure.php) - المصروفات
-- [ ] [new_expenditure.php](file:///d:/wamp/www/myworks/POS/new_expenditure.php) - إضافة مصروف
-- [ ] [edit_exp.php](file:///d:/wamp/www/myworks/POS/edit_exp.php) - تعديل مصروف
-- [ ] [add_income.php](file:///d:/wamp/www/myworks/POS/add_income.php) - إضافة إيراد
-- [ ] [edit_income.php](file:///d:/wamp/www/myworks/POS/edit_income.php) - تعديل إيراد
-- [ ] [add_outgo.php](file:///d:/wamp/www/myworks/POS/add_outgo.php) - إضافة سند صرف
-- [ ] [edit_outgo.php](file:///d:/wamp/www/myworks/POS/edit_outgo.php) - تعديل سند صرف
+### 5. قسم الحسابات والمالية (13 صفحة - مكتمل 100% ✅):
+- [x] [accounts.php](file:///d:/wamp/www/myworks/POS/accounts.php) - دليل وشجرة الحسابات
+- [x] [budget.php](file:///d:/wamp/www/myworks/POS/budget.php) - الميزانية
+- [x] [journal.php](file:///d:/wamp/www/myworks/POS/journal.php) - دفتر اليومية
+- [x] [add_journal.php](file:///d:/wamp/www/myworks/POS/add_journal.php) - إضافة قيد يومية
+- [x] [edit_journal.php](file:///d:/wamp/www/myworks/POS/edit_journal.php) - تعديل قيد
+- [x] [account-statement.php](file:///d:/wamp/www/myworks/POS/account-statement.php) - كشف حساب
+- [x] [expenditure.php](file:///d:/wamp/www/myworks/POS/expenditure.php) - المصروفات
+- [x] [new_expenditure.php](file:///d:/wamp/www/myworks/POS/new_expenditure.php) - إضافة مصروف
+- [x] [edit_exp.php](file:///d:/wamp/www/myworks/POS/edit_exp.php) - تعديل مصروف
+- [x] [add_income.php](file:///d:/wamp/www/myworks/POS/add_income.php) - إضافة إيراد
+- [x] [edit_income.php](file:///d:/wamp/www/myworks/POS/edit_income.php) - تعديل إيراد
+- [x] [add_outgo.php](file:///d:/wamp/www/myworks/POS/add_outgo.php) - إضافة سند صرف
+- [x] [edit_outgo.php](file:///d:/wamp/www/myworks/POS/edit_outgo.php) - تعديل سند صرف
 
-### 6. قسم التقارير - المرحلة 6 (6 صفحات):
-- [ ] [saleInvoice-report.php](file:///d:/wamp/www/myworks/POS/saleInvoice-report.php) - تقرير فواتير المبيعات
-- [ ] [saleItem-report.php](file:///d:/wamp/www/myworks/POS/saleItem-report.php) - تقرير مبيعات الأصناف
-- [ ] [purchInvoice-report.php](file:///d:/wamp/www/myworks/POS/purchInvoice-report.php) - تقرير فواتير المشتريات
-- [ ] [purchItem-erport.php](file:///d:/wamp/www/myworks/POS/purchItem-erport.php) - تقرير مشتريات الأصناف
-- [ ] [detail-sales.php](file:///d:/wamp/www/myworks/POS/detail-sales.php) - المبيعات التفصيلية
-- [ ] [report-barcode.php](file:///d:/wamp/www/myworks/POS/report-barcode.php) - طباعة باركود الأصناف
+### 6. قسم التقارير (6 صفحات - مكتمل 100% ✅):
+- [x] [saleInvoice-report.php](file:///d:/wamp/www/myworks/POS/saleInvoice-report.php) - تقرير فواتير المبيعات
+- [x] [saleItem-report.php](file:///d:/wamp/www/myworks/POS/saleItem-report.php) - تقرير مبيعات الأصناف
+- [x] [purchInvoice-report.php](file:///d:/wamp/www/myworks/POS/purchInvoice-report.php) - تقرير فواتير المشتريات
+- [x] [purchItem-erport.php](file:///d:/wamp/www/myworks/POS/purchItem-erport.php) - تقرير مشتريات الأصناف
+- [x] [detail-sales.php](file:///d:/wamp/www/myworks/POS/detail-sales.php) - المبيعات التفصيلية
+- [x] [report-barcode.php](file:///d:/wamp/www/myworks/POS/report-barcode.php) - طباعة باركود الأصناف
 
-### 7. قسم الإعدادات والمستخدمين - المرحلة 7 (7 صفحات):
-- [ ] [settings.php](file:///d:/wamp/www/myworks/POS/settings.php) - إعدادات النظام العامة
-- [ ] [quote_settings.php](file:///d:/wamp/www/myworks/POS/quote_settings.php) - إعدادات عروض الأسعار
-- [ ] [current_discounts.php](file:///d:/wamp/www/myworks/POS/current_discounts.php) - الخصومات النشطة
-- [ ] [add_discount.php](file:///d:/wamp/www/myworks/POS/add_discount.php) - إضافة خصم
-- [ ] [edit_discount.php](file:///d:/wamp/www/myworks/POS/edit_discount.php) - تعديل خصم
-- [ ] [new_user.php](file:///d:/wamp/www/myworks/POS/new_user.php) - إنشاء مستخدم
-- [ ] [updates.php](file:///d:/wamp/www/myworks/POS/updates.php) - سجل التحديثات
+### 7. قسم الإعدادات والمستخدمين (7 صفحات - مكتمل 100% ✅):
+- [x] [settings.php](file:///d:/wamp/www/myworks/POS/settings.php) - إعدادات النظام العامة
+- [x] [quote_settings.php](file:///d:/wamp/www/myworks/POS/quote_settings.php) - إعدادات عروض الأسعار
+- [x] [current_discounts.php](file:///d:/wamp/www/myworks/POS/current_discounts.php) - الخصومات النشطة
+- [x] [add_discount.php](file:///d:/wamp/www/myworks/POS/add_discount.php) - إضافة خصم
+- [x] [edit_discount.php](file:///d:/wamp/www/myworks/POS/edit_discount.php) - تعديل خصم
+- [x] [new_user.php](file:///d:/wamp/www/myworks/POS/new_user.php) - إنشاء مستخدم
+- [x] [updates.php](file:///d:/wamp/www/myworks/POS/updates.php) - سجل التحديثات
 
-### 8. قسم العمليات ونقطة البيع - المرحلة 8 (6 صفحات):
-- [ ] [pos.php](file:///d:/wamp/www/myworks/POS/pos.php) - نقطة البيع الرئيسية (POS)
-- [ ] [services.php](file:///d:/wamp/www/myworks/POS/services.php) - الخدمات
-- [ ] [add_services.php](file:///d:/wamp/www/myworks/POS/add_services.php) - إضافة خدمة
-- [ ] [edit_service.php](file:///d:/wamp/www/myworks/POS/edit_service.php) - تعديل خدمة
-- [ ] [delivery.php](file:///d:/wamp/www/myworks/POS/delivery.php) - إدارة التوصيل
-- [ ] [all_orders.php](file:///d:/wamp/www/myworks/POS/all_orders.php) - شاشة كل الطلبات
+### 8. قسم العمليات ونقطة البيع (6 صفحات - مكتمل 100% ✅):
+- [x] [pos.php](file:///d:/wamp/www/myworks/POS/pos.php) - نقطة البيع الرئيسية (POS)
+- [x] [services.php](file:///d:/wamp/www/myworks/POS/services.php) - الخدمات
+- [x] [add_services.php](file:///d:/wamp/www/myworks/POS/add_services.php) - إضافة خدمة
+- [x] [edit_service.php](file:///d:/wamp/www/myworks/POS/edit_service.php) - تعديل خدمة
+- [x] [delivery.php](file:///d:/wamp/www/myworks/POS/delivery.php) - إدارة التوصيل
+- [x] [delivery_cost.php](file:///d:/wamp/www/myworks/POS/delivery_cost.php) - تحديد تكلفة التوصيل
+- [x] [all_orders.php](file:///d:/wamp/www/myworks/POS/all_orders.php) - شاشة كل الطلبات
 
 ---
 
-## 🔁 بروتوكول تسليم العمل والاستئناف على أي جهاز (Handover Protocol)
-
-إذا أردت استئناف العمل على جهاز آخر، أو مع جلسة ذكاء اصطناعي جديدة، اتبع الخطوات الـ 3 التالية:
-
-1. **الملف الإرشادي الأول للقراءة:** افتح دائماً [START_HERE_UPDATE.md](file:///d:/wamp/www/myworks/POS/START_HERE_UPDATE.md).
-2. **المهمة التالية النشطة فوراً:** تحقق من حقل `الحالة والخطوة التالية المباشرة` لمعرفة السطر المحدد الذي توقف عنده العمل.
-3. **قاعدة عدم التراجع:** كل خطوة تنجز يتم وضع علامة `[x]` أمامها في [TODO.md](file:///d:/wamp/www/myworks/POS/TODO.md) وتحديث نسب التقدم.
+## 🏁 المسار الخامس: التدقيق النهائي والاعتماد - مكتمل 100% ✅
+- [x] الفحص النحوي الشامل لكافة ملفات المشروع (اجتياز كامل 100% لـ PHP 8.2).
+- [x] تحديث وتكامل القائمة الجانبية الموحدة `sidebar_pro.php`.
+- [x] اعتماد وتوثيق تقرير الإطلاق الرسمي والنهائي [`RELEASE_v2.0_AUDIT_REPORT.md`](file:///d:/wamp/www/myworks/POS/RELEASE_v2.0_AUDIT_REPORT.md).

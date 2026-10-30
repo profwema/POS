@@ -263,6 +263,8 @@ function check_page_access(string $pageName): bool {
         'purchitem-erport.php',
         'report-barcode.php',
         'store-inventory.php',
+        'all_orders.php',
+        'detail-sales.php',
     ];
     if (in_array($page, $reportPages, true)) {
         return can_view_reports();

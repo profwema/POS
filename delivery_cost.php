@@ -2,15 +2,16 @@
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
-$language 	= $_SESSION['lang'];
-$storeid	= $_SESSION['storeid'];
 
-$idval		= $adController->encrypt_decrypt(2, urldecode($_REQUEST['d']), 0);
+$language = $_SESSION['lang'] ?? 'ar';
+$storeid  = intval($_SESSION['storeid'] ?? 1);
 
-$query	 	= "SELECT * FROM delivery WHERE storeid='$storeid'";
-$res		= mysqli_query($adController->MySQL, $query);
-$dataDiscount	= mysqli_fetch_assoc($res);
-$discount	= $dataCat['amount'];
+$idval = isset($_REQUEST['d']) ? $adController->encrypt_decrypt(2, urldecode($_REQUEST['d']), 0) : '';
+
+$query = "SELECT * FROM delivery WHERE storeid='$storeid' LIMIT 1";
+$res   = mysqli_query($adController->MySQL, $query);
+$dataDiscount = $res ? mysqli_fetch_assoc($res) : null;
+$amountVal    = $dataDiscount['amount'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="light">
@@ -53,11 +54,11 @@ $discount	= $dataCat['amount'];
 						</div>
 						<span class="breadcrumb-separator">/</span>
 						<div class="breadcrumb-item">
-							<span><?= FILES ?></span>
+							<a href="delivery.php"><?= DELIVERY_COST ?></a>
 						</div>
 						<span class="breadcrumb-separator">/</span>
 						<div class="breadcrumb-item">
-							<span class="text-primary"><?= DELIVERY_COST ?></span>
+							<span class="text-primary">تحديث تكلفة التوصيل</span>
 						</div>
 					</div>
 				</div>
@@ -72,6 +73,7 @@ $discount	= $dataCat['amount'];
 					</div>
 					<div class="card-body-pro">
 						<form id="update-discount">
+							<?= csrf_input() ?>
 							<input type="hidden" value="discountAdd" name="f">
 
 							<div class="form-group-pro">
@@ -80,8 +82,8 @@ $discount	= $dataCat['amount'];
 									<?= DELIVERY_COST ?>
 									<span class="text-danger">*</span>
 								</label>
-								<input type="text" class="form-input-pro float-val" maxlength="4" name='amount' id='amount' value="<?= $dataDiscount['amount'] ?>" placeholder="أدخل تكلفة التوصيل">
-								<small class="text-muted">* حقل مطلوب</small>
+								<input type="text" class="form-input-pro float-val" maxlength="8" name='amount' id='amount' value="<?= htmlspecialchars((string)$amountVal) ?>" placeholder="أدخل تكلفة التوصيل" required>
+								<small class="text-muted">* المبلغ الافتراضي لتوصيل الطلبات للعملاء</small>
 							</div>
 
 							<div class="d-flex gap-2 mt-4">
@@ -89,10 +91,10 @@ $discount	= $dataCat['amount'];
 									<i class="fas fa-save me-1"></i>
 									<?= SAVE ?>
 								</button>
-								<button type="reset" class="btn-pro btn-pro-outline">
-									<i class="fas fa-times me-1"></i>
+								<a href="delivery.php" class="btn-pro btn-pro-outline">
+									<i class="fas fa-arrow-right me-1"></i>
 									<?= CANCEL ?>
-								</button>
+								</a>
 							</div>
 
 							<p class='error-red mt-3'>&nbsp;</p>

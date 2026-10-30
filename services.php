@@ -3,85 +3,131 @@ error_reporting(E_ALL);
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
+
+$language = $_SESSION['lang'] ?? 'ar';
+$storeid  = intval($_SESSION['storeid'] ?? 1);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl" data-theme="light">
+
 <head>
 	<meta charset="utf-8">
-	<title>WAM Tech Soft</title>
-	<?php require_once("header.php");?>	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>WAM Tech POS - <?= SERVICES ?></title>
+
+	<?php require_once("header.php"); ?>
+	<link href="css/admin-pro.css" rel="stylesheet">
 </head>
 
 <body>
-		<?php require_once("header_top.php");?>
-	
-		<div class="container-fluid-full">
-		<div class="row-fluid">
-			<?php require_once("left_menu.php");?>
-			<div id="content" class="span10">
-			<div>  <!--class="row-fluid sortable"-->
-				<div class="box span12">
-					<div class="box-header" data-original-title>
-						<h2><i class="halflings-icon edit"></i><span class="break"></span><?=SERVICES?></h2>
-					</div>
-					<div class="box-content">
-						<p align="right">
-                                                    <a class="btn btn-success" href="add_services.php">
-								<i class="icon-plus"></i>
-							</a>
-						</p>
-						<table class="table table-striped table-bordered bootstrap-datatable datatable">
-						  	<thead>
-							  <tr>
-								  <th><?=SERVICE_EN?></th>
-								  <th><?=SERVICE_AR?></th>
-								  <th><?=EDITING?></th>
-							  </tr>
-						  	</thead>   
-						  	<tbody>
-								<?php
-									$language 	= LANG;
-									$storeid	= $_SESSION['storeid'];
-									$query	 	= "SELECT * FROM services  WHERE storeid='$storeid'";
-									$res 	 	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-									while($data 	= mysqli_fetch_assoc($res))
-									{
-                                                                                $tableName = "services";
-                                                                                
-                                                                                $idval  = $data['id'];
-                                                                                $name   = $data['name_en'];
-                                                                                $name_ar= $data['name_ar'];
-                                                                                
-										echo "<tr>";
-											echo "<td>$name</td>";
-											echo "<td>$name_ar</td>";
-											echo "<td class='center'>
-													<a class='btn btn-info' href='edit_service.php?sd=$idval'>
-														<i class='halflings-icon white edit'></i>  
-													</a>
-													<a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteData(\"$tableName\",\"$idval\",\"$dirVal\");'>
-														<i class='halflings-icon white trash'></i> 
-													</a>
-												</td>";
-										echo "</tr>";
-									}
-								?>
-							</tbody>
-					  </table>            
+
+	<div class="admin-wrapper">
+
+		<!-- Professional Sidebar -->
+		<?php require_once("components/sidebar_pro.php"); ?>
+
+		<!-- Main Content Wrapper -->
+		<div style="flex: 1; display: flex; flex-direction: column;">
+
+			<!-- Professional Navbar -->
+			<?php require_once("components/header_pro.php"); ?>
+
+			<!-- Main Content -->
+			<main class="admin-content">
+
+				<!-- Page Header -->
+				<div class="page-header">
+					<h1 class="page-title">
+						<i class="fas fa-concierge-bell text-primary me-2"></i>
+						<?= SERVICES ?>
+					</h1>
+					<div class="page-breadcrumb">
+						<div class="breadcrumb-item">
+							<i class="fas fa-home"></i>
+							<span>الرئيسية</span>
+						</div>
+						<span class="breadcrumb-separator">/</span>
+						<div class="breadcrumb-item">
+							<span>نقطة البيع والعمليات</span>
+						</div>
+						<span class="breadcrumb-separator">/</span>
+						<div class="breadcrumb-item">
+							<span class="text-primary"><?= SERVICES ?></span>
+						</div>
 					</div>
 				</div>
 
-			</div>
+				<!-- Services Card -->
+				<div class="card-pro">
+					<div class="card-header-pro">
+						<div class="d-flex justify-content-between align-items-center w-100 flex-wrap gap-2">
+							<h2 class="card-title-pro">
+								<i class="fas fa-list me-1"></i>
+								قائمة الخدمات المسجلة
+							</h2>
+							<a class="btn-pro btn-pro-success" href="add_services.php">
+								<i class="fas fa-plus me-1"></i>
+								<?= ADD_SERVICE ?>
+							</a>
+						</div>
+					</div>
+					<div class="card-body-pro">
+						<div class="table-responsive">
+							<table class="table-pro datatable">
+								<thead>
+									<tr>
+										<th style="width: 80px;" class="text-center">#</th>
+										<th><i class="fas fa-concierge-bell me-1"></i><?= SERVICE ?></th>
+										<th class="text-center" style="width: 140px;"><i class="fas fa-cog me-1"></i><?= EDITING ?></th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php
+									$query = "SELECT * FROM services WHERE storeid = '$storeid' ORDER BY id DESC";
+									$res   = mysqli_query($adController->MySQL, $query);
 
-			
+									if ($res) {
+										while ($data = mysqli_fetch_assoc($res)) {
+											$idval       = urlencode($adController->encrypt_decrypt(1, $data['id'], 0));
+											$tableName   = urlencode($adController->encrypt_decrypt(1, 'services', 0));
+											$serviceName = !empty($data['name_ar']) ? $data['name_ar'] : ($data['name_en'] ?? '');
+
+											echo "<tr>";
+											echo "<td class='text-center'><strong>#" . intval($data['id']) . "</strong></td>";
+											echo "<td><strong>" . htmlspecialchars($serviceName) . "</strong></td>";
+											echo "<td class='text-center'>
+													<div class='d-flex gap-1 justify-content-center'>
+														<a class='btn-pro btn-pro-outline btn-pro-sm' href='edit_service.php?sd=$idval' title='" . EDIT . "'>
+															<i class='fas fa-edit'></i>
+														</a>
+														<button class='btn-pro btn-pro-danger btn-pro-sm' onclick='deleteData(\"$tableName\",\"$idval\",\"\");' title='" . DELETE . "'>
+															<i class='fas fa-trash'></i>
+														</button>
+													</div>
+												  </td>";
+											echo "</tr>";
+										}
+									}
+									?>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<!-- Professional Footer -->
+				<?php require_once("components/footer_pro.php"); ?>
+
+			</main>
 
 		</div>
-		</div>
-		</div>
-		
-	
-	<div class="clearfix"></div>
-	
-	<?php require_once("footer.php");?>
+
+	</div>
+
+	<!-- Scripts -->
+	<?php require_once("include.php"); ?>
+	<script src="js/admin-pro.js"></script>
+
 </body>
+
 </html>
