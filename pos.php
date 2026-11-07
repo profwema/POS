@@ -5,9 +5,6 @@ require_once("controller.php");
     
 $userId         = $_SESSION['userlogged'] ?? 0;
 
-
-
-
 $language 	= $_SESSION['lang'] ?? 'ar';
 $storeid	= $_SESSION['storeid'] ?? 0;
 $enableNegative	= $_SESSION['enableNegative'] ?? 0;        
@@ -26,68 +23,41 @@ $query	= "SELECT * FROM delivery  WHERE `storeid` = '$storeid'";
 $res 	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
 $data 	= mysqli_fetch_assoc($res);
 $delcost  = floatval($data['amount'] ?? 0);
-
 ?>
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
     <meta charset="utf-8">
-    <title>WAM Tech Soft</title>
+    <title>WAM Tech Soft - نقطة البيع</title>
     <?php require_once("script_php_variables.php");?>
 
-    
-    
-    
-    
-<!-- end: Mobile Specific -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/autocomplete.css">
+    <link rel="stylesheet" href="css/chosen1.css" />
+    <link rel="stylesheet" href="css/style-forms.css" />
+    <link href="css/custom.css" rel="stylesheet">
+    <script src="js/jquery-1.9.1.min.js"></script>
 
-<!-- start: CSS -->
-
-<link href="font-awesome/css/font-awesome.min.css" rel="stylesheet">
-
-<link rel="stylesheet" href="css/autocomplete.css">
-
-
-<!-- end: CSS -->
-<link rel="stylesheet" href="css/chosen1.css" />
-<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.4.2/chosen.css" />-->
-<link rel="stylesheet" href="css/style-forms.css" />
-<link href="css/custom.css" rel="stylesheet">
-<script src="js/jquery-1.9.1.min.js"></script>
-<!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
-<!--[if lt IE 9]>
-	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-	<link id="ie-style" href="css/ie.css" rel="stylesheet">
-<![endif]-->
-
-<!--[if IE 9]>
-	<link id="ie9style" href="css/ie9.css" rel="stylesheet">
-<![endif]-->
-	
-<!-- start: Favicon -->
-<link rel="shortcut icon" href="img/favicon.ico">  
-<link rel="stylesheet" href="css/pos.css" />
-<link rel="stylesheet" href="css/keyboard.css" />
-<!-- end: Favicon -->
-<script type="text/javascript">
-    var numAlready   = 0;
-    var branch = '<?=$branch?>';
-    //alert(branch);
-    var store = '<?=$store?>';
-    var currentLanguage = '<?=$language?>';
-    var $enableNegative = '<?=$enableNegative?>';   
-    var delcost = '<?=$delcost?>';    
-    <?php
-    if (!empty($_SESSION['result']) && $_SESSION['result'] !== 'SUCCESS')
-    {
-        ?>
-            alert('<?=$_SESSION['result']?>');
+    <link rel="shortcut icon" href="img/favicon.ico">  
+    <link rel="stylesheet" href="css/pos.css" />
+    <link rel="stylesheet" href="css/keyboard.css" />
+    <script type="text/javascript">
+        var numAlready   = 0;
+        var branch = '<?=$branch?>';
+        var store = '<?=$store?>';
+        var currentLanguage = '<?=$language?>';
+        var $enableNegative = '<?=$enableNegative?>';   
+        var delcost = '<?=$delcost?>';    
         <?php
-        unset($_SESSION['result']);
-    }
-    ?>
-</script>
+        if (!empty($_SESSION['result']) && $_SESSION['result'] !== 'SUCCESS')
+        {
+            ?>
+                alert('<?=$_SESSION['result']?>');
+            <?php
+            unset($_SESSION['result']);
+        }
+        ?>
+    </script>
 </head>
 
 <body>
@@ -112,7 +82,7 @@ $delcost  = floatval($data['amount'] ?? 0);
         <span onclick="togglePosShortcutsModal()" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F1</kbd> مساعدة</span>
         <span onclick="$('#search-items').focus().select();" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F2</kbd> باركود</span>
         <span onclick="posFastCashSubmit();" style="cursor:pointer; background:#047857; color:#fff; padding:3px 9px; border-radius:4px; font-weight:bold;"><kbd style="background:#065f46; color:#a7f3d0; padding:1px 5px; border-radius:3px; font-size:11px;">F4</kbd> كاش وحفظ</span>
-        <span onclick="$('#mada').focus().select();" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F7</kbd> شبكة / مدى</span>
+        <span onclick="$('#mada').focus().select();" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F7</kbd> كارت / ميزة (POS)</span>
         <span onclick="posNewSale();" style="cursor:pointer; background:#b91c1c; color:#fff; padding:3px 9px; border-radius:4px;"><kbd style="background:#7f1d1d; color:#fecaca; padding:1px 5px; border-radius:3px; font-size:11px;">F8</kbd> فاتورة جديدة</span>
         <span onclick="$('#customer').trigger('chosen:open');" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F9</kbd> العميل</span>
         <span onclick="addDeliverInf();" style="cursor:pointer; background:#1e293b; padding:3px 9px; border-radius:4px; border:1px solid #334155;"><kbd style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:11px;">F10</kbd> توصيل</span>
@@ -146,9 +116,7 @@ $delcost  = floatval($data['amount'] ?? 0);
 	</div>
     </div>  
     
-    
-    
-    <!--        to add customer fastly-->
+    <!-- to add customer fastly -->
     <div class='delivery-table-content' id="customer_inf"> 
 
         <div class="box-header" data-original-title>
@@ -159,9 +127,8 @@ $delcost  = floatval($data['amount'] ?? 0);
         </div>
         <div class='error-red'></div>
 	<div class="pos-popup">
-	    <form  id="add-customer" autocomplete="off">
+	    <form id="add-customer" autocomplete="off">
 		<?= csrf_input() ?>
-		
 		<input type="hidden" value="addCustomer" name="f">
 		
 		<div class="cont_group">
@@ -195,24 +162,22 @@ $delcost  = floatval($data['amount'] ?? 0);
 		    </div>
 		</div>
 		<div class ="buttons" >
-		    <button type="button"class="submit"  id='submit-customer' src='1' class="btn btn-primary"><?=SAVE?></button>
+		    <button type="button" class="submit" id='submit-customer' src='1' class="btn btn-primary"><?=SAVE?></button>
 		    <button type="reset" class="reset"><?=CANCEL?></button>
 		</div>
 	    </form>
 	</div>
 	    
     </div>  
-        <!--        to add deliver fastly-->
+    
+    <!-- to add deliver fastly -->
     <div class='delivery-table-content' id="deliver_inf">
-        
-                
         <div class="box-header" data-original-title>
             <h2><i class="halflings-icon edit"></i><span class="break"></span>
                     <?=DELIVER?> 
             </h2>	
             <a href="javascript:void(0)" class="close-button" onclick="closeTables()"> &#10006; </a>
         </div>
-        
         
         <div class="pos-popup">
             <div class="cont_group">
@@ -229,12 +194,11 @@ $delcost  = floatval($data['amount'] ?? 0);
             </div>  
 
 	    <div class ="buttons" >
-
                 <button type="button"  src='1' class="submit" onclick="closeTables()"><?=SAVE?></button>
             </div>     
         </div>  
     </div>     
-<!--    -->
+
 <?php
 $query = "SELECT id FROM `transactions` WHERE `user_id` = '$userId' AND status = '1' ";
 $res   = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL)); 
@@ -266,18 +230,15 @@ else
     $ress	= mysqli_query($adController->MySQL,$queryy) or die(mysqli_error($adController->MySQL));	
 ?>
 <script>
-        $("#new_trans").show();
-    </script>
+    $("#new_trans").show();
+</script>
         
 <?php
 }
 ?>
 
-
-
-<form class="form-horizontal" id="sales-form" method='POST'action="#" style="display: block;" autocomplete="off">
+    <form class="form-horizontal" id="sales-form" method='POST' action="#" style="display: block;" autocomplete="off">
         <?= csrf_input() ?>
-                   
         <input type="hidden" value="addSale" name="f">	
         <input type="hidden" name="purchase_expiry" value='<?php echo date("Y-m-d")?>'>
         <input type="hidden" name="branch" value='<?php echo $branch?>'>
@@ -288,49 +249,50 @@ else
             <?php require_once("data-type.php");?>
         </div> 
         
-        <div class="barcode-side">
-
-                            <input type="text" id="search-items" placeholder="البحث بالاسم أو مسح الباركود (F2)...">
-                            <input type="text" id="search-items22"  disabled="true">
-
+        <div class="barcode-side" style="display:flex; align-items:center; gap:6px;">
+            <input type="text" id="search-items" placeholder="البحث بالاسم أو مسح الباركود (F2)..." style="flex:1;">
+            <button type="button" onclick="openCameraScanner();" title="مسح بكاميرا الهاتف أو اللابتوب" class="btn btn-info" style="height:36px; padding:4px 10px; font-weight:bold; border-radius:4px; display:inline-flex; align-items:center; gap:5px;">
+                <i class="fa fa-camera"></i> <span>كاميرا</span>
+            </button>
+            <input type="text" id="search-items22" disabled="true" style="display:none;">
         </div>
 
         <div class="customer-side">        
-            <select name="customer"  data-rel="chosen" id = 'customer'>
+            <select name="customer" data-rel="chosen" id='customer'>
             </select>                 
-            <a href="javascript:void(0)"  onclick="addCustomerDialog()" title="<?=ADD_NEW ?> <?=CUSTOMERS?>"> <img src="img/addCust.png"class="addCus"> </a>  
+            <a href="javascript:void(0)" onclick="addCustomerDialog()" title="<?=ADD_NEW ?> <?=CUSTOMERS?>"> <img src="img/addCust.png" class="addCus"> </a>  
         </div>  
         <div class="pos-side">        
-            <a href="index.php" > 
+            <a href="index.php"> 
                 <img src="img/cashier.jpg">
-                <span > ادارة اليومية </span>
+                <span> إدارة اليومية </span>
             </a>                             
         </div>        
         <div class="home-side">        
-            <a href="index.php" > 
+            <a href="index.php"> 
                 <img src="img/pos1.png">
                 <span> خروج</span> 
             </a>                             
         </div>
-         <?php require_once("payment-div.php");?>
+        <?php require_once("payment-div.php");?>
 	
     </form>
+    
     <script src="js/pos.js"></script>
-    	<?php include ("include.php");?>
+    <?php include ("include.php");?>
+    
     <script type="text/javascript">
-
 $(document).ready(function()
 {
-     getCustomers();
+    getCustomers();
      
-   $("#dChange").click(function()
+    $("#dChange").click(function()
     {
         var changedDis = $("#d-rate").val();
-       // alert(changedDis);
         if (changedDis > 0)
         {  
             changedDis = parseFloat(changedDis);
-            var k =  $("#item-list-container tbody tr").length;
+            var k = $("#item-list-container tbody tr").length;
             for(var j = 0; j < k; j++)
             {
                 $("#item-discount-"+j).val(changedDis.toFixed(2));
@@ -348,23 +310,23 @@ $(document).ready(function()
     
     $(document).on("change", "input.item-price" , function()   
     {               
-       var id = $(this).attr('id').replace('item-price-','');
+        var id = $(this).attr('id').replace('item-price-','');
         totalParshase(id);
     });
     
     $(document).on("click", "div.del-item" , function()   
     {
-       var id = $(this).attr('id');   
-       delItem(id);
+        var id = $(this).attr('id');   
+        delItem(id);
     });
     
     $(document).on("keypress", "#search-items", function(e) 
     {   
-        var wight   = 1 ;          
+        var wight = 1;          
         if (e.keyCode === 13) 
         {             
             var searchVal = $.trim($("#search-items").val());
-            var search= '';
+            var search = '';
             if (searchVal.length === 13 && searchVal.substr(0, 2) === '99')
             {
                 search = searchVal.substr(2, 5);
@@ -389,22 +351,22 @@ $(document).ready(function()
                     }
                     else if(json.length == 1)
                     {
-                        var id    = json[0].id;
-                        
+                        var id = json[0].id;
                         $("#search-items").val('');
                         getThisItem(id,wight);
                         $("#search-items").focus();
                     }
                 }		
             });
-            return false; // prevent the button click from happening
+            return false;
         }
     });    
+    
     $("#search-items22").autocomplete
     ({
         source: "controller.php?f=search_items",
         minLength: 0,
-        auotoFocus:true,
+        auotoFocus: true,
         select: function(event, ui) 
         {
             $("#search-items").val('');
@@ -414,8 +376,8 @@ $(document).ready(function()
         open: function(event, ui) 
         {
             $(".ui-autocomplete").css("z-index", 1000);
-    },
-   }); 
+        },
+    }); 
    
     $(document).on('keyup',function(evt) {
         if (evt.keyCode == 27) {
@@ -423,68 +385,107 @@ $(document).ready(function()
         }
     });
 
-
-    
-    
     $("#customer").chosen().change(function() 
     {
-        var phone          = $('option:selected', this).attr('phone');
-        var address        = $('option:selected', this).attr('address');
+        var phone = $('option:selected', this).attr('phone');
+        var address = $('option:selected', this).attr('address');
         $("#delv_phone").val(phone);
         $("#delv_address").val(address);
     });
-    
- 
 
     $("#cash").change(function()
     {
-        var left = $("#all-total").val () - $("#cash").val () - $("#visa").val () - $("#mada").val ();
-        $("#left").val ( left.toFixed(2) ) ;
+        var left = $("#all-total").val() - $("#cash").val() - $("#visa").val() - $("#mada").val();
+        $("#left").val(left.toFixed(2));
     });        
     $("#visa").change(function()
     {
-        var left = $("#all-total").val () - $("#cash").val () - $("#visa").val () - $("#mada").val ();
-        $("#left").val ( left.toFixed(2) ) ;
+        var left = $("#all-total").val() - $("#cash").val() - $("#visa").val() - $("#mada").val();
+        $("#left").val(left.toFixed(2));
     });  
     $("#mada").change(function()
     {
-        var left = $("#all-total").val () - $("#cash").val () - $("#visa").val () - $("#mada").val ();
-        $("#left").val ( left.toFixed(2) ) ;
+        var left = $("#all-total").val() - $("#cash").val() - $("#visa").val() - $("#mada").val();
+        $("#left").val(left.toFixed(2));
     });        
         
     $("#cust-paid").change(function()
     {
-       var amt =  $("#all-total").val ()- $("#cust-paid").val()
-    $("#ret-amt").val ( amt.toFixed(2) )   ;
+        var amt = $("#all-total").val() - $("#cust-paid").val();
+        $("#ret-amt").val(amt.toFixed(2));
     });   
 
     $(document).on("click focus", "input" , function() 
     {
-       var element = $(this);
-       element.select();
-       lastElementFocused = element.attr('id');
-       lastElementFocused = '#'+lastElementFocused;
-       isItNew = 1;
+        var element = $(this);
+        element.select();
+        lastElementFocused = element.attr('id');
+        lastElementFocused = '#'+lastElementFocused;
+        isItNew = 1;
     });
     
-    
-    
-    
-    
-     for (var selector in config) 
+    for (var selector in config) 
     {
         $(selector).chosen(config[selector]);
     }   
 });        
-
-
-
-
-
-
-
-      
     </script>
 
+    <!-- Mobile / Web Camera Barcode & QR Scanner Modal -->
+    <div id="camera-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:999999; justify-content:center; align-items:center;">
+        <div style="background:#fff; border-radius:12px; width:460px; max-width:92%; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); direction:rtl; font-family:inherit;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">
+                <h4 style="margin:0; font-size:16px; color:#1e293b;"><i class="fa fa-camera text-primary"></i> مسح الباركود / QR بكاميرا الهاتف</h4>
+                <button type="button" onclick="closeCameraScanner()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#94a3b8;">&times;</button>
+            </div>
+            <p style="font-size:12px; color:#64748b; margin-bottom:10px;">وجه كاميرا الموبايل نحو باركود أو QR الصنف لإضافته فوراً للفاتورة:</p>
+            <div id="qr-reader" style="width:100%; border-radius:8px; overflow:hidden; background:#000;"></div>
+            <div style="text-align:center; margin-top:14px;">
+                <button type="button" onclick="closeCameraScanner()" class="btn btn-secondary" style="padding:6px 20px;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script>
+    var html5QrCode = null;
+    function openCameraScanner() {
+        $("#camera-modal").css("display", "flex").hide().fadeIn(150);
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("qr-reader");
+        }
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 160 } },
+            function(decodedText, decodedResult) {
+                closeCameraScanner();
+                handleScannedBarcode(decodedText);
+            },
+            function(errorMessage) {}
+        ).catch(err => {
+            alert("يرجى السماح بصلاحية الكاميرا في المتصفح لاستخدام الماسح:\n" + err);
+            closeCameraScanner();
+        });
+    }
+
+    function closeCameraScanner() {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                $("#camera-modal").fadeOut(150);
+            }).catch(err => {
+                $("#camera-modal").fadeOut(150);
+            });
+        } else {
+            $("#camera-modal").fadeOut(150);
+        }
+    }
+
+    function handleScannedBarcode(code) {
+        if (!code) return;
+        $("#search-items").val($.trim(code));
+        var e = $.Event("keypress", { keyCode: 13 });
+        $("#search-items").trigger(e);
+    }
+    </script>
 </body>
 </html>

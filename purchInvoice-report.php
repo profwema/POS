@@ -1,492 +1,607 @@
 <?php
-error_reporting(E_ALL);
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
 
-$storeid  = intval($_SESSION['storeid'] ?? 1);
-$language = $_SESSION['lang'] ?? 'ar';
+$storeid  = (int)($_SESSION['storeid'] ?? 1);
+$language = defined('LANG') ? LANG : ($_SESSION['lang'] ?? 'ar');
+$currency = defined('CURRENCY_NAME') ? CURRENCY_NAME : 'ج.م';
+$pgName   = basename(__FILE__);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['Submit'])) {
-    mysqli_query($adController->MySQL, "DELETE FROM report_purchinvoice");
-    mysqli_query($adController->MySQL, "DELETE FROM report_purchinvoice_all");
+// Filters
+$selectedSupplier = (int)($_REQUEST['supplier'] ?? 0);
+$selectedBranch   = (int)($_REQUEST['branch'] ?? 0);
+$fr_date          = trim($_REQUEST['fr_date'] ?? date('Y-m-01'));
+$to_date          = trim($_REQUEST['to_date'] ?? date('Y-m-d'));
+
+$grossTotal   = 0.0;
+$discTotal    = 0.0;
+$vatTotal     = 0.0;
+$purchTotal   = 0.0;
+$paidTotal    = 0.0;
+$leftTotal    = 0.0;
+$rePurchTotal = 0.0;
+$rePurchCount = 0;
+$purchCount   = 0;
+
+$conditionPurch = "";
+$conditionRet   = "";
+
+if ($selectedSupplier > 0) {
+    $conditionPurch .= " AND p.supplier = '$selectedSupplier'";
+    $conditionRet   .= " AND pr.supplier = '$selectedSupplier'";
+    $qSupp = "SELECT name_ar, name_en FROM suppliers WHERE id='$selectedSupplier' AND storeid='$storeid' LIMIT 1";
+    $rSupp = mysqli_query($adController->MySQL, $qSupp);
+    $dSupp = mysqli_fetch_assoc($rSupp);
+    $suppName = ($language == 'ar' ? ($dSupp['name_ar'] ?? '') : ($dSupp['name_en'] ?? '')) ?: ($dSupp['name_ar'] ?? 'الكل');
+} else {
+    $suppName = 'الكل';
 }
 
-$pgName           = basename($_SERVER['PHP_SELF']);
-$selectedSupplier = intval($_REQUEST['supplier'] ?? 0);
-$selectedBranch   = intval($_REQUEST['branch'] ?? 0);
-$fr_date          = $_POST['fr_date'] ?? '';
-$to_date          = $_POST['to_date'] ?? '';
+if ($selectedBranch > 0) {
+    $conditionPurch .= " AND p.branch = '$selectedBranch'";
+    $conditionRet   .= " AND pr.branch = '$selectedBranch'";
+    $qBr = "SELECT name_ar, name_en FROM branches WHERE id='$selectedBranch' AND storeid='$storeid' LIMIT 1";
+    $rBr = mysqli_query($adController->MySQL, $qBr);
+    $dBr = mysqli_fetch_assoc($rBr);
+    $branchName = ($language == 'ar' ? ($dBr['name_ar'] ?? '') : ($dBr['name_en'] ?? '')) ?: ($dBr['name_ar'] ?? 'الكل');
+} else {
+    $branchName = 'الكل';
+}
+
+if (!empty($fr_date)) {
+    $safeFDate = mysqli_real_escape_string($adController->MySQL, $fr_date);
+    $conditionPurch .= " AND p.purchase_date >= '$safeFDate 00:00:00'";
+    $conditionRet   .= " AND pr.purchase_date >= '$safeFDate 00:00:00'";
+}
+if (!empty($to_date)) {
+    $safeTDate = mysqli_real_escape_string($adController->MySQL, $to_date);
+    $conditionPurch .= " AND p.purchase_date <= '$safeTDate 23:59:59'";
+    $conditionRet   .= " AND pr.purchase_date <= '$safeTDate 23:59:59'";
+}
+
+// Fetch Purchases
+$purchList = [];
+$queryPurch = "SELECT p.*, s.name_ar AS supp_name_ar, s.name_en AS supp_name_en, b.name_ar AS branch_name_ar, b.name_en AS branch_name_en
+               FROM purchase p
+               LEFT JOIN suppliers s ON s.id = p.supplier AND (s.storeid = '$storeid' OR s.storeid = '0')
+               LEFT JOIN branches b ON b.id = p.branch AND (b.storeid = '$storeid' OR b.storeid = '0')
+               WHERE p.storeid = '$storeid' AND p.state = '1' $conditionPurch
+               ORDER BY p.id DESC";
+$resPurch = mysqli_query($adController->MySQL, $queryPurch);
+if ($resPurch) {
+    while ($row = mysqli_fetch_assoc($resPurch)) {
+        $purchList[] = $row;
+        $purchCount++;
+        $gross     = round((float)($row['gross_total'] ?? 0), 2);
+        $dis_added = round((float)($row['dis_added'] ?? 0), 2);
+        $vat_all   = round((float)($row['vat_all'] ?? 0), 2);
+        $all_total = round((float)($row['all_total'] ?? 0), 2);
+        $isCash    = ((int)($row['paymentType'] ?? 0) === 1);
+        $paid      = $isCash ? $all_total : round((float)($row['paid'] ?? 0), 2);
+        $left      = round((float)($row['left'] ?? ($all_total - $paid)), 2);
+
+        $grossTotal += $gross;
+        $discTotal  += $dis_added;
+        $vatTotal   += $vat_all;
+        $purchTotal += $all_total;
+        $paidTotal  += $paid;
+        $leftTotal  += $left;
+    }
+}
+
+// Fetch Returned Purchases
+$retList = [];
+$queryRet = "SELECT pr.*, s.name_ar AS supp_name_ar, s.name_en AS supp_name_en, b.name_ar AS branch_name_ar, b.name_en AS branch_name_en
+             FROM purchaseRet pr
+             LEFT JOIN suppliers s ON s.id = pr.supplier AND (s.storeid = '$storeid' OR s.storeid = '0')
+             LEFT JOIN branches b ON b.id = pr.branch AND (b.storeid = '$storeid' OR b.storeid = '0')
+             WHERE pr.storeid = '$storeid' AND pr.state = '1' $conditionRet
+             ORDER BY pr.id DESC";
+$resRet = mysqli_query($adController->MySQL, $queryRet);
+if ($resRet) {
+    while ($rowRet = mysqli_fetch_assoc($resRet)) {
+        $retList[] = $rowRet;
+        $rePurchCount++;
+        $all_total = round((float)($rowRet['all_total'] ?? 0), 2);
+        $rePurchTotal += $all_total;
+    }
+}
+
+$netPurchTotal = $purchTotal - $rePurchTotal;
+
+// Refresh PDF report temp cache
+mysqli_query($adController->MySQL, "DELETE FROM report_purchinvoice");
+mysqli_query($adController->MySQL, "DELETE FROM report_purchinvoice_all");
+
+foreach ($purchList as $row) {
+    $invNo    = mysqli_real_escape_string($adController->MySQL, $row['invoicenumber'] ?? '');
+    $invDate  = mysqli_real_escape_string($adController->MySQL, $row['purchase_date'] ?? '');
+    $suppTxt  = ($language == 'ar' ? ($row['supp_name_ar'] ?? '') : ($row['supp_name_en'] ?? '')) ?: ($row['supp_name_ar'] ?? '-----');
+    $safeSupp = mysqli_real_escape_string($adController->MySQL, $suppTxt);
+    $gross    = (float)($row['gross_total'] ?? 0);
+    $dis_add  = (float)($row['dis_added'] ?? 0);
+    $vat_all  = (float)($row['vat_all'] ?? 0);
+    $all_tot  = (float)($row['all_total'] ?? 0);
+    $isCash   = ((int)($row['paymentType'] ?? 0) === 1);
+    $paid     = $isCash ? $all_tot : (float)($row['paid'] ?? 0);
+    $left     = (float)($row['left'] ?? ($all_tot - $paid));
+
+    $qIns = "INSERT INTO `report_purchinvoice` 
+            (`invoice_date`, `invoicenumber`, `supplier`, `gross_total`, `dis_added`, `vat_all`, `all_total`, `paid`, `left`, `cost`, `profit`) 
+            VALUES ('$invDate', '$invNo', '$safeSupp', '$gross', '$dis_add', '$vat_all', '$all_tot', '$paid', '$left', '', '')";
+    mysqli_query($adController->MySQL, $qIns);
+}
+
+$safeFdate    = mysqli_real_escape_string($adController->MySQL, $fr_date);
+$safeTdate    = mysqli_real_escape_string($adController->MySQL, $to_date);
+$safeBranch   = mysqli_real_escape_string($adController->MySQL, $branchName);
+$safeSuppName = mysqli_real_escape_string($adController->MySQL, $suppName);
+$allGrossFmt  = flout_format($grossTotal);
+$allDiscFmt   = flout_format($discTotal);
+$allVatFmt    = flout_format($vatTotal);
+$allPurchFmt  = flout_format($purchTotal);
+$allRePurchF  = flout_format($rePurchTotal);
+$netFmt       = flout_format($netPurchTotal);
+$allPaidFmt   = flout_format($paidTotal);
+$allLeftFmt   = flout_format($leftTotal);
+
+$qSummary = "INSERT INTO `report_purchinvoice_all` 
+             (`from`, `to`, `branch`, `supplier`, `grossTotal`, `discTotal`, `vatTotal`, `purchTotal`, `rePurchTotal`, `netTotal`, `payTotal`, `leftTotal`) 
+             VALUES ('$safeFdate', '$safeTdate', '$safeBranch', '$safeSuppName', '$allGrossFmt', '$allDiscFmt', '$allVatFmt', '$allPurchFmt', '$allRePurchF', '$netFmt', '$allPaidFmt', '$allLeftFmt')";
+mysqli_query($adController->MySQL, $qSummary);
 ?>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
     <meta charset="utf-8">
-    <title>WAM Tech Soft - <?=INVOICE_REPORT?></title>
-    <?php require_once("header.php"); ?>	
-    <link href="css/bootstrap-datetimepicker.css" rel="stylesheet" media="screen">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>تقرير فواتير المشتريات - ERP WAM Tech</title>
+    <?php require_once("header.php"); ?>
+    <link href="css/admin-pro.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <style>
-        .datetime {
-            width: 85%;
-            border: 1px solid #10b981 !important;
-            padding: 6px 10px;
-            border-radius: 4px;
-        }
-        .titles {
-            background: #2d3748;
-            color: #fff;
-            padding: 8px 15px;
-            font-weight: bold;
-            font-size: 15px;
-            border-radius: 4px;
-            margin: 15px 0 10px 0;
-        }
-        .totalAll {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .totalAll .counts {
-            flex: 1;
-            min-width: 260px;
+        .filter-card {
             background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #eef2f6;
+            padding: 20px;
+            margin-bottom: 24px;
         }
-        .totalAll table {
-            width: 100%;
-            border-collapse: collapse;
+        .stat-card-clean {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid #eef2f6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
         }
-        .totalAll table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #edf2f7;
+        .stat-card-clean:hover {
+            transform: translateY(-2px);
+        }
+        .stat-card-clean .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .stat-card-clean .stat-label {
             font-size: 13px;
+            color: #64748b;
+            margin-bottom: 4px;
         }
-        .totalAll table td.title {
-            background: #edf2f7;
-            font-weight: bold;
-            color: #2d3748;
-            border-bottom: 2px solid #cbd5e0;
+        .stat-card-clean .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
         }
-        .totalAll table td.head {
-            color: #4a5568;
-            font-weight: 600;
+        .table-pro-wrap {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #eef2f6;
+            padding: 20px;
+            margin-bottom: 24px;
         }
-        .totalAll table td.value {
-            text-align: left;
-            font-weight: bold;
-            color: #1a202c;
-            direction: ltr;
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .br {
-            border: none;
-            border-top: 1px solid #e2e8f0;
-            margin: 20px 0;
+        @media print {
+            .admin-sidebar, .admin-navbar, .filter-card, .btn-no-print {
+                display: none !important;
+            }
+            .admin-content {
+                padding: 0 !important;
+            }
         }
     </style>
 </head>
 <body>
-    <?php require_once("header_top.php"); ?>
-    <div class="container-fluid-full">
-        <div class="row-fluid">
-            <?php require_once("left_menu.php"); ?>
-            <div id="content" class="span10">
-                <div>
-                    <div class="box span12">
-                        <div class="box-header" data-original-title>
-                            <h2>
-                                <i class="halflings-icon edit"></i>
-                                <span class="break"></span>
-                                <a href="purchase.php"><?=PURCHASES?></a> &gt;&gt; <?=INVOICE_REPORT?>
-                            </h2>
-                            <div class="box-icon">
-                                <a href="#" class="btn-minimize"><i class="halflings-icon chevron-up"></i></a>
+    <div class="admin-wrapper">
+        <?php require_once("components/sidebar_pro.php"); ?>
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <?php require_once("components/header_pro.php"); ?>
+            <main class="admin-content">
+                
+                <!-- Page Breadcrumbs & Actions -->
+                <div class="page-header d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="page-title fs-4 fw-bold mb-1">
+                            <i class="fas fa-file-invoice-dollar text-primary me-2"></i>
+                            تقرير فواتير المشتريات الشامل
+                        </h1>
+                        <div class="page-breadcrumb text-muted fs-7">
+                            <a href="index.php" class="text-decoration-none text-muted"><i class="fas fa-home"></i> الرئيسية</a>
+                            <span class="mx-2">/</span>
+                            <a href="purchase.php" class="text-decoration-none text-muted">المشتريات</a>
+                            <span class="mx-2">/</span>
+                            <span class="text-primary fw-semibold">تقرير الفواتير</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 btn-no-print">
+                        <a href="reports/purchInvoiceReport.php" target="_blank" class="btn btn-outline-danger">
+                            <i class="fas fa-file-pdf me-1"></i> طباعة PDF
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-secondary">
+                            <i class="fas fa-print me-1"></i> طباعة فورية
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter Card -->
+                <div class="filter-card btn-no-print">
+                    <form method="GET" action="<?=htmlspecialchars($pgName)?>" class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold fs-7 text-secondary">المورد</label>
+                            <select name="supplier" class="form-select select2-supplier">
+                                <option value="">-- كافة الموردين --</option>
+                                <?php
+                                $qS = "SELECT id, name_ar, name_en FROM suppliers WHERE storeid='$storeid' ORDER BY name_ar ASC";
+                                $rS = mysqli_query($adController->MySQL, $qS);
+                                if ($rS) {
+                                    while ($s = mysqli_fetch_assoc($rS)) {
+                                        $sName = ($language == 'ar' ? $s['name_ar'] : $s['name_en']) ?: $s['name_ar'];
+                                        $sel = ($selectedSupplier == $s['id']) ? 'selected' : '';
+                                        echo "<option value='{$s['id']}' $sel>" . htmlspecialchars($sName) . "</option>";
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold fs-7 text-secondary">الفرع</label>
+                            <select name="branch" class="form-select">
+                                <option value="">-- كافة الفروع --</option>
+                                <?php
+                                $qB = "SELECT id, name_ar, name_en FROM branches WHERE storeid='$storeid' ORDER BY name_ar ASC";
+                                $rB = mysqli_query($adController->MySQL, $qB);
+                                if ($rB) {
+                                    while ($b = mysqli_fetch_assoc($rB)) {
+                                        $bName = ($language == 'ar' ? $b['name_ar'] : $b['name_en']) ?: $b['name_ar'];
+                                        $sel = ($selectedBranch == $b['id']) ? 'selected' : '';
+                                        echo "<option value='{$b['id']}' $sel>" . htmlspecialchars($bName) . "</option>";
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold fs-7 text-secondary">من تاريخ</label>
+                            <input type="date" name="fr_date" class="form-control" value="<?=htmlspecialchars($fr_date)?>">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold fs-7 text-secondary">إلى تاريخ</label>
+                            <input type="date" name="to_date" class="form-control" value="<?=htmlspecialchars($to_date)?>">
+                        </div>
+                        <div class="col-md-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-1"></i> تصفية
+                            </button>
+                            <a href="<?=htmlspecialchars($pgName)?>" class="btn btn-light" title="إعادة ضبط">
+                                <i class="fas fa-sync-alt"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- KPI / Totals Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="stat-card-clean">
+                            <div>
+                                <div class="stat-label">إجمالي المشتريات (الفواتير)</div>
+                                <div class="stat-value text-primary"><?=flout_format($purchTotal)?> <span class="fs-7 fw-normal text-muted"><?=$currency?></span></div>
+                                <div class="fs-8 text-muted mt-1"><?=$purchCount?> فاتورة توريد</div>
+                            </div>
+                            <div class="stat-icon bg-primary-subtle text-primary">
+                                <i class="fas fa-shopping-cart"></i>
                             </div>
                         </div>
-                        <div class="box-content">
-                            <form class="form-horizontal" autocomplete="off" action="<?=$pgName?>" id='form' method="POST">
-                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
-                                <fieldset>
-                                    <div class="control-group" style="display:flex; flex-wrap:wrap; gap:15px;">
-                                        <div class="salesOptions" style="min-width:260px;">
-                                            <label class="control-label" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=SUPPLIER?> : </label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <select name="supplier" class="span12" data-rel="chosen">
-                                                    <option value=''>-- <?=ALL ?? 'كافة الموردين'?> --</option>
-                                                    <?php
-                                                    $querySupp = "SELECT id, name_ar, name_en FROM suppliers WHERE storeid='$storeid' ORDER BY name_ar ASC";
-                                                    $resSupp   = mysqli_query($adController->MySQL, $querySupp);
-                                                    if ($resSupp) {
-                                                        while ($dataSupp = mysqli_fetch_assoc($resSupp)) {
-                                                            $sId   = $dataSupp['id'];
-                                                            $sName = ($language == 'ar' ? $dataSupp['name_ar'] : $dataSupp['name_en']) ?: $dataSupp['name_ar'];
-                                                            $sel   = ($selectedSupplier == $sId) ? "selected" : "";
-                                                            echo "<option value='" . htmlspecialchars($sId) . "' $sel>" . htmlspecialchars($sName) . "</option>";
-                                                        }
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="salesOptions" style="min-width:260px;">
-                                            <label class="control-label" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=BRANCH?> :</label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <select name="branch" class="span12" data-rel="chosen">
-                                                    <option value="">-- <?=ALL ?? 'كافة الفروع'?> --</option>
-                                                    <?php
-                                                    $queryBranch = "SELECT id, name_ar, name_en FROM branches WHERE storeid='$storeid' ORDER BY name_ar ASC";
-                                                    $resBranch   = mysqli_query($adController->MySQL, $queryBranch);
-                                                    if ($resBranch) {
-                                                        while ($dataBr = mysqli_fetch_assoc($resBranch)) {
-                                                            $bId   = $dataBr['id'];
-                                                            $bName = ($language == 'ar' ? $dataBr['name_ar'] : $dataBr['name_en']) ?: $dataBr['name_ar'];
-                                                            $sel   = ($selectedBranch == $bId) ? "selected" : "";
-                                                            echo "<option value='" . htmlspecialchars($bId) . "' $sel>" . htmlspecialchars($bName) . "</option>";
-                                                        }
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="control-group" style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px;">
-                                        <div class="salesOptions" style="min-width:260px;">                               
-                                            <label class="control-label" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=FROM_DATE?></label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <input type="text" class="datetime datetimepicker" id="fr_date" name="fr_date" value="<?=htmlspecialchars($fr_date)?>" placeholder="yyyy-mm-dd hh:00:00">
-                                            </div>
-                                        </div>
-                                        <div class="salesOptions" style="min-width:260px;">                                                                 
-                                            <label class="control-label" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=TO_DATE?></label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <input type="text" class="datetime datetimepicker" id="to_date" name="to_date" value="<?=htmlspecialchars($to_date)?>" placeholder="yyyy-mm-dd hh:00:00">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-actions" style="margin-top:15px;">
-                                        <button type="submit" class="btn btn-primary" name="Submit"><?=defined('LOAD_FORM') ? LOAD_FORM : 'عرض التقرير'?></button>
-                                        <a href="<?=$pgName?>" class="btn"><?=defined('CANCEL') ? CANCEL : 'إلغاء'?></a>
-                                    </div>
-                                </fieldset>
-                            </form>
+                    </div>
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="stat-card-clean">
+                            <div>
+                                <div class="stat-label">إجمالي المرتجعات</div>
+                                <div class="stat-value text-danger"><?=flout_format($rePurchTotal)?> <span class="fs-7 fw-normal text-muted"><?=$currency?></span></div>
+                                <div class="fs-8 text-muted mt-1"><?=$rePurchCount?> فاتورة مرتجع</div>
+                            </div>
+                            <div class="stat-icon bg-danger-subtle text-danger">
+                                <i class="fas fa-undo-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="stat-card-clean">
+                            <div>
+                                <div class="stat-label">صافي المشتريات الفعلي</div>
+                                <div class="stat-value text-success"><?=flout_format($netPurchTotal)?> <span class="fs-7 fw-normal text-muted"><?=$currency?></span></div>
+                                <div class="fs-8 text-muted mt-1">بعد خصم المرتجعات</div>
+                            </div>
+                            <div class="stat-icon bg-success-subtle text-success">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="stat-card-clean">
+                            <div>
+                                <div class="stat-label">المتبقي / الآجل للموردين</div>
+                                <div class="stat-value text-warning"><?=flout_format($leftTotal)?> <span class="fs-7 fw-normal text-muted"><?=$currency?></span></div>
+                                <div class="fs-8 text-muted mt-1">مسدد: <?=flout_format($paidTotal)?> <?=$currency?></div>
+                            </div>
+                            <div class="stat-icon bg-warning-subtle text-warning">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <?php
-                if (isset($_POST['Submit'])) {
-                    $grossTotal   = 0;
-                    $discTotal    = 0;  
-                    $vatTotal     = 0;
-                    $purchTotal   = 0;  
-                    $paidTotal    = 0;
-                    $leftTotal    = 0;
-                    $rePurchTotal = 0;
-
-                    $conditionPurch = '';
-                    $conditionRet   = '';
-
-                    if ($selectedSupplier > 0) {
-                        $conditionPurch .= " AND p.supplier = '$selectedSupplier'";
-                        $conditionRet   .= " AND pr.supplier = '$selectedSupplier'";
-                        $qSupp = "SELECT name_ar, name_en FROM suppliers WHERE id='$selectedSupplier' AND storeid='$storeid' LIMIT 1";
-                        $rSupp = mysqli_query($adController->MySQL, $qSupp);
-                        $dSupp = mysqli_fetch_assoc($rSupp);
-                        $suppName = ($language == 'ar' ? ($dSupp['name_ar'] ?? '') : ($dSupp['name_en'] ?? '')) ?: ($dSupp['name_ar'] ?? 'الكل');
-                    } else {
-                        $suppName = 'الكل';
-                    }
-
-                    if ($selectedBranch > 0) {
-                        $conditionPurch .= " AND p.branch = '$selectedBranch'";
-                        $conditionRet   .= " AND pr.branch = '$selectedBranch'";
-                        $qBr = "SELECT name_ar, name_en FROM branches WHERE id='$selectedBranch' AND storeid='$storeid' LIMIT 1";
-                        $rBr = mysqli_query($adController->MySQL, $qBr);
-                        $dBr = mysqli_fetch_assoc($rBr);
-                        $branchName = ($language == 'ar' ? ($dBr['name_ar'] ?? '') : ($dBr['name_en'] ?? '')) ?: ($dBr['name_ar'] ?? 'الكل');
-                    } else {
-                        $branchName = 'الكل';
-                    }
-
-                    if (!empty($fr_date)) {
-                        $safeFDate = mysqli_real_escape_string($adController->MySQL, $fr_date);
-                        $conditionPurch .= " AND p.purchase_date >= '$safeFDate'";
-                        $conditionRet   .= " AND pr.purchase_date >= '$safeFDate'";
-                    }
-                    if (!empty($to_date)) {
-                        $safeTDate = mysqli_real_escape_string($adController->MySQL, $to_date);
-                        $conditionPurch .= " AND p.purchase_date <= '$safeTDate'";
-                        $conditionRet   .= " AND pr.purchase_date <= '$safeTDate'";
-                    }
-                ?>
-                <div>
-                    <div class="box span12">   
-                        <div style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
-                            <a href='reports/purchInvoiceReport.php' target='_blank' class="btn btn-success" title="طباعة تقرير PDF">
-                                <i class="icon-print"></i> طباعة التقرير PDF
-                            </a>
-                        </div> 
-                        <div class="titles"><?=TOTAlS?></div>
-                        <div class="totalAll">
-                            <div class="counts"> 
-                                <table>
-                                    <tr>
-                                        <td class="title" colspan="2"><b><?=PAYMENT_TYPE?></b></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="head"><b><?=TOTAL?> <?=PAID?></b></td>
-                                        <td class="value"><div id='pay-total'>0.00</div></td>
-                                    </tr>   
-                                    <tr>
-                                        <td class="head"><b><?=LEFT?></b></td>
-                                        <td class="value"><div id='left-total'>0.00</div></td>
-                                    </tr>                                       
-                                </table> 
-                            </div>
-                            <div class="counts"> 
-                                <table>
-                                    <tr>
-                                        <td class="title" colspan="2"><b><?=PURCHASES?></b></td>
-                                    </tr>       
-                                    <tr>
-                                        <td class="head"><b><?=TOTAL?></b></td>
-                                        <td class="value"><div id='gross-total'>0.00</div></td>
-                                    </tr>   
-                                    <tr>
-                                        <td class="head"><b><?=VAT?></b></td>
-                                        <td class="value"><div id='vat-total'>0.00</div></td>
-                                    </tr>                                 
-                                    <tr>
-                                        <td class="head"><b><?=DISCOUNT_ADDED?></b></td>
-                                        <td class="value"><div id='disc-total'>0.00</div></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="head"><b><?=TOTAL?></b></td>
-                                        <td class="value"><div id='sales-total'>0.00</div></td>
-                                    </tr>                                    
-                                </table>                               
-                            </div>
-                            <div class="counts"> 
-                                <table>
-                                    <tr>
-                                        <td class="title" colspan="2"><b><?=RETURNED_PURCHASES?></b></td>
-                                    </tr>                                   
-                                    <tr>
-                                        <td class="head"><b><?=TOTAL?></b></td>
-                                        <td class="value"><div id='reSales-total'>0.00</div></td>
-                                    </tr>
-                                </table>
-                                <table>
-                                    <tr>
-                                        <td class="title"><b><?=NET_BALANCE?></b></td>
-                                    </tr>                                   
-                                    <tr>
-                                        <td class="head value" style="text-align:center;"><div id='net-total' style="font-size:16px; color:#2563eb;">0.00</div></td>
-                                    </tr>
-                                </table>    
-                            </div>
+                <!-- Secondary Financial KPI Strip -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-white border rounded-3 d-flex justify-content-between align-items-center">
+                            <span class="text-secondary fs-7"><i class="fas fa-calculator text-muted me-1"></i> إجمالي قبل الضريبة والخصم:</span>
+                            <span class="fw-bold text-dark"><?=flout_format($grossTotal)?> <?=$currency?></span>
                         </div>
-                        <div class="clearfix"></div>
-                        <hr class="br">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-white border rounded-3 d-flex justify-content-between align-items-center">
+                            <span class="text-secondary fs-7"><i class="fas fa-percentage text-danger me-1"></i> إجمالي ضريبة القيمة المضافة 14%:</span>
+                            <span class="fw-bold text-danger"><?=flout_format($vatTotal)?> <?=$currency?></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-white border rounded-3 d-flex justify-content-between align-items-center">
+                            <span class="text-secondary fs-7"><i class="fas fa-tag text-info me-1"></i> إجمالي الخصومات المكتسبة:</span>
+                            <span class="fw-bold text-info"><?=flout_format($discTotal)?> <?=$currency?></span>
+                        </div>
+                    </div>
+                </div>
 
-                        <div class="titles"><?=PURCHASES?></div>
-                        <table class="table table-striped table-bordered bootstrap-datatable datatable">     
-                            <thead>
+                <!-- Purchases Table -->
+                <div class="table-pro-wrap">
+                    <div class="section-header">
+                        <h2 class="fs-5 fw-bold mb-0 text-dark">
+                            <i class="fas fa-file-invoice text-primary me-2"></i>
+                            فواتير الشراء والتوريد
+                        </h2>
+                        <span class="badge bg-light text-primary border px-3 py-2">عدد الفواتير: <?=$purchCount?></span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="purchTable" class="table table-hover align-middle table-striped table-bordered text-center w-100">
+                            <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th><?=INVOICE_NUMBER?></th>  
-                                    <th><?=DATE?></th>             
-                                    <th><?=SUPPLIER?></th>    
-                                    <th><?=TOTAL?></th>   
-                                    <th><?=TAX?></th>             
-                                    <th><?=DISCOUNT_ADDED?></th>         
-                                    <th><?=TOTAL?></th>            
-                                    <th><?=PAID?></th>          
-                                    <th><?=LEFT?></th>          
+                                    <th>رقم الفاتورة</th>
+                                    <th>التاريخ</th>
+                                    <th>المورد</th>
+                                    <th>الفرع</th>
+                                    <th>الإجمالي قبل الضريبة</th>
+                                    <th>الضريبة 14%</th>
+                                    <th>الخصم</th>
+                                    <th>الإجمالي الصافي</th>
+                                    <th>طريقة السداد</th>
+                                    <th>المدفوع</th>
+                                    <th>المتبقي</th>
+                                    <th class="btn-no-print">إجراءات</th>
                                 </tr>
                             </thead>
                             <tbody>
-                            <?php
-                            $queryPurch = "SELECT p.*, s.name_ar AS supp_name_ar, s.name_en AS supp_name_en
-                                           FROM purchase p
-                                           LEFT JOIN suppliers s ON s.id = p.supplier AND s.storeid = '$storeid'
-                                           WHERE p.storeid = '$storeid' AND p.state = '1' $conditionPurch 
-                                           ORDER BY p.invoicenumber DESC";
-                            $resPurch = mysqli_query($adController->MySQL, $queryPurch);
-                            $i = 0;
-                            if ($resPurch) {
-                                while ($data = mysqli_fetch_assoc($resPurch)) {
-                                    $i++;   
-                                    $invoice_no   = $data['invoicenumber'] ?? '';
-                                    $invoice_date = $data['purchase_date'] ?? '';
-                                    $supplier     = ($language == 'ar' ? ($data['supp_name_ar'] ?? '') : ($data['supp_name_en'] ?? '')) ?: ($data['supp_name_ar'] ?? '-----');
-
-                                    $gross     = round(floatval($data['gross_total'] ?? 0), 2);
-                                    $dis_added = round(floatval($data['dis_added'] ?? 0), 2);
-                                    $vat_all   = round(floatval($data['vat_all'] ?? 0), 2);
-                                    $all_total = round(floatval($data['all_total'] ?? 0), 2);
-
-                                    $paid = (($data['paymentType'] ?? 0) == 1) ? $all_total : round(floatval($data['paid'] ?? 0), 2);
-                                    $left = round(floatval($data['left'] ?? ($all_total - $paid)), 2);
-
-                                    $grossTotal += $gross;
-                                    $discTotal  += $dis_added;
-                                    $vatTotal   += $vat_all;
-                                    $purchTotal += $all_total;
-                                    $paidTotal  += $paid;
-                                    $leftTotal  += $left;
-
-                                    $safeSupp = mysqli_real_escape_string($adController->MySQL, $supplier);
-                                    $safeInv  = mysqli_real_escape_string($adController->MySQL, $invoice_no);
-                                    $safeDate = mysqli_real_escape_string($adController->MySQL, $invoice_date);
-
-                                    $queryIns = "INSERT INTO `report_purchinvoice` (`invoice_date`,`invoicenumber`,`supplier`,`gross_total`,`dis_added`,`vat_all`,`all_total`,`paid`,`left`,`cost`,`profit`) VALUES ('$safeDate','$safeInv','$safeSupp','$gross','$dis_added','$vat_all','$all_total','$paid','$left','','')";
-                                    mysqli_query($adController->MySQL, $queryIns);
-                            ?>
+                                <?php
+                                $idx = 0;
+                                foreach ($purchList as $row):
+                                    $idx++;
+                                    $invNo    = $row['invoicenumber'] ?? '';
+                                    $invDate  = substr($row['purchase_date'] ?? '', 0, 16);
+                                    $sName    = ($language == 'ar' ? ($row['supp_name_ar'] ?? '') : ($row['supp_name_en'] ?? '')) ?: ($row['supp_name_ar'] ?? '-----');
+                                    $bName    = ($language == 'ar' ? ($row['branch_name_ar'] ?? '') : ($row['branch_name_en'] ?? '')) ?: ($row['branch_name_ar'] ?? '-----');
+                                    $gross    = (float)($row['gross_total'] ?? 0);
+                                    $vatAll   = (float)($row['vat_all'] ?? 0);
+                                    $disAdd   = (float)($row['dis_added'] ?? 0);
+                                    $allTot   = (float)($row['all_total'] ?? 0);
+                                    $isCash   = ((int)($row['paymentType'] ?? 0) === 1);
+                                    $paid     = $isCash ? $allTot : (float)($row['paid'] ?? 0);
+                                    $left     = (float)($row['left'] ?? ($allTot - $paid));
+                                ?>
                                 <tr>
-                                    <td><?=$i?></td>
-                                    <td><a href='edit_purchase.php?sd=<?=urlencode($invoice_no)?>'><?=htmlspecialchars($invoice_no)?></a></td>  
-                                    <td><?=htmlspecialchars($invoice_date)?></td>
-                                    <td><?=htmlspecialchars($supplier)?></td>
+                                    <td><?=$idx?></td>
+                                    <td>
+                                        <a href="edit_purchase.php?sd=<?=urlencode($invNo)?>" class="fw-bold text-primary text-decoration-none">
+                                            <?=htmlspecialchars($invNo)?>
+                                        </a>
+                                    </td>
+                                    <td class="text-muted fs-7"><?=htmlspecialchars($invDate)?></td>
+                                    <td class="fw-semibold"><?=htmlspecialchars($sName)?></td>
+                                    <td><span class="badge bg-secondary-subtle text-secondary"><?=htmlspecialchars($bName)?></span></td>
                                     <td><?=flout_format($gross)?></td>
-                                    <td><?=flout_format($vat_all)?></td>
-                                    <td><?=flout_format($dis_added)?></td>
-                                    <td><?=flout_format($all_total)?></td>                                
-                                    <td><?=flout_format($paid)?></td>
-                                    <td><?=flout_format($left)?></td>
+                                    <td class="text-danger"><?=flout_format($vatAll)?></td>
+                                    <td class="text-info"><?=flout_format($disAdd)?></td>
+                                    <td class="fw-bold text-dark"><?=flout_format($allTot)?></td>
+                                    <td>
+                                        <?php if ($isCash): ?>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">نقدي</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">آجل</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-success"><?=flout_format($paid)?></td>
+                                    <td class="<?=$left > 0 ? 'text-danger fw-bold' : 'text-muted'?>"><?=flout_format($left)?></td>
+                                    <td class="btn-no-print">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="edit_purchase.php?sd=<?=urlencode($invNo)?>" class="btn btn-outline-primary" title="عرض وتعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="reports/purchInvoice.php?sd=<?=urlencode($invNo)?>" target="_blank" class="btn btn-outline-secondary" title="طباعة الفاتورة">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
-                            <?php
-                                }
-                            }
-                            ?>
-                            </tbody>
-                        </table>
-                        <div class="clearfix"></div>
-                        <hr class="br">
-
-                        <div class="titles"><?=RETURNED_PURCHASES?></div>
-                        <table class="table table-striped table-bordered bootstrap-datatable datatable">     
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th><?=INVOICE_NUMBER?></th>  
-                                    <th><?=DATE?></th>             
-                                    <th><?=SUPPLIER?></th>    
-                                    <th><?=TOTAL?></th>  
-                                    <th><?=TAX?></th>             
-                                    <th><?=DISCOUNT_ADDED?></th>         
-                                    <th><?=TOTAL?></th>            
-                                    <th><?=PAYMENT?></th>          
-                                    <th><?=LEFT?></th>          
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <?php
-                            $queryRet = "SELECT pr.*, s.name_ar AS supp_name_ar, s.name_en AS supp_name_en
-                                         FROM purchaseRet pr
-                                         LEFT JOIN suppliers s ON s.id = pr.supplier AND s.storeid = '$storeid'
-                                         WHERE pr.storeid = '$storeid' AND pr.state = '1' $conditionRet 
-                                         ORDER BY pr.invoicenumber DESC";
-                            $resRet = mysqli_query($adController->MySQL, $queryRet);
-                            $j = 0;
-                            if ($resRet) {
-                                while ($dataRet = mysqli_fetch_assoc($resRet)) {
-                                    $j++;
-                                    $invoice_no   = $dataRet['invoicenumber'] ?? '';
-                                    $invoice_date = $dataRet['purchase_date'] ?? '';
-                                    $supplier     = ($language == 'ar' ? ($dataRet['supp_name_ar'] ?? '') : ($dataRet['supp_name_en'] ?? '')) ?: ($dataRet['supp_name_ar'] ?? '-----');
-
-                                    $gross     = round(floatval($dataRet['gross_total'] ?? 0), 2);
-                                    $dis_added = round(floatval($dataRet['dis_added'] ?? 0), 2);
-                                    $vat_all   = round(floatval($dataRet['vat_all'] ?? 0), 2);
-                                    $all_total = round(floatval($dataRet['all_total'] ?? 0), 2);
-                                    $paid      = (($dataRet['paymentType'] ?? 0) == 1) ? $all_total : 0;
-                                    $left      = $all_total - $paid;
-                                    $rePurchTotal += $all_total;
-                            ?>
-                                <tr>
-                                    <td><?=$j?></td>
-                                    <td><a href='edit_purchaseRet.php?sd=<?=urlencode($invoice_no)?>'><?=htmlspecialchars($invoice_no)?></a></td>  
-                                    <td><?=htmlspecialchars($invoice_date)?></td>
-                                    <td><?=htmlspecialchars($supplier)?></td>
-                                    <td><?=flout_format($gross)?></td>
-                                    <td><?=flout_format($vat_all)?></td>
-                                    <td><?=flout_format($dis_added)?></td>
-                                    <td><?=flout_format($all_total)?></td>                                
-                                    <td><?=flout_format($paid)?></td>
-                                    <td><?=flout_format($left)?></td>
-                                </tr>
-                            <?php
-                                }
-                            }
-                            ?>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
-                </div>      
-                <?php
-                    $allGross   = flout_format($grossTotal);                
-                    $allDdisc   = flout_format($discTotal);            
-                    $allVat     = flout_format($vatTotal);     
-                    $allPurch   = flout_format($purchTotal);
-                    $allRePurch = flout_format($rePurchTotal); 
-                    $net        = flout_format($purchTotal - $rePurchTotal);               
-                    $allPaid    = flout_format($paidTotal);
-                    $allLeft    = flout_format($leftTotal);           
+                </div>
 
-                    $safeFdate    = mysqli_real_escape_string($adController->MySQL, $fr_date);
-                    $safeTdate    = mysqli_real_escape_string($adController->MySQL, $to_date);
-                    $safeBranch   = mysqli_real_escape_string($adController->MySQL, $branchName);
-                    $safeSuppName = mysqli_real_escape_string($adController->MySQL, $suppName);
+                <!-- Returned Purchases Table -->
+                <?php if (!empty($retList)): ?>
+                <div class="table-pro-wrap">
+                    <div class="section-header">
+                        <h2 class="fs-5 fw-bold mb-0 text-danger">
+                            <i class="fas fa-undo-alt me-2"></i>
+                            مرتجع فواتير الشراء والتوريد
+                        </h2>
+                        <span class="badge bg-danger-subtle text-danger border px-3 py-2">عدد المرتجعات: <?=$rePurchCount?></span>
+                    </div>
 
-                    $querySummary = "INSERT INTO `report_purchinvoice_all` (`from`, `to`, `branch`, `supplier`, `grossTotal`, `discTotal`, `vatTotal`, `purchTotal`, `rePurchTotal`, `netTotal`, `payTotal`, `leftTotal`) VALUES ('$safeFdate','$safeTdate','$safeBranch','$safeSuppName','$allGross','$allDdisc','$allVat','$allPurch','$allRePurch','$net','$allPaid','$allLeft')";
-                    mysqli_query($adController->MySQL, $querySummary);
-                ?>
-                <script type="text/javascript">
-                    $(document).ready(function() {
-                        $("#pay-total").html("<?=$allPaid?>");
-                        $("#left-total").html("<?=$allLeft?>");   
-                        
-                        $("#gross-total").html("<?=$allGross?>");                
-                        $("#disc-total").html("<?=$allDdisc?>");            
-                        $("#vat-total").html("<?=$allVat?>");     
-                        $("#sales-total").html("<?=$allPurch?>"); 
-                        $("#reSales-total").html("<?=$allRePurch?>"); 
-                        $("#net-total").html("<?=$net?>");   
-                    });
-                </script>
-                <?php
-                } // End if (isset($_POST['Submit']))
-                ?>
-            </div>
+                    <div class="table-responsive">
+                        <table id="retTable" class="table table-hover align-middle table-striped table-bordered text-center w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>رقم الإشعار</th>
+                                    <th>التاريخ</th>
+                                    <th>المورد</th>
+                                    <th>الفرع</th>
+                                    <th>الإجمالي قبل الضريبة</th>
+                                    <th>الضريبة 14%</th>
+                                    <th>إجمالي المرتجع</th>
+                                    <th>السداد</th>
+                                    <th class="btn-no-print">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $rIdx = 0;
+                                foreach ($retList as $rowRet):
+                                    $rIdx++;
+                                    $invNo   = $rowRet['invoicenumber'] ?? '';
+                                    $invDate = substr($rowRet['purchase_date'] ?? '', 0, 16);
+                                    $sName   = ($language == 'ar' ? ($rowRet['supp_name_ar'] ?? '') : ($rowRet['supp_name_en'] ?? '')) ?: ($rowRet['supp_name_ar'] ?? '-----');
+                                    $bName   = ($language == 'ar' ? ($rowRet['branch_name_ar'] ?? '') : ($rowRet['branch_name_en'] ?? '')) ?: ($rowRet['branch_name_ar'] ?? '-----');
+                                    $gross   = (float)($rowRet['gross_total'] ?? 0);
+                                    $vatAll  = (float)($rowRet['vat_all'] ?? 0);
+                                    $allTot  = (float)($rowRet['all_total'] ?? 0);
+                                    $isCash  = ((int)($rowRet['paymentType'] ?? 0) === 1);
+                                ?>
+                                <tr>
+                                    <td><?=$rIdx?></td>
+                                    <td>
+                                        <a href="edit_purchaseRet.php?sd=<?=urlencode($invNo)?>" class="fw-bold text-danger text-decoration-none">
+                                            <?=htmlspecialchars($invNo)?>
+                                        </a>
+                                    </td>
+                                    <td class="text-muted fs-7"><?=htmlspecialchars($invDate)?></td>
+                                    <td class="fw-semibold"><?=htmlspecialchars($sName)?></td>
+                                    <td><span class="badge bg-secondary-subtle text-secondary"><?=htmlspecialchars($bName)?></span></td>
+                                    <td><?=flout_format($gross)?></td>
+                                    <td class="text-danger"><?=flout_format($vatAll)?></td>
+                                    <td class="fw-bold text-danger"><?=flout_format($allTot)?></td>
+                                    <td>
+                                        <?php if ($isCash): ?>
+                                            <span class="badge bg-success-subtle text-success">استرداد نقدي</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-info-subtle text-info">تخفيض حساب المورد</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="btn-no-print">
+                                        <a href="edit_purchaseRet.php?sd=<?=urlencode($invNo)?>" class="btn btn-sm btn-outline-danger" title="عرض وتعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+            </main>
         </div>
     </div>
-	
-    <div class="clearfix"></div>
-    <?php require_once("footer.php"); ?>
-    <script type="text/javascript" src="js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
-    <script type="text/javascript">  
-        $('.datetimepicker').datetimepicker({
-            format: 'yyyy-mm-dd hh:00:00',
-            minView: 1,        
-            showMeridian: true,
-            todayBtn: true,
-            autoclose: true
-        });
 
+    <?php require_once("footer.php"); ?>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <script>
         $(document).ready(function() {
-            var config = {
-                '.span3'  : { width: '80%' },
-                '.span12' : { width: '100%' }
+            var dtLang = {
+                "sProcessing": "جاري التحميل...",
+                "sLengthMenu": "عرض _MENU_ سجل لكل صفحة",
+                "sZeroRecords": "لم يتم العثور على أية نتائج",
+                "sInfo": "إظهار _START_ إلى _END_ من أصل _TOTAL_ سجل",
+                "sInfoEmpty": "يعرض 0 إلى 0 من أصل 0 سجل",
+                "sInfoFiltered": "(منتقاة من مجموع _MAX_ سجل)",
+                "sSearch": "بحث سريع:",
+                "oPaginate": {
+                    "sFirst": "الأول",
+                    "sPrevious": "السابق",
+                    "sNext": "التالي",
+                    "sLast": "الأخير"
+                }
             };
-            for (var selector in config) {
-                $(selector).chosen(config[selector]);
+
+            $('#purchTable').DataTable({
+                language: dtLang,
+                dom: '<"d-flex justify-content-between align-items-center mb-3"Bf>rt<"d-flex justify-content-between align-items-center mt-3"lip>',
+                buttons: [
+                    { extend: 'excelHtml5', text: '<i class="fas fa-file-excel text-success me-1"></i> تصدير Excel', className: 'btn btn-outline-success btn-sm' },
+                    { extend: 'print', text: '<i class="fas fa-print me-1"></i> طباعة الجدول', className: 'btn btn-outline-secondary btn-sm' }
+                ],
+                order: [[0, 'asc']]
+            });
+
+            if ($('#retTable').length) {
+                $('#retTable').DataTable({
+                    language: dtLang,
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"Bf>rt<"d-flex justify-content-between align-items-center mt-3"lip>',
+                    buttons: [
+                        { extend: 'excelHtml5', text: '<i class="fas fa-file-excel text-success me-1"></i> تصدير Excel', className: 'btn btn-outline-success btn-sm' },
+                        { extend: 'print', text: '<i class="fas fa-print me-1"></i> طباعة الجدول', className: 'btn btn-outline-secondary btn-sm' }
+                    ],
+                    order: [[0, 'asc']]
+                });
             }
         });
     </script>

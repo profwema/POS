@@ -1,12 +1,13 @@
 <?php
+error_reporting(E_ALL);
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
 
-$language = $_SESSION['lang'] ?? 'ar';
+$language = $_SESSION['lang'] ?? (defined('LANG') ? LANG : 'ar');
 $storeid  = intval($_SESSION['storeid'] ?? 1);
 
-// فك تشفير المعرف بأمان (دعم التشفير المزدوج والرقمي الصريح)
+// Decrypt ID
 $rawId = $_REQUEST['sd'] ?? '';
 $decrypted = $adController->encrypt_decrypt(2, urldecode($rawId), 0);
 if (!empty($decrypted)) {
@@ -17,256 +18,400 @@ if (!empty($decrypted)) {
 }
 $cleanId = intval($id);
 
-$query   = "SELECT * FROM income WHERE id='$cleanId' AND storeid='$storeid' LIMIT 1";
+$query   = "SELECT * FROM income WHERE id='$cleanId' AND (storeid='$storeid' OR storeid='0') LIMIT 1";
 $resP    = mysqli_query($adController->MySQL, $query);
-$dataPur = mysqli_fetch_assoc($resP);
+$dataPur = $resP ? mysqli_fetch_assoc($resP) : null;
 if (!$dataPur) {
     header("Location: incoming-entry.php");
     exit();
 }
 
-$itemsListArray = [];
-$safeIncomeNo   = mysqli_real_escape_string($adController->MySQL, $dataPur['income_No']);
-$query          = "SELECT * FROM income_items WHERE storeid='$storeid' AND income_No='$safeIncomeNo' ORDER BY id ASC";
-$ress           = mysqli_query($adController->MySQL, $query);
+// Fetch existing items for this incoming invoice
+$savedItems = [];
+$safeIncomeNo = mysqli_real_escape_string($adController->MySQL, $dataPur['income_No']);
+$query = "SELECT * FROM income_items WHERE (storeid='$storeid' OR storeid='0') AND income_No='$safeIncomeNo' ORDER BY id ASC";
+$ress  = mysqli_query($adController->MySQL, $query);
 if ($ress) {
-    while ($dataItemsList = mysqli_fetch_assoc($ress)) {
-        $itemsListArray[] = $dataItemsList;
+    while ($it = mysqli_fetch_assoc($ress)) {
+        $savedItems[] = [
+            'itemid'   => (int)$it['itemid'],
+            'store'    => (int)$it['store'],
+            'quantity' => (float)$it['quantity']
+        ];
     }
 }
-$numAlready = count($itemsListArray);
 
-// جلب الفروع والمخازن والأصناف ووحداتها مسبقاً لمنع تكرار آلاف الاستعلامات
-$branchesQuery = "SELECT id, name_ar, name_en FROM branches WHERE storeid='$storeid' ORDER BY id ASC";
-$resBranches = mysqli_query($adController->MySQL, $branchesQuery);
-$cachedBranches = [];
+// Pre-cache branches
+$branches = [];
+$resBranches = mysqli_query($adController->MySQL, "SELECT id, name_ar, name_en FROM branches WHERE storeid='$storeid' OR storeid='0' ORDER BY id ASC");
 if ($resBranches) {
     while ($br = mysqli_fetch_assoc($resBranches)) {
-        $brName = ($language == 'en' && !empty($br['name_en'])) ? $br['name_en'] : (!empty($br['name_ar']) ? $br['name_ar'] : $br['name_en']);
-        $cachedBranches[] = [
-            'id'   => $br['id'],
-            'name' => $brName
-        ];
+        $branches[] = $br;
     }
 }
 
-$storesQuery = "SELECT id, name_ar, name_en FROM stores WHERE storeid='$storeid' ORDER BY id ASC";
-$resStores = mysqli_query($adController->MySQL, $storesQuery);
-$cachedStores = [];
+// Pre-cache stores
+$stores = [];
+$resStores = mysqli_query($adController->MySQL, "SELECT id, name_ar, name_en, branch FROM stores WHERE storeid='$storeid' OR storeid='0' ORDER BY id ASC");
 if ($resStores) {
     while ($st = mysqli_fetch_assoc($resStores)) {
-        $stName = ($language == 'en' && !empty($st['name_en'])) ? $st['name_en'] : (!empty($st['name_ar']) ? $st['name_ar'] : $st['name_en']);
-        $cachedStores[] = [
-            'id'   => $st['id'],
-            'name' => $stName
-        ];
+        $stores[] = $st;
     }
 }
 
+// Pre-cache items list
 $itemsQuery = "SELECT i.id, i.barcode, i.vat, i.name_ar, i.name_en, u.name_ar AS unit_ar, u.name_en AS unit_en
                FROM items i
-               LEFT JOIN units u ON u.id = i.unit AND u.storeid = '$storeid'
-               WHERE i.storeid = '$storeid'
+               LEFT JOIN units u ON u.id = i.unit
+               WHERE i.storeid = '$storeid' OR i.storeid = '0'
                ORDER BY i.name_ar ASC";
 $resItems = mysqli_query($adController->MySQL, $itemsQuery);
+
 $cachedItems = [];
 if ($resItems) {
     while ($it = mysqli_fetch_assoc($resItems)) {
-        $bCode = !empty($it['barcode']) ? $it['barcode'] : '-----';
-        $iName = ($language == 'en' && !empty($it['name_en'])) ? $it['name_en'] : (!empty($it['name_ar']) ? $it['name_ar'] : $it['name_en']);
-        if (empty($iName) || $iName == '`') {
-            $iName = '-----';
-        }
-        $uName = ($language == 'en' && !empty($it['unit_en'])) ? $it['unit_en'] : (!empty($it['unit_ar']) ? $it['unit_ar'] : $it['unit_en']);
-        if (empty($uName)) {
-            $uName = '-----';
-        }
+        $bCode = !empty($it['barcode']) ? $it['barcode'] : '---';
+        $iName = ($language == 'en' && !empty($it['name_en'])) ? $it['name_en'] : (!empty($it['name_ar']) ? $it['name_ar'] : 'صنف');
+        $uName = ($language == 'en' && !empty($it['unit_en'])) ? $it['unit_en'] : (!empty($it['unit_ar']) ? $it['unit_ar'] : 'وحدة');
+        
         $cachedItems[] = [
-            'id'      => $it['id'],
+            'id'      => (int)$it['id'],
             'barcode' => $bCode,
-            'vat'     => $it['vat'] ?? 0,
             'name'    => $iName,
             'unit'    => $uName
         ];
     }
 }
 
-$invoiceDate = !empty($dataPur['date']) ? date("d/m/Y", strtotime($dataPur['date'])) : date("d/m/Y");
+$invoiceDate = !empty($dataPur['date']) ? date("Y-m-d", strtotime($dataPur['date'])) : date("Y-m-d");
+$currBranch  = (int)($dataPur['branch'] ?? 0);
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
-    <title>WAM Tech Soft - <?=EDIT_INCOMING_INVOICE?></title>
-    <?php require_once("script_php_variables.php"); ?>
-    <?php require_once("header.php"); ?>	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل إذن إضافة وارد مخزني | WAM Tech ERP</title>
+    <link rel="stylesheet" href="css/admin-pro.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <style>
-        .mult-padding {
-            padding: 4px !important;
+        .table-custom {
+            border: 1px solid #edf2f7;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .table-custom th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 12px;
             text-align: center;
         }
-        .del-palance-item, .more-palance-item {
-            cursor: pointer;
-            text-align: center;
-            width: 32px;
-        }
-        .del-palance-item label, .more-palance-item label {
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
-            margin: 0;
-            display: block;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-        .del-palance-item label {
-            color: #fff;
-            background-color: #d9534f;
-        }
-        .more-palance-item label {
-            color: #fff;
-            background-color: #5cb85c;
-        }
-        .error-red {
-            color: #d9534f;
-            font-weight: bold;
-            margin-top: 10px;
+        .table-custom td {
+            padding: 8px;
+            vertical-align: middle;
         }
     </style>
 </head>
-<body>
-    <?php require_once("header_top.php"); ?>
-    <div class="container-fluid-full">
-        <div class="row-fluid">
-            <?php require_once("left_menu.php"); ?>
-            <div id="content" class="span10">
-                <div>
-                    <div class="box span12">
-                        <div class="box-header" data-original-title>
-                            <h2><i class="halflings-icon edit"></i><span class="break"></span><?=EDIT_INCOMING_INVOICE?></h2>
-                        </div>
-                        <div class="box-content">
-                            <form class="form-horizontal" id="incoming-form">
-                                <input type="hidden" value="<?=$cleanId?>" name='sd'>
-                                <input type="hidden" value="editIncoming" name="f">
-                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
-                                <fieldset>
-                                    <div class="control-group" style="display:flex; flex-wrap:wrap; gap:20px;">
-                                        <div class="salesOptions">
-                                            <label class="control-label" for="invoice" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=INVOICE_NUMBER?> : </label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <input type="text" class="input-medium" name='invoice' id='invoice' value='<?=htmlspecialchars($dataPur['income_No'] ?? '')?>' readonly style="background:#eee;">
-                                            </div>
-                                        </div>  
-
-                                        <div class="salesOptions">
-                                            <label class="control-label" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=INVOICE_DATE?></label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <input type="text" class="input-medium datepicker-nobar" name="date" value='<?=htmlspecialchars($invoiceDate)?>'>
-                                            </div>
-                                        </div>
-
-                                        <div class="salesOptions" style="min-width:250px;">
-                                            <label class="control-label" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=BRANCH?> :</label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <select name="branch" data-rel="chosen" class="span12">
-                                                    <option value=''>-- اختر الفرع --</option>
-                                                    <?php
-                                                    foreach ($cachedBranches as $br) {
-                                                        $selected = ($br['id'] == ($dataPur['branch'] ?? '')) ? 'selected' : '';
-                                                        echo "<option value='" . htmlspecialchars($br['id']) . "' $selected>" . htmlspecialchars($br['name']) . "</option>";
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <hr>
-
-                                    <div class="control-group">
-                                        <h4 style="margin-bottom:15px;"><?=INCOMING_ITEMS?></h4>
-                                        <div class="controls" style="margin-right:0;">	
-                                            <table class="table table-striped table-bordered" style="width:100%;">                                                
-                                                <thead>
-                                                    <tr style="background:#f5f5f5;">
-                                                        <th style="width:25%;"><?=STORES?></th>
-                                                        <th style="width:50%;"><?=BARCODE?> | <?=ITEM_NAME?> | <?=UNITS?></th>    
-                                                        <th style="width:15%;"><?=QUANTITY?></th>
-                                                        <th style="width:35px;"></th>
-                                                        <th style="width:35px;"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                <?php
-                                                for ($i = 0; $i < 10; $i++) {
-                                                    $existingRow = $itemsListArray[$i] ?? null;
-                                                    $rowStyle = ($i >= $numAlready && $i > 0) ? "style='display:none;'" : "";
-                                                    $curStore = $existingRow['store'] ?? '';
-                                                    $curItem  = $existingRow['itemid'] ?? '';
-                                                    $curQty   = $existingRow['quantity'] ?? '';
-                                                ?>
-                                                    <tr <?= $rowStyle ?> id='row-v-<?= $i ?>'>
-                                                        <td>
-                                                            <select id='store-<?= $i ?>' name="store[]" data-rel="chosen" class="span12" style="width:100%;">
-                                                                <option value="">-- اختر المخزن --</option>
-                                                                <?php
-                                                                foreach ($cachedStores as $st) {
-                                                                    $selected = ($st['id'] == $curStore) ? 'selected' : '';
-                                                                    echo "<option value='" . htmlspecialchars($st['id']) . "' $selected>" . htmlspecialchars($st['name']) . "</option>";
-                                                                }
-                                                                ?>
-                                                            </select>
-                                                        </td>
-                                                        <td>
-                                                            <select id='barcode-<?= $i ?>' name="barcode[]" data-rel="chosen" class="barcode-select span12" style="width:100%;">
-                                                                <option value=''>-- اختر الصنف --</option>
-                                                                <?php
-                                                                foreach ($cachedItems as $item) {
-                                                                    $selected = ($item['id'] == $curItem) ? 'selected' : '';
-                                                                    $val = "{$i}@@{$item['id']}@@{$item['vat']}@@{$item['barcode']}@@{$item['name']}@@{$item['unit']}";
-                                                                    $optText = "{$item['barcode']} | {$item['name']} | {$item['unit']}";
-                                                                    echo "<option value='" . htmlspecialchars($val) . "' $selected>" . htmlspecialchars($optText) . "</option>";
-                                                                }
-                                                                ?>
-                                                            </select>
-                                                        </td>
-                                                        <td class="mult-padding">
-                                                            <input type="text" id='item-qty-<?= $i ?>' class="item-qty span12" maxlength="100" name='item_qty[]' value='<?=htmlspecialchars($curQty)?>' style="text-align:center;">
-                                                        </td>
-                                                        <td class='del-palance-item mult-padding' prop='<?= $i ?>'><label title="<?=DELETE ?? 'حذف'?>">×</label></td>
-                                                        <td class='more-palance-item mult-padding' prop='<?= $i ?>'><label title="<?=ADD ?? 'إضافة سطر'?>">+</label></td>
-                                                    </tr>
-                                                <?php } ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>                                  				
-                                    <hr>
-
-                                    <div class="form-actions">
-                                        <button type="button" id='submit-income' class="btn btn-primary"><?=SAVE?></button>
-                                        <a href="incoming-entry.php" class="btn"><?=CANCEL?></a>
-                                    </div>
-                                    <p class='error-red'>&nbsp;</p>
-                                </fieldset>
-                            </form>   
-                        </div>
+<body class="admin-pro-body">
+    <?php require_once("components/header_pro.php"); ?>
+    
+    <div class="admin-wrapper">
+        <?php require_once("components/sidebar_pro.php"); ?>
+        
+        <main class="admin-main">
+            <div class="container-fluid px-4 py-4">
+                
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold text-dark mb-1">
+                            <i class="fas fa-edit text-success me-2"></i> تعديل إذن إضافة وارد: <span class="font-monospace text-success"><?= htmlspecialchars($dataPur['income_No']) ?></span>
+                        </h2>
+                        <p class="text-muted mb-0">تعديل بنود وكميات الوارد المخزني المسجلة مسبقاً</p>
+                    </div>
+                    <div>
+                        <a href="incoming-entry.php" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> العودة لسجل أذونات الوارد
+                        </a>
                     </div>
                 </div>
+
+                <form id="editIncomingForm">
+                    <input type="hidden" name="f" value="editIncoming">
+                    <input type="hidden" name="sd" value="<?= htmlspecialchars($rawId) ?>">
+                    <input type="hidden" name="invoice" value="<?= htmlspecialchars($dataPur['income_No']) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+
+                    <!-- Header Card -->
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-header bg-white py-3 border-bottom">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="fas fa-info-circle text-primary me-2"></i> بيانات إذن الإضافة
+                            </h6>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-hashtag me-1"></i> رقم إذن الوارد
+                                    </label>
+                                    <input type="text" class="form-control font-monospace bg-light fw-bold text-success" value="<?= htmlspecialchars($dataPur['income_No']) ?>" readonly>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-calendar-alt me-1"></i> تاريخ الإذن <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" name="date" class="form-control" value="<?= htmlspecialchars($invoiceDate) ?>" required>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-code-branch me-1"></i> الفرع <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="branch" class="form-select select2-basic" required>
+                                        <option value="">-- اختر الفرع --</option>
+                                        <?php foreach ($branches as $br): 
+                                            $brName = $br['name_' . $language] ?? $br['name_ar'];
+                                            $sel = ($currBranch == $br['id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $br['id'] ?>" <?= $sel ?>><?= htmlspecialchars($brName) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Dynamic Table -->
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="fas fa-boxes text-success me-2"></i> أصناف إذن الإضافة
+                            </h6>
+                            <button type="button" id="btnAddRow" class="btn btn-sm btn-success">
+                                <i class="fas fa-plus me-1"></i> إضافة بند جديد
+                            </button>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="table-responsive table-custom mb-3">
+                                <table class="table table-bordered align-middle mb-0" id="itemsTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 45px;">#</th>
+                                            <th style="width: 25%;">المخزن المستلم <span class="text-danger">*</span></th>
+                                            <th style="width: 45%;">الصنف (الباركود | الاسم | الوحدة) <span class="text-danger">*</span></th>
+                                            <th style="width: 20%;">الكمية الواردة <span class="text-danger">*</span></th>
+                                            <th style="width: 50px;">حذف</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemsTableBody">
+                                        <!-- Dynamic Rows Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <button type="button" id="btnAddRowBottom" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-1"></i> إضافة سطر آخر
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Summary & Actions -->
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-7">
+                                    <div class="d-flex gap-4">
+                                        <div>
+                                            <span class="text-muted d-block small">عدد الأصناف:</span>
+                                            <span class="fw-bold fs-5 text-dark" id="displayTotalRows">0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted d-block small">إجمالي الكميات الواردة:</span>
+                                            <span class="fw-bold fs-5 text-success font-monospace" id="displayTotalQty">0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                                    <button type="submit" id="btnSubmitForm" class="btn btn-success px-4 py-2 fs-6">
+                                        <i class="fas fa-save me-1"></i> حفظ تعديلات إذن الوارد
+                                    </button>
+                                    <a href="incoming-entry.php" class="btn btn-outline-secondary px-4 py-2 fs-6 ms-2">
+                                        إلغاء
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+
             </div>
-        </div>
+        </main>
     </div>
-	
-    <div class="clearfix"></div>
-    <?php require_once("footer.php"); ?>
-    <script type="text/javascript">
-        $(document).ready(function() {
-            var config = {
-                '.span3' : { width: '95%' }
-            };
-            for (var selector in config) {
-                $(selector).chosen(config[selector]);
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        var cachedItems = <?= json_encode($cachedItems, JSON_UNESCAPED_UNICODE) ?>;
+        var storesList  = <?= json_encode($stores, JSON_UNESCAPED_UNICODE) ?>;
+        var savedItems  = <?= json_encode($savedItems, JSON_UNESCAPED_UNICODE) ?>;
+        var lang        = "<?= $language ?>";
+        var rowCount    = 0;
+
+        function buildStoreOptions(selectedId) {
+            var html = '<option value="">-- اختر المخزن --</option>';
+            for (var i = 0; i < storesList.length; i++) {
+                var st = storesList[i];
+                var name = (lang === 'en' && st.name_en) ? st.name_en : st.name_ar;
+                var sel = (selectedId && selectedId == st.id) ? 'selected' : '';
+                html += '<option value="' + st.id + '" ' + sel + '>' + name + '</option>';
             }
+            return html;
+        }
+
+        function buildItemOptions(selectedId) {
+            var html = '<option value="">-- اختر الصنف --</option>';
+            for (var i = 0; i < cachedItems.length; i++) {
+                var it = cachedItems[i];
+                var sel = (selectedId && selectedId == it.id) ? 'selected' : '';
+                var optVal = '0@@' + it.id;
+                var optText = it.barcode + ' | ' + it.name + ' (' + it.unit + ')';
+                html += '<option value="' + optVal + '" ' + sel + '>' + optText + '</option>';
+            }
+            return html;
+        }
+
+        function addRow(prefill) {
+            rowCount++;
+            var idx = rowCount;
+            var tr = $('<tr id="row-' + idx + '"></tr>');
+
+            var tdSeq = $('<td class="text-center text-muted fw-bold row-seq"></td>');
+            
+            var tdStore = $('<td></td>');
+            var selectStore = $('<select name="store[]" class="form-select select2-store-row" required></select>');
+            selectStore.html(buildStoreOptions(prefill ? prefill.store : null));
+            tdStore.append(selectStore);
+
+            var tdItem = $('<td></td>');
+            var selectItem = $('<select name="barcode[]" class="form-select select2-item-row" required></select>');
+            selectItem.html(buildItemOptions(prefill ? prefill.itemid : null));
+            tdItem.append(selectItem);
+
+            var qtyVal = (prefill && prefill.quantity) ? prefill.quantity : '';
+            var tdQty = $('<td><input type="number" step="0.01" min="0.01" name="item_qty[]" class="form-control text-center item-qty-input font-monospace fw-bold" required placeholder="0.00" value="' + qtyVal + '"></td>');
+            var tdDel = $('<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-remove-row"><i class="fas fa-times"></i></button></td>');
+
+            tr.append(tdSeq, tdStore, tdItem, tdQty, tdDel);
+            $('#itemsTableBody').append(tr);
+
+            selectStore.select2({ dir: 'rtl', width: '100%' });
+            selectItem.select2({ dir: 'rtl', width: '100%' });
+
+            renumberRows();
+            calculateAll();
+        }
+
+        function renumberRows() {
+            $('#itemsTableBody tr').each(function(index) {
+                $(this).find('.row-seq').text(index + 1);
+            });
+        }
+
+        function calculateAll() {
+            var totalQty = 0;
+            var count = 0;
+
+            $('#itemsTableBody tr').each(function() {
+                var itVal = $(this).find('.select2-item-row').val();
+                var q = parseFloat($(this).find('.item-qty-input').val()) || 0;
+                if (itVal && q > 0) {
+                    count++;
+                    totalQty += q;
+                }
+            });
+
+            $('#displayTotalRows').text(count);
+            $('#displayTotalQty').text(totalQty.toFixed(2));
+        }
+
+        $(document).ready(function() {
+            $('.select2-basic').select2({ dir: 'rtl', width: '100%' });
+
+            if (savedItems && savedItems.length > 0) {
+                for (var i = 0; i < savedItems.length; i++) {
+                    addRow(savedItems[i]);
+                }
+            } else {
+                addRow();
+            }
+
+            $('#btnAddRow, #btnAddRowBottom').on('click', function() {
+                addRow();
+            });
+
+            $(document).on('click', '.btn-remove-row', function() {
+                if ($('#itemsTableBody tr').length <= 1) {
+                    alert('يجب أن يحتوي إذن الوارد على صنف واحد على الأقل.');
+                    return;
+                }
+                $(this).closest('tr').remove();
+                renumberRows();
+                calculateAll();
+            });
+
+            $(document).on('input', '.item-qty-input', function() {
+                calculateAll();
+            });
+
+            // Form Submit
+            $('#editIncomingForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var hasValidRow = false;
+                $('#itemsTableBody tr').each(function() {
+                    var stVal = $(this).find('.select2-store-row').val();
+                    var itVal = $(this).find('.select2-item-row').val();
+                    var q     = parseFloat($(this).find('.item-qty-input').val()) || 0;
+                    if (stVal && itVal && q > 0) {
+                        hasValidRow = true;
+                    }
+                });
+
+                if (!hasValidRow) {
+                    alert('يرجى تحديد المخزن، الصنف، وإدخال كمية صحيحة لبند واحد على الأقل.');
+                    return;
+                }
+
+                var btn = $('#btnSubmitForm');
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> جاري حفظ التعديل...');
+
+                $.ajax({
+                    url: 'controller.php',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(resp) {
+                        btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> حفظ تعديلات إذن الوارد');
+                        if ($.trim(resp) === '1' || parseInt(resp) > 0) {
+                            alert('تم حفظ تعديل إذن الوارد بنجاح.');
+                            window.location.href = 'incoming-entry.php';
+                        } else {
+                            alert(resp || 'حدث خطأ أثناء حفظ التعديل.');
+                        }
+                    },
+                    error: function() {
+                        btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> حفظ تعديلات إذن الوارد');
+                        alert('تعذر الاتصال بالخادم.');
+                    }
+                });
+            });
         });
     </script>
 </body>

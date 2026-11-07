@@ -2,6 +2,79 @@
    PROFESSIONAL ADMIN NAVBAR
    Modern, clean navbar with search, notifications, and user menu
    ═══════════════════════════════════════════════════════════════ -->
+<?php
+// Calculate live alerts for the notification bell
+$headerAlertsCount = 0;
+$headerAlertList = [];
+if (isset($adController) && $adController->MySQL) {
+    $hdrStoreId = (int)($_SESSION['storeid'] ?? 1);
+    $hdrQuery = "SELECT 
+                    i.id, i.name_ar, i.name_en, i.selt, i.expiry_date,
+                    (
+                        COALESCE((SELECT SUM(o.quantity) FROM open_palance o WHERE o.itemid = i.id), 0) +
+                        COALESCE((SELECT SUM(inc.quantity) FROM income_items inc WHERE inc.itemid = i.id AND inc.state = '1'), 0) -
+                        COALESCE((SELECT SUM(outg.quantity) FROM outgo_items outg WHERE outg.itemid = i.id AND outg.state = '1'), 0)
+                    ) AS current_stock
+                 FROM items i 
+                 WHERE (i.storeid = '$hdrStoreId' OR i.storeid = '0') AND i.enabled = '1'
+                 LIMIT 200";
+    $hdrRes = @mysqli_query($adController->MySQL, $hdrQuery);
+    if ($hdrRes) {
+        $todayDt = new DateTime();
+        while ($hItem = mysqli_fetch_assoc($hdrRes)) {
+            $hStock = (float)$hItem['current_stock'];
+            $hReorder = (float)$hItem['selt'];
+            if ($hReorder <= 0) $hReorder = 5.0;
+
+            $hName = !empty($hItem['name_ar']) ? $hItem['name_ar'] : $hItem['name_en'];
+
+            if ($hStock <= 0) {
+                $headerAlertsCount++;
+                if (count($headerAlertList) < 4) {
+                    $headerAlertList[] = [
+                        'type' => 'out_of_stock',
+                        'title' => 'نفاد المخزون',
+                        'desc' => "المنتج ($hName) نفدت كميته (0)",
+                        'icon' => 'fas fa-ban',
+                        'bg' => 'bg-danger text-white',
+                        'link' => 'inventory_alerts.php?type=out_of_stock'
+                    ];
+                }
+            } elseif ($hStock <= $hReorder) {
+                $headerAlertsCount++;
+                if (count($headerAlertList) < 4) {
+                    $headerAlertList[] = [
+                        'type' => 'low_stock',
+                        'title' => 'مخزون منخفض',
+                        'desc' => "المنتج ($hName) متبقي $hStock فقط",
+                        'icon' => 'fas fa-exclamation-triangle',
+                        'bg' => 'bg-warning text-dark',
+                        'link' => 'inventory_alerts.php?type=low_stock'
+                    ];
+                }
+            } elseif (!empty($hItem['expiry_date']) && $hItem['expiry_date'] !== '0000-00-00') {
+                try {
+                    $expDt = new DateTime($hItem['expiry_date']);
+                    $diffDays = (int)$todayDt->diff($expDt)->format('%r%a');
+                    if ($diffDays <= 60) {
+                        $headerAlertsCount++;
+                        if (count($headerAlertList) < 4) {
+                            $headerAlertList[] = [
+                                'type' => 'expiry',
+                                'title' => ($diffDays < 0) ? 'منتهي الصلاحية' : 'قرب انتهاء الصلاحية',
+                                'desc' => "المنتج ($hName) صلاحيته: {$hItem['expiry_date']}",
+                                'icon' => 'fas fa-hourglass-half',
+                                'bg' => 'bg-danger text-white',
+                                'link' => 'inventory_alerts.php?type=near_expiry'
+                            ];
+                        }
+                    }
+                } catch (\Throwable $t) {}
+            }
+        }
+    }
+}
+?>
 <nav class="admin-navbar">
   <!-- Left Section -->
   <div class="navbar-left">
@@ -32,56 +105,48 @@
     <div class="navbar-item">
       <button class="navbar-btn" data-action="notifications" data-bs-toggle="dropdown" aria-label="Notifications">
         <i class="fas fa-bell"></i>
-        <span class="navbar-badge">3</span>
+        <?php if ($headerAlertsCount > 0): ?>
+          <span class="navbar-badge"><?= $headerAlertsCount ?></span>
+        <?php endif; ?>
       </button>
-      <ul class="dropdown-menu dropdown-menu-end shadow" style="width: 320px;">
+      <ul class="dropdown-menu dropdown-menu-end shadow" style="width: 330px;">
         <li class="dropdown-header d-flex justify-content-between align-items-center px-3 py-2">
-          <strong>الإشعارات</strong>
-          <span class="badge-pro badge-pro-primary">3</span>
+          <strong>تنبيهات المخزون</strong>
+          <span class="badge-pro <?= ($headerAlertsCount > 0) ? 'badge-pro-danger' : 'badge-pro-success' ?>">
+            <?= $headerAlertsCount ?>
+          </span>
         </li>
         <li>
           <hr class="dropdown-divider m-0">
         </li>
-        <li>
-          <a class="dropdown-item py-3" href="#">
-            <div class="d-flex gap-3">
-              <div class="flex-shrink-0">
-                <div class="bg-warning-light text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                  <i class="fas fa-exclamation-triangle"></i>
+        <?php if (empty($headerAlertList)): ?>
+          <li class="px-3 py-4 text-center text-muted">
+            <i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i>
+            <span class="small">لا توجد تنبيهات عاجلة، المخزون آمن</span>
+          </li>
+        <?php else: ?>
+          <?php foreach ($headerAlertList as $alert): ?>
+            <li>
+              <a class="dropdown-item py-2 px-3 border-bottom" href="<?= htmlspecialchars($alert['link']) ?>">
+                <div class="d-flex gap-3 align-items-center">
+                  <div class="flex-shrink-0">
+                    <div class="<?= $alert['bg'] ?> rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; font-size: 0.9rem;">
+                      <i class="<?= $alert['icon'] ?>"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1 overflow-hidden">
+                    <div class="fw-semibold text-truncate small"><?= htmlspecialchars($alert['title']) ?></div>
+                    <div class="text-muted small text-truncate"><?= htmlspecialchars($alert['desc']) ?></div>
+                  </div>
                 </div>
-              </div>
-              <div class="flex-grow-1">
-                <div class="fw-semibold">مخزون منخفض</div>
-                <div class="text-muted small">5 منتجات بحاجة لإعادة طلب</div>
-                <div class="text-muted small mt-1">منذ 10 دقائق</div>
-              </div>
-            </div>
+              </a>
+            </li>
+          <?php endforeach; ?>
+        <?php endif; ?>
+        <li class="text-center py-2 bg-light">
+          <a href="inventory_alerts.php" class="small text-decoration-none fw-bold text-primary">
+            <i class="fas fa-external-link-alt me-1"></i> عرض كافة التنبيهات (<?= $headerAlertsCount ?>)
           </a>
-        </li>
-        <li>
-          <hr class="dropdown-divider m-0">
-        </li>
-        <li>
-          <a class="dropdown-item py-3" href="#">
-            <div class="d-flex gap-3">
-              <div class="flex-shrink-0">
-                <div class="bg-success-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                  <i class="fas fa-check-circle"></i>
-                </div>
-              </div>
-              <div class="flex-grow-1">
-                <div class="fw-semibold">طلب جديد</div>
-                <div class="text-muted small">تم استلام طلب جديد #12345</div>
-                <div class="text-muted small mt-1">منذ 30 دقيقة</div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <hr class="dropdown-divider m-0">
-        </li>
-        <li class="text-center py-2">
-          <a href="#" class="small text-decoration-none">عرض كل الإشعارات</a>
         </li>
       </ul>
     </div>

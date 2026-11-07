@@ -921,11 +921,15 @@ else
 
 
     define("CASH","كاش");
-    define("CARD_PAYMENT","فيزا");
+    define("CARD_PAYMENT","فيزا / كارت");
     define("Master Card","ماستر كارد");
-    define("SABAKAH","مدى");
+    define("SABAKAH","كارت / ميزة");
+    define("MEEZA","كارت / ميزة");
+    define("INSTAPAY","إنستاباي (InstaPay)");
+    define("WALLET","محفظة إلكترونية");
+    define("BANK_TRANSFER","تحويل بنكي");
     define("PAID","مدفوع");    
-    define("LEFT","آجل");
+    define("LEFT","آجل (على الحساب)");
 
     define("ORDER_TYPE","Order Type");
     define("CARD_NUMBER","رقم الفيزا");
@@ -1155,7 +1159,10 @@ define("CONSTANT_BRANCH_ADDED","1");
 define("CONSTANT_BRANCH_UPDATED","2");
 define("ENC_KEY","tU2s!f6w0~!@$%@@$$@!~@@!");
 define("ENC_BS",256);
-define("DEFAULT_CURRENCY","SAR");
+define("DEFAULT_CURRENCY","EGP");
+define("CURRENCY_SYMBOL","ج.م");
+define("CURRENCY_NAME","جنيه مصري");
+define("DEFAULT_VAT_PERCENT", 14);
 
 define("DIR_CAT",1);
 define("DIR_CAT_NAME","categories");

@@ -199,6 +199,10 @@
             <i class="fas fa-barcode nav-icon"></i>
             <span class="nav-text">طباعة الباركود</span>
           </a></li>
+        <li><a href="inventory_alerts.php" class="nav-link">
+            <i class="fas fa-exclamation-triangle nav-icon text-warning"></i>
+            <span class="nav-text">تنبيهات المخزون والصلاحية</span>
+          </a></li>
       </ul>
     </div>
 
@@ -228,6 +232,14 @@
         <li><a href="account-statement.php" class="nav-link">
             <i class="fas fa-file-alt nav-icon"></i>
             <span class="nav-text"><?= ACCOUNT_STATEMENT ?></span>
+          </a></li>
+        <li><a href="customer_statement.php" class="nav-link">
+            <i class="fas fa-file-invoice-dollar nav-icon text-success"></i>
+            <span class="nav-text">كشف حساب عميل</span>
+          </a></li>
+        <li><a href="supplier_statement.php" class="nav-link">
+            <i class="fas fa-file-invoice nav-icon text-info"></i>
+            <span class="nav-text">كشف حساب مورد</span>
           </a></li>
         <li><a href="expenditure.php" class="nav-link">
             <i class="fas fa-receipt nav-icon"></i>
@@ -262,6 +274,10 @@
         <li><a href="updates.php" class="nav-link">
             <i class="fas fa-sync-alt nav-icon"></i>
             <span class="nav-text"><?= UPDATES ?></span>
+          </a></li>
+        <li><a href="backup.php" class="nav-link">
+            <i class="fas fa-shield-alt nav-icon text-primary"></i>
+            <span class="nav-text">النسخ الاحتياطي والأمان</span>
           </a></li>
       </ul>
     </div>

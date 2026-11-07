@@ -4,352 +4,510 @@ require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
 
-$language = $_SESSION['lang'] ?? 'ar';
+$language = $_SESSION['lang'] ?? (defined('LANG') ? LANG : 'ar');
 $storeid  = intval($_SESSION['storeid'] ?? 1);
+$pgName   = basename(__FILE__);
 
-// مسح جداول التقارير المؤقتة للأرصدة الافتتاحية بأمان
-$query = "TRUNCATE TABLE report_open_palance";
-mysqli_query($adController->MySQL, $query);
-$query = "TRUNCATE TABLE report_open_palance_all";
-mysqli_query($adController->MySQL, $query);
+// Clear Jasper temporary tables
+mysqli_query($adController->MySQL, "TRUNCATE TABLE report_open_palance");
+mysqli_query($adController->MySQL, "TRUNCATE TABLE report_open_palance_all");
 
 if (isset($_REQUEST["store"])) {
     $_SESSION['store'] = trim($_REQUEST["store"]);
 }
+$selectedStore = $_SESSION['store'] ?? '';
+
+// Fetch active opening balance date
+$queryDate = "SELECT * FROM open_palance_date WHERE storeid='$storeid' OR storeid='0' ORDER BY id DESC LIMIT 1";
+$resDate   = mysqli_query($adController->MySQL, $queryDate);
+$dataDate  = $resDate ? mysqli_fetch_assoc($resDate) : null;
+$open_palance_date = !empty($dataDate['date']) ? date("Y-m-d", strtotime($dataDate['date'])) : date("Y-m-d");
+$_SESSION['open_palance_date'] = $open_palance_date;
+
+// Fetch store list
+$storesList = [];
+$resStores = mysqli_query($adController->MySQL, "SELECT id, name_ar, name_en, defualt FROM stores WHERE storeid='$storeid' OR storeid='0' ORDER BY id ASC");
+if ($resStores) {
+    while ($st = mysqli_fetch_assoc($resStores)) {
+        $storesList[] = $st;
+        if ($selectedStore === '' && ($st['defualt'] ?? 0) == 1) {
+            $selectedStore = $st['id'];
+            $_SESSION['store'] = $selectedStore;
+        }
+    }
+}
+
+// Fetch open balance items with single optimized JOIN query
+$storeSearch = "";
+if (!empty($selectedStore)) {
+    $cleanStore = intval($selectedStore);
+    $storeSearch = " AND op.store = '$cleanStore' ";
+}
+
+$query = "SELECT op.*, 
+                 s.name_ar AS store_name_ar, s.name_en AS store_name_en,
+                 i.barcode, i.intimate_stock, i.name_ar AS item_name_ar, i.name_en AS item_name_en,
+                 u.name_ar AS unit_name_ar, u.name_en AS unit_name_en
+          FROM open_palance op
+          LEFT JOIN stores s ON s.id = op.store
+          LEFT JOIN items i ON i.id = op.itemid
+          LEFT JOIN units u ON u.id = i.unit
+          WHERE (op.storeid = '$storeid' OR op.storeid = '0') $storeSearch
+          ORDER BY op.id DESC";
+$res = mysqli_query($adController->MySQL, $query);
+
+$itemsRows = [];
+$kpiTotalItems = 0;
+$kpiTotalQty   = 0;
+$kpiTotalValue = 0;
+
+if ($res) {
+    $i = 1;
+    while ($data = mysqli_fetch_assoc($res)) {
+        $barcode   = $data["barcode"] ?? '';
+        $count     = floatval($data["intimate_stock"] ?? 1);
+        $itemName  = ($language == 'en' && !empty($data['item_name_en'])) ? $data['item_name_en'] : (!empty($data['item_name_ar']) ? $data['item_name_ar'] : 'صنف');
+        $unitName  = ($language == 'en' && !empty($data['unit_name_en'])) ? $data['unit_name_en'] : (!empty($data['unit_name_ar']) ? $data['unit_name_ar'] : 'وحدة');
+        $stName    = ($language == 'en' && !empty($data['store_name_en'])) ? $data['store_name_en'] : (!empty($data['store_name_ar']) ? $data['store_name_ar'] : 'المخزن');
+
+        $quantity  = floatval($data['quantity'] ?? 0);
+        $cost      = floatval($data['cost'] ?? 0);
+        $discount  = floatval($data['discount'] ?? 0);
+
+        $preTotal  = $quantity * $cost;
+        $discValue = $preTotal * $discount / 100;
+        $discTotal = $preTotal - $discValue;
+
+        $kpiTotalItems++;
+        $kpiTotalQty   += $quantity;
+        $kpiTotalValue += $discTotal;
+
+        $idval     = urlencode($adController->encrypt_decrypt(1, $data['id'], 0));
+        $tableName = urlencode($adController->encrypt_decrypt(1, 'open_palance', 0));
+
+        $itemsRows[] = [
+            'id'        => $data['id'],
+            'seq'       => $i,
+            'store'     => $stName,
+            'barcode'   => $barcode,
+            'item'      => $itemName,
+            'unit'      => $unitName,
+            'quantity'  => $quantity,
+            'cost'      => $cost,
+            'discount'  => $discount,
+            'total'     => $discTotal,
+            'idval'     => $idval,
+            'tableName' => $tableName
+        ];
+
+        safe_query($adController->MySQL, 
+            "INSERT INTO `report_open_palance` (`id`, `store`, `barcode`, `item`, `unit`, `count`, `quantity`, `cost`, `discount`, `total`) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [$i, $stName, $barcode, $itemName, $unitName, $count, $quantity, $cost, $discount, $discTotal]);
+        $i++;
+    }
+}
+
+// Update report summary table
+$currStoreLabel = 'كل المخازن';
+if (!empty($selectedStore)) {
+    foreach ($storesList as $st) {
+        if ($st['id'] == $selectedStore) {
+            $currStoreLabel = $st['name_' . $language] ?? $st['name_ar'];
+            break;
+        }
+    }
+}
+
+safe_query($adController->MySQL, 
+    "INSERT INTO `report_open_palance_all` (`store`, `date`, `total`) VALUES (?, ?, ?)",
+    [$currStoreLabel, $open_palance_date, $kpiTotalValue]);
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
-    <title>WAM Tech Soft - <?=OPENING_PALANCE?></title>
-    <?php require_once("header.php"); ?>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الأرصدة الافتتاحية للمخازن | WAM Tech ERP</title>
+    <link rel="stylesheet" href="css/admin-pro.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
     <style>
-        .totalAll {
-            width: 140px;
-            border: #D73D3D solid 1px;
-            padding: 8px 15px;
-            margin-right: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #D73D3D;
-            background: #fff5f5;
-            text-align: center;
-            border-radius: 4px;
+        .kpi-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
-        .salesOptions {
-            display: inline-block;
-            margin-left: 20px;
-            vertical-align: middle;
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .edit-input {
+            width: 90px;
+            text-align: center;
+            padding: 4px 6px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .edit-input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
         }
     </style>
 </head>
-<body>
-    <?php require_once("header_top.php"); ?>
-    <div class="container-fluid-full">
-        <div class="row-fluid">
-            <?php require_once("left_menu.php"); ?>
-            <div class="span10" id="content">
-                <div>
-                    <div class="box span12">
-                        <div class="box-header" data-original-title="">
-                            <h2><i class="halflings-icon edit"></i><span class="break"></span><?=OPENING_PALANCE?></h2>
+<body class="admin-pro-body">
+    <?php require_once("components/header_pro.php"); ?>
+    
+    <div class="admin-wrapper">
+        <?php require_once("components/sidebar_pro.php"); ?>
+        
+        <main class="admin-main">
+            <div class="container-fluid px-4 py-4">
+                
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold text-dark mb-1">
+                            <i class="fas fa-balance-scale text-primary me-2"></i> الأرصدة الافتتاحية للمخازن
+                        </h2>
+                        <p class="text-muted mb-0">إدخال واعتماد أرصدة أول المدة للمستودعات وتعديل أسعار التكلفة الافتتاحية</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="reports/openPalance.php" target="_blank" class="btn btn-outline-danger">
+                            <i class="fas fa-file-pdf me-1"></i> طباعة تقرير الأرصدة (PDF)
+                        </a>
+                        <a href="add_open_palance.php" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> إضافة رصيد افتتاحي جديد
+                        </a>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="kpi-card">
+                            <div>
+                                <div class="text-muted small fw-bold">الأصناف المسجلة</div>
+                                <div class="fs-4 fw-bold text-dark font-monospace"><?= number_format($kpiTotalItems) ?></div>
+                            </div>
+                            <div class="kpi-icon" style="background:#e0f2fe; color:#0284c7;">
+                                <i class="fas fa-cubes"></i>
+                            </div>
                         </div>
-                        <div class="box-content">
-                            <p align="left">
-                                <a class="btn btn-success" href="add_open_palance.php" title="<?=NEW_ITEM?>">
-                                    <i class="icon-plus"></i> <?=NEW_ITEM?>
-                                </a>
-                            </p>
-                            <div class="box-content">
-                                <form action="open-palance.php" class="form-horizontal" id='form' method="post" name="form">
-                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
-                                    <fieldset>
-                                        <div class="control-group" style="display:flex; align-items:center; flex-wrap:wrap; gap:15px;">
-                                            <div class="salesOptions" style="min-width:220px;">
-                                                <label class="control-label" for="store" style="width:auto; float:none; margin-bottom:5px;"><?=STORES?></label>
-                                                <div class="controls" style="margin-right:0;">
-                                                    <select class='span12' name="store" id="store" onchange="this.form.submit()">
-                                                        <option value="">-- <?=ALL_STORES ?? 'كل المخازن'?> --</option>
-                                                        <?php
-                                                        $query = "SELECT * FROM stores WHERE storeid='$storeid' ORDER BY id ASC";
-                                                        $res   = mysqli_query($adController->MySQL, $query);
-                                                        $currentStore = $_SESSION['store'] ?? '';
-                                                        while ($data = mysqli_fetch_assoc($res)) {
-                                                            $name = $data["name_" . $language] ?? $data["name_ar"];
-                                                            $sel = "";
-                                                            if ($currentStore != '' && $currentStore == $data['id']) {
-                                                                $sel = " selected='selected' ";
-                                                            } elseif ($currentStore == '' && ($data["defualt"] ?? 0) == 1) {
-                                                                $_SESSION['store'] = $data['id'];
-                                                                $currentStore = $data['id'];
-                                                                $sel = " selected='selected' ";
-                                                            }
-                                                            echo "<option value='" . htmlspecialchars($data['id']) . "' $sel>" . htmlspecialchars($name) . "</option>";
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="kpi-card">
+                            <div>
+                                <div class="text-muted small fw-bold">إجمالي كميات الرصيد</div>
+                                <div class="fs-4 fw-bold text-success font-monospace"><?= number_format($kpiTotalQty, 2) ?></div>
+                            </div>
+                            <div class="kpi-icon" style="background:#dcfce7; color:#16a34a;">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="kpi-card">
+                            <div>
+                                <div class="text-muted small fw-bold">إجمالي القيمة التقديرية</div>
+                                <div class="fs-4 fw-bold text-primary font-monospace"><?= number_format($kpiTotalValue, 2) ?> <small class="fs-6 text-muted">ج.م</small></div>
+                            </div>
+                            <div class="kpi-icon" style="background:#fef3c7; color:#d97706;">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="kpi-card">
+                            <div>
+                                <div class="text-muted small fw-bold">تاريخ الرصيد الافتتاحي</div>
+                                <div class="fs-5 fw-bold text-dark font-monospace"><?= htmlspecialchars($open_palance_date) ?></div>
+                            </div>
+                            <div class="kpi-icon" style="background:#f1f5f9; color:#475569;">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                            <div class="salesOptions" style="min-width:240px;">
-                                                <?php 
-                                                    $queryDate = "SELECT * FROM open_palance_date WHERE storeid='$storeid' ORDER BY id DESC LIMIT 1";
-                                                    $resDate   = mysqli_query($adController->MySQL, $queryDate);
-                                                    $dataDate  = mysqli_fetch_assoc($resDate);
-                                                    $open_palance_date = !empty($dataDate['date']) ? date("d/m/Y", strtotime($dataDate['date'])) : date("d/m/Y");
-                                                    $_SESSION['open_palance_date'] = $open_palance_date;
-                                                ?>
-                                                <label class="control-label" for="palance-date" style="width:auto; float:none; margin-bottom:5px;"><?=DATE?></label>						
-                                                <div class="controls" style="margin-right:0; display:flex; gap:5px;">
-                                                    <input type="text" class="input-medium datepicker-nobar" name="palance-date" id="palance-date" value='<?=htmlspecialchars($_SESSION['open_palance_date'])?>' style="margin-bottom:0;">
-                                                    <button type="button" id='open-palance-date' class="btn btn-primary"><?=EDIT?></button>
-                                                </div>
-                                            </div>  
-
-                                            <div class="salesOptions" style="min-width:160px;">
-                                                <label class="control-label" style="width:auto; float:none; margin-bottom:5px;"><?=TOTAL?></label>
-                                                <div class="totalAll" id="totalAll">0.00</div>
-                                            </div>  
-
-                                            <div class="salesOptions" style="padding-top:22px;">
-                                                <button type="submit" id='report' name='report' class="btn btn-dark" title="<?=REPORT ?? 'طباعة التقرير'?>">
-                                                    <i class='halflings-icon white list-alt'></i> <?=REPORT ?? 'تقرير'?>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </fieldset>
+                <!-- Controls & Filter Bar -->
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-body p-3">
+                        <div class="row g-3 align-items-center">
+                            <!-- Store Filter -->
+                            <div class="col-md-5">
+                                <form action="<?= $pgName ?>" method="GET" class="d-flex align-items-center gap-2">
+                                    <label class="fw-bold text-secondary text-nowrap mb-0">
+                                        <i class="fas fa-warehouse text-primary me-1"></i> تصفية بالمخزن:
+                                    </label>
+                                    <select name="store" class="form-select" onchange="this.form.submit()">
+                                        <option value="">-- كل المخازن --</option>
+                                        <?php
+                                        foreach ($storesList as $st) {
+                                            $stName = $st['name_' . $language] ?? $st['name_ar'];
+                                            $sel = ($selectedStore !== '' && $selectedStore == $st['id']) ? 'selected' : '';
+                                            echo "<option value='{$st['id']}' $sel>" . htmlspecialchars($stName) . "</option>";
+                                        }
+                                        ?>
+                                    </select>
                                 </form>
                             </div>
 
-                            <table class="table table-striped table-bordered bootstrap-datatable datatable">
-                                <thead>
+                            <!-- Opening Balance Date Update -->
+                            <div class="col-md-7 d-flex align-items-center justify-content-md-end gap-2">
+                                <label class="fw-bold text-secondary text-nowrap mb-0">
+                                    <i class="fas fa-clock text-info me-1"></i> اعتماد تاريخ الرصيد:
+                                </label>
+                                <input type="date" id="openPalanceDateInput" class="form-control" style="max-width:180px;" value="<?= htmlspecialchars($open_palance_date) ?>">
+                                <button type="button" id="btnUpdateDate" class="btn btn-outline-primary text-nowrap">
+                                    <i class="fas fa-save me-1"></i> تحديث التاريخ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Open Balance Table -->
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0 text-dark">
+                            <i class="fas fa-list text-secondary me-2"></i> بيان الأرصدة الافتتاحية للمستودع: <span class="text-primary"><?= htmlspecialchars($currStoreLabel) ?></span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="table-responsive">
+                            <table id="openPalanceTable" class="table table-hover align-middle table-bordered mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <th style="width:40px;">#</th>
-                                        <th><?=STORE?></th>                                        
-                                        <th><?=ITEM_NAME?></th>
-                                        <th><?=UNIT?></th>
-                                        <th><?=QTY?></th>
-                                        <th><?=PRICE?></th>
-                                        <th><?=DISCOUNT?> %</th>
-                                        <th><?=TOTAL?></th> 
-                                        <th style="width:110px;"><?=ACTIONS ?? 'العمليات'?></th>
+                                        <th style="width: 45px;">#</th>
+                                        <th>المخزن</th>
+                                        <th>الباركود</th>
+                                        <th>اسم الصنف</th>
+                                        <th>الوحدة</th>
+                                        <th class="text-center" style="width: 110px;">الكمية</th>
+                                        <th class="text-center" style="width: 110px;">التكلفة (ج.م)</th>
+                                        <th class="text-center" style="width: 90px;">الخصم %</th>
+                                        <th class="text-end" style="width: 120px;">الإجمالي (ج.م)</th>
+                                        <th class="text-center" style="width: 110px;">إجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php
-                                    $storeSearch = '';
-                                    if (!empty($_SESSION['store'])) {
-                                        $cleanStore = intval($_SESSION['store']);
-                                        $storeSearch = " AND op.store = $cleanStore ";
-                                    }
-
-                                    $allTotal = 0;
-                                    $i = 1;
-                                    $reportInserts = [];
-
-                                    // استعلام موحد مع LEFT JOIN لمنع مشكلة N+1 استعلام
-                                    $query = "SELECT op.*, 
-                                                     s.name_ar AS store_name_ar, s.name_en AS store_name_en,
-                                                     i.barcode, i.intimate_stock, i.name_ar AS item_name_ar, i.name_en AS item_name_en,
-                                                     u.name_ar AS unit_name_ar, u.name_en AS unit_name_en
-                                              FROM open_palance op
-                                              LEFT JOIN stores s ON s.id = op.store AND s.storeid = '$storeid'
-                                              LEFT JOIN items i ON i.id = op.itemid AND i.storeid = '$storeid'
-                                              LEFT JOIN units u ON u.id = i.unit AND u.storeid = '$storeid'
-                                              WHERE op.storeid = '$storeid' $storeSearch
-                                              ORDER BY op.id ASC";
-
-                                    $res = mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
-
-                                    while ($data = mysqli_fetch_assoc($res)) {
-                                        $idval      = urlencode($adController->encrypt_decrypt(1, $data['id'], 0));
-                                        $tableName  = urlencode($adController->encrypt_decrypt(1, 'open_palance', 0));
-
-                                        $barcode    = $data["barcode"] ?? '';
-                                        $count      = floatval($data["intimate_stock"] ?? 0);
-
-                                        $itemName   = ($language == 'ar' ? $data['item_name_ar'] : $data['item_name_en']) ?? '';
-                                        if (empty($itemName) || $itemName == '`') {
-                                            $itemName = !empty($data['item_name_ar']) ? $data['item_name_ar'] : ($data['item_name_en'] ?? '');
-                                        }
-
-                                        $unitName   = ($language == 'ar' ? $data['unit_name_ar'] : $data['unit_name_en']) ?? '';
-                                        if (empty($unitName)) {
-                                            $unitName = !empty($data['unit_name_ar']) ? $data['unit_name_ar'] : ($data['unit_name_en'] ?? '');
-                                        }
-
-                                        $storeName  = ($language == 'ar' ? $data['store_name_ar'] : $data['store_name_en']) ?? '';
-                                        if (empty($storeName)) {
-                                            $storeName = !empty($data['store_name_ar']) ? $data['store_name_ar'] : ($data['store_name_en'] ?? '');
-                                        }
-
-                                        $quantity   = floatval($data['quantity'] ?? 0);
-                                        $cost       = floatval($data['cost'] ?? 0);
-                                        $discount   = floatval($data['discount'] ?? 0);
-
-                                        $preTotal   = $quantity * $cost;
-                                        $discValue  = $preTotal * $discount / 100;
-                                        $discTotal  = $preTotal - $discValue;
-                                        $allTotal  += $discTotal;
-
-                                        // تجهيز إدراج تقرير الأرصدة
-                                        $safeStoreName = mysqli_real_escape_string($adController->MySQL, $storeName);
-                                        $safeBarcode   = mysqli_real_escape_string($adController->MySQL, $barcode);
-                                        $safeItemName  = mysqli_real_escape_string($adController->MySQL, $itemName);
-                                        $safeUnitName  = mysqli_real_escape_string($adController->MySQL, $unitName);
-
-                                        $reportQuery = "INSERT INTO `report_open_palance` (`id`, `store`, `barcode`, `item`, `unit`, `count`, `quantity`, `cost`, `discount`, `total`) VALUES ('$i', '$safeStoreName', '$safeBarcode', '$safeItemName', '$safeUnitName', '$count', '$quantity', '$cost', '$discount', '$discTotal')";
-                                        mysqli_query($adController->MySQL, $reportQuery);
-                                        ?>
-                                        <tr>
-                                            <td><?= $i ?></td>
-                                            <td><?= htmlspecialchars($storeName) ?></td>
+                                    <?php foreach ($itemsRows as $r): ?>
+                                        <tr id="row-<?= $r['id'] ?>">
+                                            <td class="text-center text-muted"><?= $r['seq'] ?></td>
+                                            <td><?= htmlspecialchars($r['store']) ?></td>
                                             <td>
-                                                <input type="hidden" id="item-id-<?= $i ?>" value='<?= htmlspecialchars($data['id']) ?>' name='id[]'/>
-                                                <?= htmlspecialchars($itemName) ?>
+                                                <span class="badge bg-light text-dark border font-monospace px-2 py-1">
+                                                    <?= htmlspecialchars($r['barcode']) ?>
+                                                </span>
                                             </td>
-                                            <td><?= htmlspecialchars($unitName) ?></td>
-                                            <td>
-                                                <input type="text" id='item-qty-<?= $i ?>' class="item-qty span12" maxlength="20" name='item_qty[]' style="text-align:center;" value="<?= $quantity ?>">
+                                            <td class="fw-bold text-dark"><?= htmlspecialchars($r['item']) ?></td>
+                                            <td><span class="text-secondary"><?= htmlspecialchars($r['unit']) ?></span></td>
+                                            <td class="text-center">
+                                                <input type="number" step="0.01" class="edit-input item-qty" id="qty-<?= $r['id'] ?>" value="<?= $r['quantity'] ?>">
                                             </td>
-                                            <td>
-                                                <input type="text" id='item-price-<?= $i ?>' class="item-price span12" maxlength="20" name='item_price[]' style="text-align:center;" value="<?= $cost ?>">
+                                            <td class="text-center">
+                                                <input type="number" step="0.01" class="edit-input item-price" id="price-<?= $r['id'] ?>" value="<?= $r['cost'] ?>">
                                             </td>
-                                            <td>
-                                                <input type="text" id='item-discount-<?= $i ?>' class="item-discount span12" maxlength="20" name='item_disc[]' style="text-align:center;" value="<?= $discount ?>">
+                                            <td class="text-center">
+                                                <input type="number" step="0.01" class="edit-input item-disc" id="disc-<?= $r['id'] ?>" value="<?= $r['discount'] ?>">
                                             </td>
-                                            <td id='item-total-<?= $i ?>' style="font-weight:bold; text-align:center;">
-                                                <?= number_format($discTotal, 2, '.', '') ?>
-                                            </td>                                                    
-                                            <td class='center' style="text-align:center;">                                                        
-                                                <a class='item-edit btn btn-info' id='item-edit-<?= $i ?>' href='javascript:void(0)' title="<?=EDIT?>">
-                                                    <i class='halflings-icon white edit'></i>  
-                                                </a>
-                                                <a class='btn btn-danger' href='javascript:void(0)' onclick='javascript:deleteData("<?= $tableName ?>", "<?= $idval ?>");' title="<?=DELETE ?? 'حذف'?>">
-                                                    <i class='halflings-icon white trash'></i> 
-                                                </a>
+                                            <td class="text-end fw-bold text-primary font-monospace" id="total-<?= $r['id'] ?>">
+                                                <?= number_format($r['total'], 2) ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-success btn-save-row" data-id="<?= $r['id'] ?>" title="حفظ التعديل">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-delete-row" data-id="<?= $r['id'] ?>" data-table="<?= $r['tableName'] ?>" data-idval="<?= $r['idval'] ?>" title="حذف البند">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
                                             </td>
                                         </tr>
-                                        <?php
-                                        $i++;
-                                    }
-                                    ?>
+                                    <?php endforeach; ?>
                                 </tbody>
+                                <tfoot class="table-light">
+                                    <tr class="fw-bold">
+                                        <td colspan="5" class="text-end">الإجمالي العام للأرصدة:</td>
+                                        <td class="text-center text-success font-monospace" id="summaryQty"><?= number_format($kpiTotalQty, 2) ?></td>
+                                        <td colspan="2"></td>
+                                        <td class="text-end text-primary font-monospace" id="summaryVal"><?= number_format($kpiTotalValue, 2) ?> ج.م</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
                 </div>
+
             </div>
-        </div>
+        </main>
     </div>
 
-    <?php
-    if (empty($_SESSION['store'])) {
-        $store = 'كل المخازن';
-    } else {
-        $cleanStore = intval($_SESSION['store']);
-        $query     = "SELECT * FROM stores WHERE id='$cleanStore' AND storeid='$storeid'";
-        $resStore  = mysqli_query($adController->MySQL, $query);
-        $dataStore = mysqli_fetch_assoc($resStore);
-        $store     = $dataStore['name_ar'] ?? 'المخزن';
-    }
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 
-    $safeStore = mysqli_real_escape_string($adController->MySQL, $store);
-    $reportDate = !empty($dataDate['date']) ? $dataDate['date'] : date('Y-m-d H:i:s');
-    $safeDate  = mysqli_real_escape_string($adController->MySQL, $reportDate);
-
-    $query = "INSERT INTO `report_open_palance_all` (`store`, `date`, `total`) VALUES ('$safeStore', '$safeDate', '$allTotal')";
-    mysqli_query($adController->MySQL, $query);
-
-    if (isset($_POST["report"])) {
-        unset($_POST["report"]);
-    ?>
-        <script type="text/javascript">
-            window.open('reports/openPalance.php', '_blank');
-        </script>    
-    <?php
-    }
-    ?>
-     
-    <div class="clearfix"></div>
-    <?php require_once("footer.php"); ?>
-    
-    <script type="text/javascript">
-        function totalOpenPalance(id) {
-            var qty = parseFloat($("#item-qty-" + id).val()) || 0;
-            var price = parseFloat($("#item-price-" + id).val()) || 0;
-            var disc = parseFloat($("#item-discount-" + id).val()) || 0;
-            
-            var preTotal = qty * price;
-            var discount = preTotal * disc / 100;
-            var total = preTotal - discount;
-            
-            $("#item-total-" + id).html(total.toFixed(2));
-            calculateAllTotals();
-        }
-
-        function calculateAllTotals() {
-            var sum = 0;
-            $("td[id^='item-total-']").each(function() {
-                var val = parseFloat($(this).text()) || 0;
-                sum += val;
-            });
-            $("#totalAll").html(sum.toFixed(2));
-        }
-
+    <script>
         $(document).ready(function() {
-            calculateAllTotals();
-
-            var config = {
-                '.span12': { width: '100%' },
-                '.span3': { width: '95%' }
-            };
-            for (var selector in config) {
-                $(selector).chosen(config[selector]);
-            }
-
-            $(".item-qty, .item-price, .item-discount").on("blur change keyup", function() {
-                var id = $(this).attr('id').split('-').pop();
-                totalOpenPalance(id);
+            var table = $('#openPalanceTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/ar.json'
+                },
+                dom: "<'row mb-3'<'col-md-6 d-flex align-items-center gap-2'B><'col-md-6'f>>" +
+                     "<'row'<'col-12'tr>>" +
+                     "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel text-success me-1"></i> تصدير إكسيل',
+                        className: 'btn btn-outline-success btn-sm'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print me-1"></i> طباعة الجدول',
+                        className: 'btn btn-outline-dark btn-sm'
+                    }
+                ],
+                order: [[0, 'asc']],
+                pageLength: 25
             });
-            
-            $(".item-edit").click(function() {  
-                var id = $(this).attr('id').replace('item-edit-', '');
-                var q = $("#item-qty-" + id).val();
-                var p = $("#item-price-" + id).val();
-                var d = $("#item-discount-" + id).val();
-                var v = $("#item-id-" + id).val();
 
-                $("#overlay").show(300);
+            // Live calculation on inline input change
+            $(document).on('input', '.item-qty, .item-price, .item-disc', function() {
+                var id = $(this).attr('id').split('-')[1];
+                var q = parseFloat($('#qty-' + id).val()) || 0;
+                var p = parseFloat($('#price-' + id).val()) || 0;
+                var d = parseFloat($('#disc-' + id).val()) || 0;
+                var preTotal = q * p;
+                var discVal = preTotal * d / 100;
+                var total = preTotal - discVal;
+                $('#total-' + id).text(total.toFixed(2));
+            });
+
+            // Save inline edit
+            $(document).on('click', '.btn-save-row', function() {
+                var id = $(this).data('id');
+                var q = $('#qty-' + id).val();
+                var p = $('#price-' + id).val();
+                var d = $('#disc-' + id).val();
+                var btn = $(this);
+
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
                 $.ajax({
-                    url: "controller.php",
+                    url: 'controller.php',
+                    type: 'POST',
                     data: {
                         'f': 'update_openPalance',
                         'q': q,
                         'p': p,
                         'd': d,
-                        'id': v
+                        'id': id
                     },
-                    type: "POST",
-                    success: function(result) {
-                        $("#overlay").hide(300);
-                        if (parseInt($.trim(result)) > 0) {
-                            if (typeof data_updated !== 'undefined') {
-                                alert(data_updated);
-                            } else {
-                                alert("تم التحديث بنجاح");
-                            }
-                            location.reload();
+                    success: function(resp) {
+                        btn.prop('disabled', false).html('<i class="fas fa-check"></i>');
+                        if ($.trim(resp) === '1' || parseInt(resp) > 0) {
+                            btn.removeClass('btn-outline-success').addClass('btn-success');
+                            setTimeout(function() {
+                                btn.removeClass('btn-success').addClass('btn-outline-success');
+                            }, 1500);
                         } else {
-                            alert(result);
+                            alert('حدث خطأ أثناء حفظ التعديل: ' + resp);
                         }
                     },
                     error: function() {
-                        $("#overlay").hide(300);
-                        alert("حدث خطأ أثناء حفظ البيانات");
+                        btn.prop('disabled', false).html('<i class="fas fa-check"></i>');
+                        alert('تعذر الاتصال بالخادم لحفظ التعديل.');
                     }
                 });
-            });   
+            });
+
+            // Delete row
+            $(document).on('click', '.btn-delete-row', function() {
+                if (!confirm('هل أنت متأكد من رغبتك في حذف هذا البند من الأرصدة الافتتاحية؟')) {
+                    return;
+                }
+                var id = $(this).data('id');
+                var tableName = $(this).data('table');
+                var idval = $(this).data('idval');
+                var row = $('#row-' + id);
+
+                $.ajax({
+                    url: 'controller.php',
+                    type: 'POST',
+                    data: {
+                        'f': 'delete',
+                        't': tableName,
+                        'id': idval
+                    },
+                    success: function(resp) {
+                        if ($.trim(resp) === '1' || parseInt(resp) > 0) {
+                            row.fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                        } else {
+                            alert('تعذر حذف البند: ' + resp);
+                        }
+                    },
+                    error: function() {
+                        alert('حدث خطأ في الاتصال بالخادم.');
+                    }
+                });
+            });
+
+            // Update opening balance date
+            $('#btnUpdateDate').on('click', function() {
+                var d = $('#openPalanceDateInput').val();
+                if (!d) {
+                    alert('يرجى اختيار تاريخ صحيح.');
+                    return;
+                }
+                var btn = $(this);
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> جاري التحديث...');
+
+                $.ajax({
+                    url: 'controller.php',
+                    type: 'POST',
+                    data: {
+                        'f': 'updatepalDate',
+                        'date': d
+                    },
+                    success: function(resp) {
+                        btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> تحديث التاريخ');
+                        if ($.trim(resp) === '1' || parseInt(resp) > 0) {
+                            alert('تم تحديث تاريخ الرصيد الافتتاحي واعتماده بنجاح.');
+                            location.reload();
+                        } else {
+                            alert('حدث خطأ أثناء اعتماد التاريخ: ' + resp);
+                        }
+                    },
+                    error: function() {
+                        btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> تحديث التاريخ');
+                        alert('تعذر الاتصال بالخادم.');
+                    }
+                });
+            });
         });
     </script>
 </body>

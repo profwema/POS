@@ -193,6 +193,9 @@ if (isset($_REQUEST["catid"]))
 										</td>";
 										echo "<td class='text-center'>
 											<div class='d-flex gap-1 justify-content-center'>
+												<a class='btn-pro btn-pro-primary btn-pro-sm' href='item_card.php?id=$data[id]' title='بطاقة الصنف'>
+													<i class='fas fa-id-card'></i>  
+												</a>
 												<a class='btn-pro btn-pro-outline btn-pro-sm' href='edit_item.php?sd=$secondIdval' title='تعديل'>
 													<i class='fas fa-edit'></i>  
 												</a>

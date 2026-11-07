@@ -2,8 +2,10 @@
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
-$language 	= $_SESSION['lang'];
-$storeid	= $_SESSION['storeid'];
+
+$language = defined('LANG') ? LANG : ($_SESSION['lang'] ?? 'ar');
+$storeid  = (int)($_SESSION['storeid'] ?? 1);
+$currency = defined('CURRENCY_NAME') ? CURRENCY_NAME : 'ج.م';
 
 $rawId = $_REQUEST['sd'] ?? '';
 if (!is_numeric($rawId)) {
@@ -16,443 +18,544 @@ if (!is_numeric($rawId)) {
     $id = (int)$rawId;
 }
 
-$query = "SELECT * FROM quote WHERE id='$id'";
-$resP = mysqli_query($adController->MySQL, $query);
-$dataPur = mysqli_fetch_assoc($resP);
+$query = "SELECT * FROM quote WHERE id='$id' AND (storeid='$storeid' OR storeid='0') LIMIT 1";
+$resP  = mysqli_query($adController->MySQL, $query);
+$dataPur = $resP ? mysqli_fetch_assoc($resP) : null;
 
-$itemsListArray = [];
-$query = "SELECT * FROM quote_items WHERE storeid='$storeid' AND purchase_id='$id'";
+if (!$dataPur) {
+    die("<div style='text-align:center; padding:50px; font-family:sans-serif;'><h3>خطأ: لم يتم العثور على عرض السعر المطلوب</h3><a href='quotations.php'>العودة لقائمة العروض</a></div>");
+}
+
+// Fetch quote items
+$savedItems = [];
+$query = "SELECT qi.*, i.name_ar, i.name_en, i.barcode, u.name_ar AS unit_ar, u.name_en AS unit_en 
+          FROM quote_items qi 
+          LEFT JOIN items i ON qi.itemid = i.id 
+          LEFT JOIN units u ON i.unit = u.id 
+          WHERE qi.purchase_id='$id' AND (qi.storeid='$storeid' OR qi.storeid='0')
+          ORDER BY qi.id ASC";
 $ress = mysqli_query($adController->MySQL, $query);
-$numRowss = mysqli_num_rows($ress);
-$numAlready = $numRowss - 1;
-if ($numAlready < 0) {
-    $numAlready = 0;
-}
-while ($dataItemsList = mysqli_fetch_assoc($ress)) {
-    $itemsListArray[] = $dataItemsList;
-}
-?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title>WAM Tech Soft</title>
-	<?php require_once("script_php_variables.php");?>
-	<?php require_once("header.php");?>	
-        <script type="text/javascript">
-//            var itemsAlready    = "";
-//            itemsAlready        = $.parseJSON(itemsAlready);
-            numAlready          = <?=$numAlready?>;
-        </script>    
-         
-</head>
-
-<body>
-		<?php require_once("header_top.php");?>
-	
-		<div class="container-fluid-full">
-		<div class="row-fluid">
-			<?php require_once("left_menu.php");?>
-			<div id="content" class="span10">
-			<div>
-				<div class="box span12">
-					<div class="box-header" data-original-title>
-                                            <h2><i class="halflings-icon edit"></i><span class="break"></span>
-                                                <a href="quotations.php"><?=QUOTATIONS?></a> >> <?=EDIT?>
-                                            </h2>
-					</div>
-					<div class="box-content">
-						<form class="form-horizontal" id="quote-form">
-                                                    <input type="hidden" value="<?=$id?>" name='sd'>
-						  <input type="hidden" value="editQuote" name="f">
-						  <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-						  <fieldset>
-                                                      
-							<div class="control-group">
-                                                            <div class="salesOptions">
-							  <label class="control-label" for="typeahead"><?=INVOICE_NUMBER?> : </label>
-							  <div class="controls">
-                                                               <?php
-//                                                               $query   = "SELECT invoicenumber
-//                                                                        FROM purchase
-//                                                                        WHERE storeid='$storeid'                                          
-//                                                                        ORDER BY invoicenumber DESC
-//                                                                        LIMIT 1";
-//                                                                $res	= mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-//                                                                $num	= mysqli_num_rows($res);
-//                                                                $data	= mysqli_fetch_assoc($res);
-//                                                                if($num)
-//                                                                {
-//                                                                    $rest = substr($data['invoicenumber'], -4);  
-//                                                                    $trans_No = intval($rest)+1;
-//                                                                }
-//                                                                    
-//                                                                else 
-//                                                                    $trans_No = 1;
-//                                                                
-//                                                                //$rand           = rand(0,9999);
-//                                                                //$rand           =  str_pad($rand,4,"0",STR_PAD_LEFT);
-//                                                                //$ip             = str_replace(".","",$_SERVER['REMOTE_ADDR']);
-//                                                                $time           = time();
-                                                               // $invoice        = $storeid.'-'.$time.'-'.str_pad($trans_No,4,"0",STR_PAD_LEFT);; 
-                                                               $invoice        =  $dataPur['invoicenumber'];
-                                                              ?>
-                                                              <input type="text" 
-                                                                     class=" typeahead"  
-                                                                     name='invoice' 
-                                                                     id='invoice' 
-                                                                     value ='<?php echo $invoice ?>'
-                                                                     readonly>
-								 <span class="help-inline email-un">&nbsp;</span>
-							  </div>
-							</div>  
-                                                      
-                                                            <div class="salesOptions">
-								<label class="control-label"><?=INVOICE_DATE?></label>
-								<div class="controls">
-								  <input type="text"
-                                                                         class="datepicker-nobar" 
-                                                                         name="purchase_expiry"  
-                                                                         value="<?=date("d/m/Y",strtotime($dataPur['purchase_date']))?>">
-								</div>
-							</div>
-                                                        </div>
-                                                      <br>
-
-							<div class="control-group">
-                                                            <div class="salesOptions">
-
-							  <label class="control-label" for="typeahead"><?=CUSTOMER_NAME?> : </label>
-							  <div class="controls">
-                                                                 <select name="customer" data-rel="chosen">
-
-									<?php
-										$query      = "SELECT * FROM customers WHERE storeid='$storeid'";
-										$res        = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-										while($data = mysqli_fetch_assoc($res))
-										{
-											$sup_id   = $data['id'];
-											$name = $data['name_'.$language];
-                                                                                        if($sup_id == $dataPur['supplier'])
-                                                                                           echo "<option value='$sup_id' selected>$name</option>"; 
-                                                                                        else
-											   echo "<option value='$sup_id'>$name</option>";
-
-										}
-									?>
-								  </select>
-								 <span class="help-inline">&nbsp;</span>
-                                                                 <a href='customers.php'class="linked" style=" padding-top: 20px;  margin-left: 40px ; "><?=ADD_EDIT_CUSTOMER?></a>
-							  </div>
-							</div>
-                                                            <div class="salesOptions">
-							  <label class="control-label" for="typeahead"><?=DOCUMENT?> : </label>
-							  <div class="controls">
-								 <input type="text" 
-                                                                        class=" typeahead"  
-                                                                        name='supplier_invoice' 
-                                                                        id='supplier_invoice'
-                                                                       value="<?=$dataPur['supplier_invoice']?>">
-							  </div>
-							</div>
-                                                        </div>
-                                                      <br>
-                                                        <div class="control-group">                                                                                                                       
-                                                            <div class="salesOptions">
-
-							  <label class="control-label"><?=BRANCH?> :</label>
-							  <div class="controls">
-								  <select name="branch" data-rel="chosen">
-                                                                        <option value=''> </option>
-									<?php
-										$query = "SELECT * FROM branches WHERE storeid='$storeid' ORDER BY name_en ASC";
-										$res   = mysqli_query($adController->MySQL,$query) or die(mysqli_error($adController->MySQL));
-										while($data= mysqli_fetch_assoc($res))
-										{
-											$bra_id   = $data['id'];
-											$name = $data['name_'.$language];
-                                                                                        if($bra_id == $dataPur['branch'])
-                                                                                           echo "<option value='$bra_id' selected>$name</option>"; 
-                                                                                        else
-											   echo "<option value='$bra_id'>$name</option>";
-
-										}
-									?>
-								  </select>
-							  </div>
-                                                            </div>
-							</div>							                                           
-                                                      <div class="control-group" >
-                                                          <div class="controls" style="margin-top:20px; margin-left:0px">	
-                                                              <table  class=" table-bordered " style="width:100%">                                              
-                                                 <tr>
-                                                    <TH><?=STORES?> </th>
-                                                    <TH ><?=BARCODE?>|<?=ITEM_NAME?>|<?=UNITS?></TH>    
-                                                    <TH ><?=QUANTITY?></TH>
-                                                    <TH ><?=QTY_AFTER?></TH>
-                                                    <TH ><?=PRICE?></TH>
-                                                    <TH ><?=DISCOUNT?> %</TH>
-                                                    <TH ><?=TOTAL_A_DIS?> </TH>
-                                                    <TH ><?=VAT?> %</TH>
-                                                    <TH ><?=VAT_VALUE?></TH>
-                                                    <TH ><?=TOTAL?></TH>
-                                                    <TH>&nbsp;</TH>
-                                                    <TH>&nbsp;</TH>
-                                                </tr>
-                                                <?php
-                                                $storesCache = [];
-                                                $resStores = mysqli_query($adController->MySQL, "SELECT * FROM stores WHERE storeid='$storeid'");
-                                                while ($st = mysqli_fetch_assoc($resStores)) {
-                                                    $storesCache[] = $st;
-                                                }
-                                                $itemsCache = [];
-                                                $resItems = mysqli_query($adController->MySQL, "SELECT i.*, u.name_ar AS unit_name_ar, u.name_en AS unit_name_en FROM items i LEFT JOIN units u ON i.unit = u.id WHERE i.storeid='$storeid' ORDER BY i.name_ar ASC");
-                                                while ($it = mysqli_fetch_assoc($resItems)) {
-                                                    $itemsCache[] = $it;
-                                                }
-
-                                                for($i = 0 ;$i < 10 ; $i++)
-                                                {
-                                                    $curItem = $itemsListArray[$i] ?? [];
-                                                    $curStore = $curItem['store'] ?? '';
-                                                    $curItemId = $curItem['itemid'] ?? '';
-                                                    $curQty = htmlspecialchars($curItem['quantity'] ?? '');
-                                                    $curCost = htmlspecialchars($curItem['cost'] ?? '');
-                                                    $curDisc = htmlspecialchars($curItem['discount'] ?? '');
-                                                    $curTax = htmlspecialchars($curItem['tax'] ?? '');
-                                                ?>
-                                                <tr id='row-v-<?=$i?>'>
-                                                    <td style="width:10%">
-                                                        <select id='store-<?=$i?>' name="store[]" data-rel="chosen" style="width:100%">
-                                                            <option value=""></option>
-                                                            <?php
-                                                            foreach ($storesCache as $st) {
-                                                                $stId = $st['id'];
-                                                                $stName = htmlspecialchars($st["name_" . $language] ?? $st["name_ar"]);
-                                                                $selected = '';
-                                                                if ($stId == $curStore) {
-                                                                    $selected = 'selected';
-                                                                } elseif ($curStore == '' && $st['default'] == '1') {
-                                                                    $selected = 'selected';
-                                                                }
-                                                                echo "<option value='$stId' $selected>$stName</option>";
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </td>
-                                                    <td style="width:20%">
-                                                        <select id='barcode-<?=$i?>' name="barcode[]" data-rel="chosen" class="barcode-select" style="width:100%">
-                                                            <option value=''> </option>
-                                                            <?php
-                                                            foreach ($itemsCache as $it) {
-                                                                $barcode = $it['barcode'] ?: '-----';
-                                                                $itemName = $it['name_' . $language] ?? '';
-                                                                if ($itemName == '' || $itemName == '`') {
-                                                                    $itemName = ($language == 'en') ? ($it['name_ar'] ?? '') : ($it['name_en'] ?? '');
-                                                                }
-                                                                $unitName = ($language == 'en') ? ($it['unit_name_en'] ?? '-----') : ($it['unit_name_ar'] ?? '-----');
-                                                                if (!$unitName) $unitName = '-----';
-                                                                $valStr = htmlspecialchars("$i@@{$it['id']}@@{$it['vat']}@@$barcode@@$itemName@@$unitName", ENT_QUOTES);
-                                                                $labelStr = htmlspecialchars("$barcode | $itemName | $unitName");
-                                                                $selected = ($it['id'] == $curItemId) ? 'selected' : '';
-                                                                echo "<option value='$valStr' $selected>$labelStr</option>";
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </td>
-                                                    <td><input type="text" id='item-qty-<?=$i?>' class="item-qty span12 typeahead" maxlength="100" name='item_qty[]' value="<?=$curQty?>"></td>
-                                                    <td><input type="text" id='item-qty-after-<?=$i?>' class="item-qty-after span12 typeahead" maxlength="100" name='item_qty_after[]' readonly></td>
-                                                    <td><input type="text" id='item-price-<?=$i?>' class="item-price span12 typeahead" maxlength="100" name='item_price[]' value="<?=$curCost?>"></td>
-                                                    <td><input type="text" id='item-discount-<?=$i?>' class="item-discount span12 typeahead" maxlength="100" name='item_disc[]' style="width:75%;" value="<?=$curDisc?>"></td>
-                                                    <td><input type="text" id='item-total-after-dis-<?=$i?>' class="item-total-after-dis span12 typeahead" maxlength="100" name='item_total_after_dis[]' readonly></td>
-                                                    <td><input type="text" id='item-vat-<?=$i?>' class="item-vat span12 typeahead" maxlength="100" name='item_vat[]' style="width:75%;" value="<?=$curTax?>"></td>
-                                                    <td><input type="text" id='item-vat-value-<?=$i?>' class="item-vat-value span12 typeahead" maxlength="100" name='item_vat_value[]' readonly></td>
-                                                    <td>
-                                                        <input type="text" id='item-total-<?=$i?>' class="item-total span12 typeahead" maxlength="100" name='item-total[]' readonly>
-                                                        <script type="text/javascript">
-                                                            $(document).ready(function() {
-                                                                totalParshase(<?=$i?>);
-                                                            });
-                                                        </script>
-                                                    </td>
-                                                    <td class='del-parchase-item mult-padding' prop='<?=$i?>'><label>x</label></td>
-                                                    <td class='more-parchase-item mult-padding' prop='<?=$i?>'><label>+</label></td>
-                                                </tr>
-                                                <?php } ?>
-                                                </table>
-                                        </div>
-                                    </div>                                  				
-                                    <hr>
-                                    
-                                    <div class="control-group">
-                                        <div style="margin-top:20px; float: right; margin-right: 20px">
-                                            
-                                            	
-                                                <table class="span12 table table-striped table-bordered " >                                                
-                                                     <tr>
-                                                         <TH colspan="2"><h4><?=TOTAlS?></h4></th>
-                                                     </tr>
-                                                    <tr>
-                                                        
-                                                        <Td style="width:40%">اجمالى بدون ضريبة </td>
-                                                    <Td  >
-                                                        <input type="text" class="span12 typeahead" width="80%" id="total-before-vat" value="0.00" readonly>
-                                                        </Td>    
-                                                    </tr>
-                                                    <tr>
-                                                    <Td> أجمالى قيمة الضريبة</td>
-                                                    <Td >
-                                                        <input type="text" class="span12 typeahead" id="total-vat-value" value="0.00" readonly>
-                                                        </Td>    
-                                                    </tr>
-                                                    <tr>
-                                                    <Td>الاجمالى شامل الضريبة </td>
-                                                    <Td>
-                                                        <input type="text" class="span12 typeahead" id="total-after-vat" value="0.00"readonly>
-                                                        </Td>    
-                                                    </tr>
-                                                    <tr>
-                                                    <Td>خصم اضافي </td>
-                                                    <Td>                                                        								
-                                                        <input type="text" class="span12 typeahead" name='final_discount' id='final_discount' value="<?=$dataPur['dis_added']?>">
-
-                                                    </Td>    
-                                                    </tr>
-                                                    <tr style="font-size: 16px ">
-                                                        <Td style=" padding: 10px; ">الأجمالى النهائي</td>
-                                                    <Td>
-                                                        <input type="text" class="span12 typeahead" name="totalAll" id="totalAll" value="0.00"readonly>
-                                                       </Td>    
-                                                    </tr>
-                                                </table>
-                                            
-                                        </div>
-                                    </div>
-                                    
-                                    
-                                    
-                                    
-							
-							<div class="form-actions">
-							  <button type="button" id='submit-quote' class="btn btn-primary"><?=SAVE?></button>
-							  <button type="reset" class="btn"><?=CANCEL?></button>
-							</div>
-							<p>&nbsp;</p>
-							<p class='error-red'>
-								&nbsp;
-								
-							</p>
-
-						  </fieldset>
-						</form>   
-
-					</div>
-				</div>
-
-			</div>
-
-			
-
-		</div>
-		</div>
-		</div>
-		
-	
-	<div class="clearfix"></div>
-	
-	<?php require_once("footer.php");?>
-         <script type="text/javascript">
-             
-
-function totalParshase(id)
-{
-        // بيجسب اجمالى الكمية فى السعر
-       var preTotal =  $("#item-qty-"+id).val() * $("#item-price-"+id).val();
-       // بيحسب مقدار الخصم
-       var discount = preTotal * $("#item-discount-"+id).val() / 100;
-       // بيحسب الاجمالى بعد الخصم ويعرضه
-       var disTotal = preTotal - discount;
-       $("#item-total-after-dis-"+id).val( disTotal.toFixed(2) );
- 
-       //-----------------------
-       // بيحسب قيمة الضريبة ويعرضها 
-       var vaTax    = disTotal * $("#item-vat-"+id).val() / 100;
-       $("#item-vat-value-"+id).val( vaTax.toFixed(2) );
-
-       //-----------------------
-       // بيحصب الاجمالى الاخير للصنف 
-       var total    = disTotal + vaTax ;
-       $("#item-total-"+id).val( total.toFixed(2) );   
-
-       // يحسب الاجمالى فى الاسفل
-        var total_before_vat = 0;
-        var total_vat_value = 0;
-        var total_after_vat = 0;
-    for ( var i = 0 ; i<10; i++)
-    {
-        if ( $("#item-qty-"+i).val() != '')
-        {
-            //alert(i);
-            total_before_vat = total_before_vat + parseFloat( $("#item-total-after-dis-"+i).val()); 
-            total_vat_value = total_vat_value + parseFloat( $("#item-vat-value-"+i).val()); 
-            total_after_vat = total_after_vat + parseFloat( $("#item-total-"+i).val()); 
-            
-        //alert(total_before_vat);
-        }
-        
+if ($ress) {
+    while ($row = mysqli_fetch_assoc($ress)) {
+        $savedItems[] = [
+            'itemid' => (int)$row['itemid'],
+            'store' => (int)$row['store'],
+            'qty' => (float)$row['quantity'],
+            'price' => (float)$row['cost'],
+            'disc' => (float)$row['discount'],
+            'tax' => (float)$row['tax'],
+            'name' => ($language == 'ar' ? $row['name_ar'] : $row['name_en']) ?: $row['name_ar'],
+            'barcode' => !empty($row['barcode']) ? $row['barcode'] : '---',
+            'unit' => ($language == 'ar' ? ($row['unit_ar'] ?? '') : ($row['unit_en'] ?? '')) ?: 'قطعة'
+        ];
     }
-    $("#total-before-vat").val( total_before_vat.toFixed(2) ) ;
-    $("#total-vat-value").val( total_vat_value.toFixed(2) ) ;
-    $("#total-after-vat").val( total_after_vat.toFixed(2) ) ;
-    // بيحسب الاجمالى النهائى للكل فى الاسفل باضافه الاجمالى شامل الضريبه على الخصم الاضافي
-    var totalAll = total_after_vat - parseFloat($("#final_discount").val());
-    $("#totalAll").val ( totalAll.toFixed(2) ) ;
 }
-             
-        $(document).ready(function()
-        {
-            var config = {
-                '.span3'     : { width: '95%' }
-            };
-            for (var selector in config) 
-            {
-                $(selector).chosen(config[selector]);
+
+// Pre-fetch items catalog
+$queryItemsFast = "SELECT i.id, i.barcode, i.name_ar, i.name_en, i.item_type, i.vat, i.price, i.discount, u.name_ar AS unit_ar, u.name_en AS unit_en 
+                   FROM items i 
+                   LEFT JOIN units u ON i.unit = u.id 
+                   WHERE (i.storeid = '$storeid' OR i.storeid = '0') AND i.enabled = '1'
+                   ORDER BY i.name_ar ASC";
+$resItemsFast = mysqli_query($adController->MySQL, $queryItemsFast);
+$itemsCache = [];
+if ($resItemsFast) {
+    while ($row = mysqli_fetch_assoc($resItemsFast)) {
+        $bcode = !empty($row['barcode']) ? $row['barcode'] : "-----";
+        $iName = !empty($row['name_ar']) ? $row['name_ar'] : (!empty($row['name_en']) ? $row['name_en'] : '---');
+        $uName = !empty($row['unit_ar']) ? $row['unit_ar'] : (!empty($row['unit_en']) ? $row['unit_en'] : "قطعة");
+        $itemsCache[] = [
+            'id' => (int)$row['id'],
+            'barcode' => $bcode,
+            'name' => $iName,
+            'unit' => $uName,
+            'type' => (int)($row['item_type'] ?? 0),
+            'vat' => (float)($row['vat'] ?? 14),
+            'price' => (float)($row['price'] ?? 0),
+            'disc' => (float)($row['discount'] ?? 0)
+        ];
+    }
+}
+
+// Pre-fetch stores
+$storesCache = [];
+$resStore = mysqli_query($adController->MySQL, "SELECT id, name_ar, name_en, branch FROM stores WHERE storeid='$storeid' OR storeid='0'");
+if ($resStore) {
+    while ($sRow = mysqli_fetch_assoc($resStore)) {
+        $sName = !empty($sRow['name_ar']) ? $sRow['name_ar'] : $sRow['name_en'];
+        $storesCache[] = [
+            'id' => (int)$sRow['id'],
+            'name' => $sName,
+            'branch' => (int)$sRow['branch']
+        ];
+    }
+}
+
+$invoiceNo   = htmlspecialchars($dataPur['invoicenumber'] ?? '');
+$invBranch   = (int)($dataPur['branch'] ?? 1);
+$invDate     = !empty($dataPur['purchase_date']) ? date('Y-m-d', strtotime($dataPur['purchase_date'])) : date('Y-m-d');
+$invCustomer = (int)($dataPur['supplier'] ?? 0);
+$invDoc      = htmlspecialchars($dataPur['supplier_invoice'] ?? '');
+$invTotalAll = (float)($dataPur['all_total'] ?? 0);
+?>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>تعديل عرض سعر #<?=$invoiceNo?> - ERP WAM Tech</title>
+    <?php require_once("header.php"); ?>
+    <link href="css/admin-pro.css" rel="stylesheet">
+    <style>
+        .item-row:hover {
+            background-color: rgba(59, 130, 246, 0.03);
+        }
+        .table-compact th, .table-compact td {
+            padding: 8px 6px;
+            vertical-align: middle;
+        }
+        .totals-summary-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .form-section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #334155;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <?php require_once("components/sidebar_pro.php"); ?>
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <?php require_once("components/header_pro.php"); ?>
+            <main class="admin-content">
+                
+                <!-- Page Breadcrumbs -->
+                <div class="page-header d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="page-title fs-4 fw-bold mb-1">
+                            <i class="fas fa-edit text-primary me-2"></i>
+                            تعديل عرض السعر #<?=$invoiceNo?>
+                        </h1>
+                        <div class="page-breadcrumb text-muted fs-7">
+                            <a href="index.php" class="text-decoration-none text-muted"><i class="fas fa-home"></i> الرئيسية</a>
+                            <span class="mx-2">/</span>
+                            <a href="quotations.php" class="text-decoration-none text-muted"><?=QUOTATIONS?></a>
+                            <span class="mx-2">/</span>
+                            <span class="text-primary fw-semibold"><?=EDIT?> (<?=$invoiceNo?>)</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="quotations.php" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> العودة لقائمة العروض
+                        </a>
+                        <a href="print_quote.php?id=<?=$id?>" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-print me-1"></i> معاينة وطباعة
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <form id="quote-form" autocomplete="off">
+                    <input type="hidden" name="f" value="editQuote">
+                    <input type="hidden" name="sd" value="<?=$id?>">
+                    <input type="hidden" name="csrf_token" value="<?=csrf_token()?>">
+
+                    <!-- Header Card -->
+                    <div class="card-pro mb-4 p-4">
+                        <div class="form-section-title d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-info-circle text-primary me-2"></i>معلومات العرض الأساسية</span>
+                            <span class="badge bg-primary-subtle text-primary">تعديل بيانات العرض</span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold fs-7 text-secondary">الفرع <span class="text-danger">*</span></label>
+                                <select name="branch" id="branch" class="form-select" required onchange="onBranchChange(this.value)">
+                                    <?php
+                                    $qBr = "SELECT id, name_ar, name_en FROM branches WHERE (storeid='$storeid' OR storeid='0') ORDER BY id ASC";
+                                    $rBr = mysqli_query($adController->MySQL, $qBr);
+                                    if ($rBr) {
+                                        while ($b = mysqli_fetch_assoc($rBr)) {
+                                            $bName = ($language == 'ar' ? $b['name_ar'] : $b['name_en']) ?: $b['name_ar'];
+                                            $sel = ($b['id'] == $invBranch) ? 'selected' : '';
+                                            echo "<option value='{$b['id']}' $sel>" . htmlspecialchars($bName) . "</option>";
+                                        }
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold fs-7 text-secondary">رقم عرض السعر</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-hashtag text-muted"></i></span>
+                                    <input type="text" class="form-control fw-bold text-primary bg-light" name="invoice" id="invoice" value="<?=$invoiceNo?>" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold fs-7 text-secondary">تاريخ العرض <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" name="purchase_expiry" id="purchase_expiry" value="<?=$invDate?>" required>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold fs-7 text-secondary">العميل <span class="text-danger">*</span></label>
+                                <select name="customer" id="customer" class="form-select" required>
+                                    <option value="">-- اختر العميل --</option>
+                                    <?php
+                                    $qCust = "SELECT id, name_ar, name_en, phone FROM customers WHERE (storeid='$storeid' OR storeid='0') ORDER BY name_ar ASC";
+                                    $rCust = mysqli_query($adController->MySQL, $qCust);
+                                    if ($rCust) {
+                                        while ($c = mysqli_fetch_assoc($rCust)) {
+                                            $cName = ($language == 'ar' ? $c['name_ar'] : $c['name_en']) ?: $c['name_ar'];
+                                            $phone = !empty($c['phone']) ? " ({$c['phone']})" : "";
+                                            $sel = ($c['id'] == $invCustomer) ? 'selected' : '';
+                                            echo "<option value='{$c['id']}' $sel>" . htmlspecialchars($cName . $phone) . "</option>";
+                                        }
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold fs-7 text-secondary">المرجع / السند</label>
+                                <input type="text" class="form-control" name="supplier_invoice" id="supplier_invoice" value="<?=$invDoc?>" placeholder="رقم طلب العميل أو مرجع المناقصة">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Table Card -->
+                    <div class="card-pro mb-4 p-4">
+                        <div class="form-section-title d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-boxes text-primary me-2"></i>الأصناف والأسعار المندرجة بالعرض</span>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="addNewRow()">
+                                <i class="fas fa-plus me-1"></i> إضافة صنف
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-compact text-center align-middle" id="itemsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 15%;">المخزن <span class="text-danger">*</span></th>
+                                        <th style="width: 30%;">الصنف / الباركود <span class="text-danger">*</span></th>
+                                        <th style="width: 10%;">الكمية <span class="text-danger">*</span></th>
+                                        <th style="width: 12%;">سعر الوحدة <span class="text-danger">*</span></th>
+                                        <th style="width: 9%;">الخصم %</th>
+                                        <th style="width: 12%;">قبل الضريبة</th>
+                                        <th style="width: 8%;">ضريبة %</th>
+                                        <th style="width: 12%;">الإجمالي بالضريبة</th>
+                                        <th style="width: 4%;">حذف</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsTableBody">
+                                    <!-- Dynamic rows via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-start mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addNewRow()">
+                                <i class="fas fa-plus-circle me-1"></i> إضافة بند إضافي
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Financial Summary & Submission -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-6 offset-lg-6">
+                            <div class="totals-summary-card">
+                                <div class="form-section-title">
+                                    <i class="fas fa-calculator text-primary me-2"></i>إجمالي عرض السعر التقديري
+                                </div>
+
+                                <table class="table table-borderless align-middle mb-0">
+                                    <tr>
+                                        <td class="text-secondary">الإجمالي قبل الخصم:</td>
+                                        <td class="text-end fw-bold" id="gross_display">0.00 <?=$currency?></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-secondary">إجمالي الخصم الممنوح:</td>
+                                        <td class="text-end fw-bold text-info" id="disc_display">0.00 <?=$currency?></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-secondary">ضريبة القيمة المضافة 14%:</td>
+                                        <td class="text-end fw-bold text-danger" id="vat_display">0.00 <?=$currency?></td>
+                                    </tr>
+                                    <tr class="border-top border-2">
+                                        <td class="fs-5 fw-bold text-dark pt-3">الصافي الإجمالي لعرض السعر:</td>
+                                        <td class="fs-4 fw-bold text-success text-end pt-3" id="total_display"><?=flout_format($invTotalAll)?> <?=$currency?></td>
+                                    </tr>
+                                </table>
+
+                                <!-- Hidden Inputs -->
+                                <input type="hidden" name="final_discount" id="final_discount" value="0.00">
+                                <input type="hidden" name="totalAll" id="totalAll" value="<?=htmlspecialchars($invTotalAll)?>">
+
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg fw-bold" id="btnSubmit">
+                                        <i class="fas fa-save me-1"></i> حفظ تعديلات عرض السعر
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+
+            </main>
+        </div>
+    </div>
+
+    <?php require_once("footer.php"); ?>
+
+    <script>
+        const savedItems = <?=json_encode($savedItems, JSON_UNESCAPED_UNICODE)?>;
+        const itemsCache = <?=json_encode($itemsCache, JSON_UNESCAPED_UNICODE)?>;
+        const storesCache = <?=json_encode($storesCache, JSON_UNESCAPED_UNICODE)?>;
+        let rowIndex = 0;
+
+        function getStoresForBranch(branchId) {
+            return storesCache.filter(s => s.branch == branchId || s.branch == 0);
+        }
+
+        function createStoreOptions(branchId, selectedStore = null) {
+            const stores = getStoresForBranch(branchId);
+            let opts = '<option value="">-- اختر المخزن --</option>';
+            stores.forEach(s => {
+                const sel = (selectedStore && s.id == selectedStore) ? 'selected' : '';
+                opts += `<option value="${s.id}" ${sel}>${s.name}</option>`;
+            });
+            return opts;
+        }
+
+        function createItemOptions(selectedItem = null) {
+            let opts = '<option value="">-- اختر الصنف --</option>';
+            itemsCache.forEach(it => {
+                const sel = (selectedItem && it.id == selectedItem) ? 'selected' : '';
+                opts += `<option value="${it.id}" ${sel} data-barcode="${it.barcode}" data-price="${it.price}" data-vat="${it.vat}" data-disc="${it.disc}" data-unit="${it.unit}">${it.barcode} | ${it.name} (${it.unit})</option>`;
+            });
+            return opts;
+        }
+
+        function addNewRow(preData = null) {
+            const currentBranch = document.getElementById('branch').value;
+            const storeOpts = createStoreOptions(currentBranch, preData ? preData.store : null);
+            const itemOpts = createItemOptions(preData ? preData.itemid : null);
+            const idx = rowIndex++;
+
+            const qtyVal   = preData ? preData.qty : 1;
+            const priceVal = preData ? preData.price : 0;
+            const discVal  = preData ? preData.disc : 0;
+            const vatVal   = preData ? preData.tax : 14;
+
+            const tr = document.createElement('tr');
+            tr.id = `row-${idx}`;
+            tr.className = 'item-row';
+            tr.innerHTML = `
+                <td>
+                    <select name="store[]" class="form-select form-select-sm store-select" id="store-${idx}" required>
+                        ${storeOpts}
+                    </select>
+                </td>
+                <td>
+                    <select name="barcode[]" class="form-select form-select-sm item-select" id="item-${idx}" required onchange="onItemChange(${idx})">
+                        ${itemOpts}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0.01" class="form-control form-control-sm text-center fw-bold" name="item_qty[]" id="qty-${idx}" value="${qtyVal}" required oninput="calculateRow(${idx})">
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" class="form-control form-control-sm text-center" name="item_price[]" id="price-${idx}" value="${priceVal.toFixed(2)}" required oninput="calculateRow(${idx})">
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" max="100" class="form-control form-control-sm text-center" name="item_disc[]" id="disc-${idx}" value="${discVal.toFixed(2)}" oninput="calculateRow(${idx})">
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-sm text-center bg-light" id="subtotal-${idx}" value="0.00" readonly>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" class="form-control form-control-sm text-center" name="item_vat[]" id="vat-${idx}" value="${vatVal.toFixed(2)}" oninput="calculateRow(${idx})">
+                    <input type="hidden" id="vatval-${idx}" value="0.00">
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-sm text-center fw-bold text-success bg-light" id="net-${idx}" value="0.00" readonly>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-outline-danger btn-sm p-1" onclick="removeRow(${idx})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+
+            document.getElementById('itemsTableBody').appendChild(tr);
+
+            if (preData) {
+                calculateRow(idx);
+            } else {
+                const storeSelect = document.getElementById(`store-${idx}`);
+                if (storeSelect.options.length > 1) {
+                    storeSelect.selectedIndex = 1;
+                }
+            }
+        }
+
+        function removeRow(idx) {
+            const tr = document.getElementById(`row-${idx}`);
+            if (tr) {
+                tr.remove();
+                calculateTotals();
+            }
+        }
+
+        function onItemChange(idx) {
+            const itemSelect = document.getElementById(`item-${idx}`);
+            const selectedOpt = itemSelect.options[itemSelect.selectedIndex];
+            if (!selectedOpt || !selectedOpt.value) return;
+
+            const price = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
+            const vat   = parseFloat(selectedOpt.getAttribute('data-vat')) || 14;
+            const disc  = parseFloat(selectedOpt.getAttribute('data-disc')) || 0;
+
+            document.getElementById(`price-${idx}`).value = price.toFixed(2);
+            document.getElementById(`vat-${idx}`).value   = vat.toFixed(2);
+            document.getElementById(`disc-${idx}`).value  = disc.toFixed(2);
+
+            calculateRow(idx);
+        }
+
+        function calculateRow(idx) {
+            const qty   = parseFloat(document.getElementById(`qty-${idx}`).value) || 0;
+            const price = parseFloat(document.getElementById(`price-${idx}`).value) || 0;
+            const disc  = parseFloat(document.getElementById(`disc-${idx}`).value) || 0;
+            const vat   = parseFloat(document.getElementById(`vat-${idx}`).value) || 0;
+
+            const gross = qty * price;
+            const discAmount = gross * (disc / 100);
+            const subtotal = Math.max(0, gross - discAmount);
+            const vatAmount = subtotal * (vat / 100);
+            const net = subtotal + vatAmount;
+
+            document.getElementById(`subtotal-${idx}`).value = subtotal.toFixed(2);
+            document.getElementById(`vatval-${idx}`).value   = vatAmount.toFixed(2);
+            document.getElementById(`net-${idx}`).value      = net.toFixed(2);
+
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let totalGross = 0;
+            let totalDisc  = 0;
+            let totalVat   = 0;
+            let grandTotal = 0;
+
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            rows.forEach(row => {
+                const idMatch = row.id.match(/row-(\d+)/);
+                if (idMatch) {
+                    const idx = idMatch[1];
+                    const qty      = parseFloat(document.getElementById(`qty-${idx}`)?.value) || 0;
+                    const price    = parseFloat(document.getElementById(`price-${idx}`)?.value) || 0;
+                    const disc     = parseFloat(document.getElementById(`disc-${idx}`)?.value) || 0;
+                    const vatVal   = parseFloat(document.getElementById(`vatval-${idx}`)?.value) || 0;
+                    const subtotal = parseFloat(document.getElementById(`subtotal-${idx}`)?.value) || 0;
+
+                    const rowGross = qty * price;
+                    const rowDisc  = rowGross * (disc / 100);
+
+                    totalGross += rowGross;
+                    totalDisc  += rowDisc;
+                    totalVat   += vatVal;
+                    grandTotal += (subtotal + vatVal);
+                }
+            });
+
+            document.getElementById('gross_display').innerText = totalGross.toFixed(2) + ' <?=$currency?>';
+            document.getElementById('disc_display').innerText  = totalDisc.toFixed(2) + ' <?=$currency?>';
+            document.getElementById('vat_display').innerText   = totalVat.toFixed(2) + ' <?=$currency?>';
+            document.getElementById('total_display').innerText = grandTotal.toFixed(2) + ' <?=$currency?>';
+
+            document.getElementById('final_discount').value = totalDisc.toFixed(2);
+            document.getElementById('totalAll').value       = grandTotal.toFixed(2);
+        }
+
+        function onBranchChange(branchId) {
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            rows.forEach(row => {
+                const idMatch = row.id.match(/row-(\d+)/);
+                if (idMatch) {
+                    const idx = idMatch[1];
+                    const storeSel = document.getElementById(`store-${idx}`);
+                    if (storeSel) {
+                        storeSel.innerHTML = createStoreOptions(branchId);
+                        if (storeSel.options.length > 1) {
+                            storeSel.selectedIndex = 1;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Form Submit
+        document.getElementById('quote-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            if (rows.length === 0) {
+                alert('يجب إضافة صنف واحد على الأقل إلى عرض السعر.');
+                return;
             }
 
-            $(".item-qty").change(function()
-            {
-                var id = $(this).attr('id').replace('item-qty-','');
-                totalParshase(id);
-            });
+            const customer = document.getElementById('customer').value;
+            if (!customer) {
+                alert('يرجى اختيار العميل أولاً.');
+                document.getElementById('customer').focus();
+                return;
+            }
 
-            $(".item-price").change(function()
-            {
-                var id = $(this).attr('id').replace('item-price-','');
-                totalParshase(id);
-            });
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري تحديث العرض...';
 
-            $(".item-discount").change(function()
-            {
-                var id = $(this).attr('id').replace('item-discount-','');
-                totalParshase(id);
-            });
-            
-            $(".item-vat").change(function()
-            {
-                var id = $(this).attr('id').replace('item-vat-','');
-                totalParshase(id);
-            });   
-            
-        $("#final_discount").change(function()
-            {
-                var totalAll = parseFloat($("#total-after-vat").val()) - parseFloat($("#final_discount").val());
-                $("#totalAll").val ( totalAll.toFixed(2) ) ;
+            $.ajax({
+                url: 'controller.php',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(res) {
+                    if ($.trim(res) == '1') {
+                        alert('تم تحديث عرض السعر بنجاح!');
+                        window.location.href = 'quotations.php';
+                    } else {
+                        alert('تنبيه: ' + res);
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-save me-1"></i> حفظ تعديلات عرض السعر';
+                    }
+                },
+                error: function(xhr) {
+                    alert('حدث خطأ في الاتصال بالسيرفر: ' + xhr.statusText);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save me-1"></i> حفظ تعديلات عرض السعر';
+                }
             });
         });
-                
 
-                    
+        document.addEventListener('DOMContentLoaded', function() {
+            if (savedItems && savedItems.length > 0) {
+                savedItems.forEach(item => addNewRow(item));
+            } else {
+                addNewRow();
+            }
+            calculateTotals();
+        });
     </script>
 </body>
 </html>

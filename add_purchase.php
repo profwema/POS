@@ -2,348 +2,577 @@
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
+
 $language = defined('LANG') ? LANG : ($_SESSION['lang'] ?? 'ar');
-$storeid  = (int)($_SESSION['storeid'] ?? 0);
+$storeid  = (int)($_SESSION['storeid'] ?? 1);
+$currency = defined('CURRENCY_NAME') ? CURRENCY_NAME : 'ج.م';
+
+// Determine default branch and generate new invoice number
+$defBranch = 1;
+$resBr = mysqli_query($adController->MySQL, "SELECT id FROM branches WHERE (storeid='$storeid' OR storeid='0') AND status='1' LIMIT 1");
+if ($resBr && $brRow = mysqli_fetch_assoc($resBr)) {
+    $defBranch = (int)$brRow['id'];
+}
+$invoice = $adController->getNewInvoiceNo("purchase", "invoicenumber", '21', $defBranch);
+
+// Pre-fetch items list for select dropdown
+$queryItemsFast = "SELECT i.id, i.barcode, i.name_ar, i.name_en, i.vat, i.price, i.discount, u.name_ar AS unit_ar, u.name_en AS unit_en 
+                   FROM items i 
+                   LEFT JOIN units u ON i.unit = u.id 
+                   WHERE (i.storeid = '$storeid' OR i.storeid = '0') AND i.enabled = '1'
+                   ORDER BY i.name_ar ASC";
+$resItemsFast = mysqli_query($adController->MySQL, $queryItemsFast);
+$itemsCache = [];
+if ($resItemsFast) {
+    while ($row = mysqli_fetch_assoc($resItemsFast)) {
+        $bcode = !empty($row['barcode']) ? $row['barcode'] : "-----";
+        $iName = !empty($row['name_ar']) ? $row['name_ar'] : (!empty($row['name_en']) ? $row['name_en'] : '---');
+        $uName = !empty($row['unit_ar']) ? $row['unit_ar'] : (!empty($row['unit_en']) ? $row['unit_en'] : "قطعة");
+        $itemsCache[] = [
+            'id' => (int)$row['id'],
+            'barcode' => $bcode,
+            'name' => $iName,
+            'unit' => $uName,
+            'vat' => (float)($row['vat'] ?? 14),
+            'price' => (float)($row['price'] ?? 0),
+            'disc' => (float)($row['discount'] ?? 0)
+        ];
+    }
+}
+
+// Pre-fetch stores for default branch
+$storesCache = [];
+$resStore = mysqli_query($adController->MySQL, "SELECT id, name_ar, name_en, branch FROM stores WHERE storeid='$storeid' OR storeid='0'");
+if ($resStore) {
+    while ($sRow = mysqli_fetch_assoc($resStore)) {
+        $sName = !empty($sRow['name_ar']) ? $sRow['name_ar'] : $sRow['name_en'];
+        $storesCache[] = [
+            'id' => (int)$sRow['id'],
+            'name' => $sName,
+            'branch' => (int)$sRow['branch']
+        ];
+    }
+}
 ?>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
+
 <head>
-	<meta charset="utf-8">
-	<title>WAM Tech Soft - <?=PURCHASES?> >> <?=ADD_NEW?></title>
-	<?php require_once("script_php_variables.php");?>
-	<?php require_once("header.php");?>	
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WAM Tech POS - إنشاء فاتورة مشتريات جديدة</title>
+
+    <?php require_once("header.php"); ?>
+    <link href="css/admin-pro.css" rel="stylesheet">
+    <style>
+        .item-row:hover {
+            background-color: rgba(59, 130, 246, 0.03);
+        }
+        .table-compact th, .table-compact td {
+            padding: 8px 6px;
+            vertical-align: middle;
+        }
+        .totals-summary-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+        }
+    </style>
 </head>
 
 <body>
-	<?php require_once("header_top.php");?>	
-	
-	<div class="container-fluid-full">
-		<div class="row-fluid">
-			<?php require_once("left_menu.php");?>
-			<div id="content" class="span10">
-				<div>
-					<div class="box span12">
-						<div class="box-header" data-original-title>
-							<h2><i class="halflings-icon edit"></i><span class="break"></span><a href="purchase.php"><?=PURCHASES?></a> &gt;&gt; <?=ADD_NEW?></h2>
-						</div>
-						<div class="box-content">
-							<form class="form-horizontal" id="purchase-form" method="POST" action="#" autocomplete="off">
-								<input type="hidden" value="addPurchase" name="f">
-								<input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-								<fieldset>                                                      
-									<div class="control-group">
-										<div class="salesOptions">
-											<label class="control-label" for="invoice"><?=INVOICE_NUMBER?> : </label>
-											<div class="controls">
-												<?php
-												$defBranch = 1;
-												$resBr = mysqli_query($adController->MySQL, "SELECT id FROM branches WHERE status='1' LIMIT 1");
-												if ($resBr && $brRow = mysqli_fetch_assoc($resBr)) {
-													$defBranch = (int)$brRow['id'];
-												}
-												$invoice = $adController->getNewInvoiceNo("purchase", "invoicenumber", '21', $defBranch);
-												?>
-												<input type="text" 
-													   class="typeahead"  
-													   name="invoice" 
-													   id="invoice" 
-													   value="<?=htmlspecialchars($invoice)?>"
-													   readonly>
-												<span class="help-inline email-un">&nbsp;</span>
-											</div>
-										</div>  
-										
-										<div class="salesOptions">
-											<label class="control-label"><?=INVOICE_DATE?> : </label>
-											<div class="controls">
-												<input type="text" class="datepicker-nobar" name="purchase_expiry" value="<?=date("Y-m-d")?>">
-											</div>
-										</div>
-									</div>
-									<br>							
-									<div class="control-group">                
-										<div class="salesOptions">
-											<label class="control-label" for="supplier"><?=SUPPLIER?> : </label>
-											<div class="controls">
-												<select name="supplier" id="supplier" data-rel="chosen">
-													<option value=""> </option>
-													<?php
-													$query = "SELECT id, name_ar, name_en FROM suppliers WHERE storeid='$storeid' OR storeid='0' ORDER BY name_ar ASC";
-													$res   = mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
-													while($data = mysqli_fetch_assoc($res))
-													{
-														$id   = (int)$data['id'];
-														$name = htmlspecialchars(!empty($data['name_ar']) ? $data['name_ar'] : ($data['name_en'] ?? ''));
-														echo "<option value='$id'>$name</option>";
-													}
-													?>
-												</select>
-												<span class="help-inline">&nbsp;</span>
-												<a href="suppliers.php" style="padding-top: 20px; margin-left: 40px;"><?=ADD_EDIT_SUPPLIER?></a>
-											</div>
-										</div>
-										<div class="salesOptions">
-											<label class="control-label" for="supplier_invoice"><?=SUPPLIER_INVOICE?> : </label>
-											<div class="controls">
-												<input type="text" class="typeahead" name="supplier_invoice" id="supplier_invoice">
-											</div>
-										</div>
-									</div>
-									<br>
-									
-									<div class="control-group">                                                                                                                       
-										<div class="salesOptions">
-											<label class="control-label"><?=BRANCH?> :</label>
-											<div class="controls">
-												<select name="branch" id="branch" data-rel="chosen">
-													<option value=""> </option>
-													<?php
-													$query = "SELECT id, name_ar, name_en FROM branches WHERE storeid='$storeid' OR storeid='0' ORDER BY name_ar ASC";
-													$res   = mysqli_query($adController->MySQL, $query) or die(mysqli_error($adController->MySQL));
-													while($data = mysqli_fetch_assoc($res))
-													{
-														$id   = (int)$data['id'];
-														$name = htmlspecialchars(!empty($data['name_ar']) ? $data['name_ar'] : ($data['name_en'] ?? ''));
-														$selected = ($id === $defBranch) ? 'selected' : '';
-														echo "<option value='$id' $selected>$name</option>";
-													}
-													?>
-												</select>
-											</div>
-										</div>
-										<div class="salesOptions">
-											<label class="control-label"><?=PAYMENT_TYPE?> :</label>
-											<div class="controls">
-												<label>
-													<input type="radio" name="payType" value="1" checked="checked"><?=CASH?>
-												</label>
-												<label>
-													<input type="radio" name="payType" value="4"><?=LEFT?>
-												</label>
-											</div>
-										</div>                                        
-									</div>                                                      
 
-									<div class="control-group">
-										<label class="control-label"><?=INVOICE_DETAILS?></label>
-										<div class="controls" style="margin-top:20px; margin-left:0px">	
-											<table class="span12 table-striped table-bordered" style="width:100%">                                                
-												<tr>
-													<th><?=STORES?></th>
-													<th><?=BARCODE?> | <?=ITEM_NAME?> | <?=UNITS?></th>    
-													<th><?=QUANTITY?></th>
-													<th><?=PRICE?></th>
-													<th><?=DISCOUNT?> %</th>
-													<th><?=TOTAL_A_DIS?></th>
-													<th><?=VAT?> %</th>
-													<th><?=VAT_VALUE?></th>
-													<th><?=TOTAL?></th>
-													<th>&nbsp;</th>
-													<th>&nbsp;</th>
-												</tr>
-												<?php
-												// Pre-fetch items and units once to eliminate N+1 query loop
-												$queryItemsFast = "SELECT i.id, i.barcode, i.name_ar, i.name_en, i.vat, i.price, i.discount, u.name_ar AS unit_ar, u.name_en AS unit_en 
-																   FROM items i 
-																   LEFT JOIN units u ON i.unit = u.id 
-																   WHERE i.storeid = '$storeid' OR i.storeid = '0' 
-																   ORDER BY i.name_ar ASC";
-												$resItemsFast = mysqli_query($adController->MySQL, $queryItemsFast) or die(mysqli_error($adController->MySQL));
-												$itemsCache = [];
-												while ($row = mysqli_fetch_assoc($resItemsFast)) {
-													$bcode = !empty($row['barcode']) ? $row['barcode'] : "-----";
-													$iName = !empty($row['name_ar']) ? $row['name_ar'] : (!empty($row['name_en']) ? $row['name_en'] : '---');
-													$uName = !empty($row['unit_ar']) ? $row['unit_ar'] : (!empty($row['unit_en']) ? $row['unit_en'] : "-----");
-													$itemsCache[] = [
-														'id' => (int)$row['id'],
-														'barcode' => $bcode,
-														'name' => $iName,
-														'unit' => $uName,
-														'vat' => $row['vat'] ?? '0',
-														'price' => $row['price'] ?? '0',
-														'disc' => $row['discount'] ?? '0'
-													];
-												}
+    <div class="admin-wrapper">
 
-												for($i = 0; $i < 10; $i++)
-												{
-												?>                                                    
-													<tr id="row-v-<?=$i?>">
-														<td style="width:10%">
-															<select name="store[]" id="store-<?=$i?>" class="store" data-rel="chosen" style="width:100%">
-																<option value=""><?=SELECT_STORE?></option>
-															</select>
-														</td>
-														<td style="width:20%">
-															<select id="barcode-<?=$i?>" name="barcode[]" data-rel="chosen" class="barcode-select-sale" style="width:100%">
-																<option value=""> </option>
-																<?php
-																foreach ($itemsCache as $itemData) {
-																	echo "<option value='{$itemData['id']}' "
-																		 . "index='$i' "
-																		 . "vat='{$itemData['vat']}' "
-																		 . "price='{$itemData['price']}' "
-																		 . "disc='{$itemData['disc']}' "
-																		 . ">{$itemData['barcode']} | {$itemData['name']} | {$itemData['unit']}</option>";
-																}
-																?>
-															</select>
-														</td>
-														<td>
-															<input type="text" id="item-qty-<?=$i?>" class="item-qty span12 typeahead" maxlength="100" name="item_qty[]">
-														</td>
-														<td>
-															<input type="text" id="item-price-<?=$i?>" class="item-price span12 typeahead" maxlength="100" name="item_price[]">
-														</td>
-														<td>
-															<input type="text" id="item-discount-<?=$i?>" class="item-discount span12 typeahead" maxlength="100" name="item_disc[]" style="width:75%;"> 
-														</td>
-														<td>
-															<input type="text" id="item-total-after-dis-<?=$i?>" class="item-total-after-dis span12 typeahead" maxlength="100" name="item_total_after_dis[]" readonly>
-														</td>
-														<td>
-															<input type="text" id="item-vat-<?=$i?>" class="item-vat span12 typeahead" maxlength="100" name="item_vat[]" style="width:75%;"> 
-														</td>
-														<td>
-															<input type="text" id="item-vat-value-<?=$i?>" class="item-vat-value span12 typeahead" maxlength="100" name="item_vat_value[]" readonly>
-														</td>
-														<td>
-															<input type="text" id="item-total-<?=$i?>" class="item-total span12 typeahead" maxlength="100" name="item-total[]" readonly> 
-														</td>
-														<td class="del-parchase-item mult-padding" prop="<?=$i?>"><label>x</label></td>
-														<td class="more-parchase-item mult-padding" prop="<?=$i?>"><label>+</label></td>
-													</tr>
-												<?php } ?>
-											</table>
-										</div>
-									</div>                                  				
-									<hr>
-									<div class="control-group">
-										<div style="margin-top:20px; float: right; margin-right: 20px">
-											<table class="span12 table table-striped table-bordered">                                                
-												<tr>
-													<th colspan="2"><h4><?=TOTAlS?></h4></th>
-												</tr>
-												<tr>
-													<td style="width:40%">اجمالى بدون ضريبة</td>
-													<td>
-														<input type="text" class="span12 typeahead" width="80%" id="total-before-vat" name="gross_total" value="0.00" readonly>
-													</td>    
-												</tr>
-												<tr>
-													<td>أجمالى قيمة الضريبة</td>
-													<td>
-														<input type="text" class="span12 typeahead" id="total-vat-value" name="vat_all" value="0.00" readonly>
-													</td>    
-												</tr>
-												<tr>
-													<td>الاجمالى شامل الضريبة</td>
-													<td>
-														<input type="text" class="span12 typeahead" id="total-after-vat" value="0.00" readonly>
-													</td>    
-												</tr>
-												<tr>
-													<td>خصم اضافي</td>
-													<td>                                                        								
-														<input type="text" class="span12 typeahead" name="final_discount" id="final_discount" value="0.00">
-													</td>    
-												</tr>
-												<tr style="font-size: 16px">
-													<td style="padding: 10px;">الأجمالى النهائي</td>
-													<td>
-														<input type="text" class="span12 typeahead" name="totalAll" id="totalAll" value="0.00" readonly>
-													</td>    
-												</tr>
-											</table>
-										</div>
-									</div>
-									<div class="form-actions">
-										<button type="button" id="submit-purchase" class="btn btn-primary"><?=SAVE?></button>
-										<button type="reset" class="btn"><?=CANCEL?></button>
-									</div>
-									<p>&nbsp;</p>
-									<p class="error-red">&nbsp;</p>
-								</fieldset>
-							</form>   
-						</div>
-					</div>
-				</div>			
-			</div>
-		</div>
-	</div>		
-	<div class="clearfix"></div>	
-	<?php require_once("footer.php");?>
-	<script type="text/javascript">
-		function totalParshase(id)
-		{
-			// يحسب اجمالي الكمية في السعر
-			var preTotal = ($("#item-qty-"+id).val() || 0) * ($("#item-price-"+id).val() || 0);
-			// يحسب مقدار الخصم
-			var discount = preTotal * ($("#item-discount-"+id).val() || 0) / 100;
-			// يحسب الاجمالي بعد الخصم
-			var disTotal = preTotal - discount;
-			$("#item-total-after-dis-"+id).val(disTotal.toFixed(2));
+        <!-- Professional Sidebar -->
+        <?php require_once("components/sidebar_pro.php"); ?>
 
-			// يحسب قيمة الضريبة
-			var vaTax = disTotal * ($("#item-vat-"+id).val() || 0) / 100;
-			$("#item-vat-value-"+id).val(vaTax.toFixed(2));
+        <!-- Main Content Wrapper -->
+        <div style="flex: 1; display: flex; flex-direction: column;">
 
-			// يحسب الاجمالي النهائي للبند
-			var total = disTotal + vaTax;
-			$("#item-total-"+id).val(total.toFixed(2));   
+            <!-- Professional Navbar -->
+            <?php require_once("components/header_pro.php"); ?>
 
-			// يحسب الاجماليات في الاسفل
-			var total_before_vat = 0;
-			var total_vat_value = 0;
-			var total_after_vat = 0;
-			for (var i = 0; i < 10; i++)
-			{
-				if ($("#item-qty-"+i).val() != '' && $("#item-qty-"+i).val() != undefined)
-				{
-					total_before_vat += parseFloat($("#item-total-after-dis-"+i).val() || 0); 
-					total_vat_value += parseFloat($("#item-vat-value-"+i).val() || 0); 
-					total_after_vat += parseFloat($("#item-total-"+i).val() || 0); 
-				}
-			}
-			$("#total-before-vat").val(total_before_vat.toFixed(2));
-			$("#total-vat-value").val(total_vat_value.toFixed(2));
-			$("#total-after-vat").val(total_after_vat.toFixed(2));
-			
-			var finalDisc = parseFloat($("#final_discount").val() || 0);
-			var totalAll = total_after_vat - finalDisc;
-			$("#totalAll").val(totalAll.toFixed(2));
-		}
+            <!-- Main Content -->
+            <main class="admin-content">
 
-		$(document).ready(function()
-		{
-			var config = {
-				'.span3': { width: '95%' }
-			};
-			for (var selector in config) 
-			{
-				$(selector).chosen(config[selector]);
-			}
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-cart-plus text-primary me-2"></i>
+                        إنشاء فاتورة مشتريات / توريد جديدة
+                    </h1>
+                    <div class="page-breadcrumb">
+                        <div class="breadcrumb-item">
+                            <i class="fas fa-home"></i>
+                            <span>الرئيسية</span>
+                        </div>
+                        <span class="breadcrumb-separator">/</span>
+                        <div class="breadcrumb-item">
+                            <a href="purchase.php" class="text-decoration-none"><?= PURCHASES ?></a>
+                        </div>
+                        <span class="breadcrumb-separator">/</span>
+                        <div class="breadcrumb-item">
+                            <span class="text-primary"><?= ADD_NEW ?></span>
+                        </div>
+                    </div>
+                </div>
 
-			// Initial store population for default branch
-			var initialBranch = $("#branch").val();
-			if (initialBranch) {
-				getStore(initialBranch);
-			}
+                <!-- Form Card -->
+                <div class="card-pro">
+                    <div class="card-header-pro">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="card-title-pro mb-0">
+                                <i class="fas fa-file-invoice text-primary"></i>
+                                بيانات الفاتورة الأساسية
+                            </h2>
+                            <a href="purchase.php" class="btn-pro btn-pro-outline btn-pro-sm">
+                                <i class="fas fa-arrow-left me-1"></i> العودة لقائمة الفواتير
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body-pro">
 
-			$(".item-qty, .item-price, .item-discount, .item-vat").on('input change', function()
-			{
-				var id = $(this).attr('id').split('-').pop();
-				totalParshase(id);
-			});
+                        <form id="purchase-form" method="POST" action="controller.php" autocomplete="off">
+                            <input type="hidden" name="f" value="addPurchase">
+                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 
-			$("#final_discount").on('input change', function()
-			{
-				var totalAfterVat = parseFloat($("#total-after-vat").val() || 0);
-				var finalDisc = parseFloat($(this).val() || 0);
-				var totalAll = totalAfterVat - finalDisc;
-				$("#totalAll").val(totalAll.toFixed(2));
-			});
-		});
-	</script>
+                            <!-- Header Fields -->
+                            <div class="row g-3 mb-4">
+                                <!-- Invoice Number -->
+                                <div class="col-md-3">
+                                    <label class="form-label-pro">
+                                        <i class="fas fa-hashtag text-muted me-1"></i> <?= INVOICE_NUMBER ?>:
+                                    </label>
+                                    <input type="text" name="invoice" id="invoice" class="form-input-pro font-monospace fw-bold bg-light" value="<?= htmlspecialchars($invoice) ?>" readonly>
+                                </div>
+
+                                <!-- Invoice Date -->
+                                <div class="col-md-3">
+                                    <label class="form-label-pro">
+                                        <i class="fas fa-calendar-alt text-muted me-1"></i> <?= INVOICE_DATE ?>:
+                                    </label>
+                                    <input type="date" name="purchase_expiry" id="purchase_expiry" class="form-input-pro" value="<?= date('Y-m-d') ?>" required>
+                                </div>
+
+                                <!-- Supplier -->
+                                <div class="col-md-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label class="form-label-pro mb-0">
+                                            <i class="fas fa-truck text-muted me-1"></i> <?= SUPPLIER ?>:
+                                        </label>
+                                        <a href="add_supplier.php" target="_blank" class="small text-primary text-decoration-none">
+                                            <i class="fas fa-plus-circle"></i> مورد جديد
+                                        </a>
+                                    </div>
+                                    <select name="supplier" id="supplier" class="form-input-pro select2" required>
+                                        <option value="">-- اختر المورد --</option>
+                                        <?php
+                                        $querySup = "SELECT id, name_ar, name_en, phone FROM suppliers WHERE storeid='$storeid' OR storeid='0' ORDER BY name_ar ASC";
+                                        $resSup = mysqli_query($adController->MySQL, $querySup);
+                                        if ($resSup) {
+                                            while ($sRow = mysqli_fetch_assoc($resSup)) {
+                                                $sTitle = !empty($sRow['name_ar']) ? $sRow['name_ar'] : $sRow['name_en'];
+                                                $sPhone = !empty($sRow['phone']) ? " ({$sRow['phone']})" : "";
+                                                echo "<option value='{$sRow['id']}'>" . htmlspecialchars($sTitle . $sPhone) . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <!-- Supplier Invoice No -->
+                                <div class="col-md-3">
+                                    <label class="form-label-pro">
+                                        <i class="fas fa-file-alt text-muted me-1"></i> <?= SUPPLIER_INVOICE ?>:
+                                    </label>
+                                    <input type="text" name="supplier_invoice" id="supplier_invoice" class="form-input-pro font-monospace" placeholder="رقم فاتورة المورد الورقية">
+                                </div>
+
+                                <!-- Branch -->
+                                <div class="col-md-3">
+                                    <label class="form-label-pro">
+                                        <i class="fas fa-code-branch text-muted me-1"></i> <?= BRANCH ?>:
+                                    </label>
+                                    <select name="branch" id="branch" class="form-input-pro" onchange="filterStoresByBranch(this.value)">
+                                        <?php
+                                        $queryBr = "SELECT id, name_ar, name_en FROM branches WHERE storeid='$storeid' OR storeid='0' ORDER BY name_ar ASC";
+                                        $resBr2 = mysqli_query($adController->MySQL, $queryBr);
+                                        if ($resBr2) {
+                                            while ($bRow = mysqli_fetch_assoc($resBr2)) {
+                                                $bTitle = !empty($bRow['name_ar']) ? $bRow['name_ar'] : $bRow['name_en'];
+                                                $selected = ($defBranch === (int)$bRow['id']) ? 'selected' : '';
+                                                echo "<option value='{$bRow['id']}' $selected>" . htmlspecialchars($bTitle) . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <!-- Payment Type -->
+                                <div class="col-md-3">
+                                    <label class="form-label-pro">
+                                        <i class="fas fa-money-check-alt text-muted me-1"></i> <?= PAYMENT_TYPE ?>:
+                                    </label>
+                                    <select name="payType" id="payType" class="form-input-pro fw-semibold">
+                                        <option value="1">نقدي (كاش - مسدد فوراً من الصندوق)</option>
+                                        <option value="4">آجل (على الحساب - مستحق للمورد)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Invoice Items Table Section -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h3 class="h6 fw-bold mb-0 text-dark">
+                                        <i class="fas fa-boxes text-warning me-1"></i>
+                                        أصناف وبنود فاتورة المشتريات
+                                    </h3>
+                                    <button type="button" class="btn-pro btn-pro-outline btn-pro-sm" onclick="addNewItemRow()">
+                                        <i class="fas fa-plus me-1"></i> إضافة بند جديد
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table-pro table-compact" id="itemsTable">
+                                        <thead>
+                                            <tr class="table-light">
+                                                <th style="width: 14%;">المستودع المستلم</th>
+                                                <th style="width: 25%;">الصنف / الباركود</th>
+                                                <th style="width: 9%;" class="text-center">الكمية</th>
+                                                <th style="width: 10%;" class="text-center">سعر الشراء</th>
+                                                <th style="width: 8%;" class="text-center">خصم %</th>
+                                                <th style="width: 10%;" class="text-center">قبل الضريبة</th>
+                                                <th style="width: 8%;" class="text-center">ضريبة %</th>
+                                                <th style="width: 8%;" class="text-center">قيمة الضريبة</th>
+                                                <th style="width: 10%;" class="text-center">الإجمالي</th>
+                                                <th style="width: 4%;" class="text-center">حذف</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="itemsTableBody">
+                                            <!-- Rows populated dynamically via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Totals & Submission -->
+                            <div class="row g-4 align-items-start">
+                                <div class="col-lg-6">
+                                    <div class="p-3 bg-light rounded border">
+                                        <h5 class="fw-bold mb-2 small text-muted">
+                                            <i class="fas fa-info-circle me-1 text-info"></i> تنبيهات وإرشادات التوريد
+                                        </h5>
+                                        <ul class="text-muted small mb-0 pe-3">
+                                            <li>تسجيل الكميات في فاتورة الشراء يقوم بزيادة أرصدة المخازن فوراً بعد الحفظ.</li>
+                                            <li>في حال السداد "نقدي"، يتم خصم المبلغ تلقائياً من حساب الصندوق وتوليد قيد اليومية.</li>
+                                            <li>في حال السداد "آجل"، يتم تسجيل المديونية لصالح المورد في كشف حسابه.</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="error-red mt-3 text-danger fw-bold"></div>
+                                </div>
+
+                                <!-- Totals Summary Box -->
+                                <div class="col-lg-6">
+                                    <div class="totals-summary-card shadow-sm">
+                                        <table class="table table-borderless mb-0">
+                                            <tr>
+                                                <td class="fw-semibold text-muted py-1">الإجمالي قبل الضريبة:</td>
+                                                <td class="text-end py-1">
+                                                    <input type="text" name="gross_total" id="total-before-vat" class="form-input-pro text-end font-monospace py-1 fw-bold" value="0.00" readonly style="max-width: 160px; display: inline-block;"> <?= $currency ?>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold text-muted py-1">إجمالي ضريبة القيمة المضافة:</td>
+                                                <td class="text-end py-1">
+                                                    <input type="text" name="vat_all" id="total-vat-value" class="form-input-pro text-end font-monospace py-1 fw-bold text-warning" value="0.00" readonly style="max-width: 160px; display: inline-block;"> <?= $currency ?>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold text-muted py-1">الإجمالي شامل الضريبة:</td>
+                                                <td class="text-end py-1">
+                                                    <input type="text" id="total-after-vat" class="form-input-pro text-end font-monospace py-1 fw-bold" value="0.00" readonly style="max-width: 160px; display: inline-block;"> <?= $currency ?>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold text-muted py-1">خصم إضافي عام:</td>
+                                                <td class="text-end py-1">
+                                                    <input type="number" step="0.01" name="final_discount" id="final_discount" class="form-input-pro text-end font-monospace py-1" value="0.00" style="max-width: 160px; display: inline-block;" oninput="calcTotals()"> <?= $currency ?>
+                                                </td>
+                                            </tr>
+                                            <tr class="border-top">
+                                                <td class="fw-bold fs-5 text-primary py-2">الصافي النهائي المطلوب:</td>
+                                                <td class="text-end py-2">
+                                                    <input type="text" name="totalAll" id="totalAll" class="form-input-pro text-end font-monospace py-1 fs-5 fw-bold text-primary" value="0.00" readonly style="max-width: 160px; display: inline-block;"> <?= $currency ?>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <div class="d-flex gap-2 justify-content-end mt-3 pt-3 border-top">
+                                            <a href="purchase.php" class="btn-pro btn-pro-outline">
+                                                <i class="fas fa-times me-1"></i> إلغاء
+                                            </a>
+                                            <button type="button" id="submit-purchase" class="btn-pro btn-pro-primary btn-pro-lg px-4 shadow">
+                                                <i class="fas fa-save me-1"></i> حفظ واعتماد فاتورة الشراء
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+
+                <!-- Professional Footer -->
+                <?php require_once("components/footer_pro.php"); ?>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <?php require_once("include.php"); ?>
+    <script src="js/admin-pro.js"></script>
+
+    <script>
+        const allStores = <?= json_encode($storesCache, JSON_UNESCAPED_UNICODE) ?>;
+        const allItems = <?= json_encode($itemsCache, JSON_UNESCAPED_UNICODE) ?>;
+        let rowIndex = 0;
+
+        function getStoresForBranch(branchId) {
+            branchId = parseInt(branchId) || 0;
+            return allStores.filter(s => s.branch === branchId || s.branch === 0);
+        }
+
+        function filterStoresByBranch(branchId) {
+            const stores = getStoresForBranch(branchId);
+            document.querySelectorAll('.store-select').forEach(sel => {
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="">-- اختر المخزن --</option>';
+                stores.forEach(st => {
+                    const opt = document.createElement('option');
+                    opt.value = st.id;
+                    opt.textContent = st.name;
+                    if (st.id == currentVal) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+                if (!sel.value && stores.length > 0) {
+                    sel.value = stores[0].id;
+                }
+            });
+        }
+
+        function addNewItemRow() {
+            const currentBranch = document.getElementById('branch').value;
+            const stores = getStoresForBranch(currentBranch);
+
+            let storeOptionsHtml = '<option value="">-- اختر المخزن --</option>';
+            stores.forEach(st => {
+                storeOptionsHtml += `<option value="${st.id}">${st.name}</option>`;
+            });
+
+            let itemOptionsHtml = '<option value="">-- اختر الصنف أو امسح الباركود --</option>';
+            allItems.forEach(item => {
+                itemOptionsHtml += `<option value="${item.id}" data-price="${item.price}" data-vat="${item.vat}" data-disc="${item.disc}">${item.barcode} | ${item.name} (${item.unit})</option>`;
+            });
+
+            const tr = document.createElement('tr');
+            tr.id = `row-${rowIndex}`;
+            tr.className = 'item-row';
+            tr.innerHTML = `
+                <td>
+                    <select name="store[]" class="form-input-pro py-1 store-select" required>
+                        ${storeOptionsHtml}
+                    </select>
+                </td>
+                <td>
+                    <select name="barcode[]" class="form-input-pro py-1 item-select" onchange="onItemSelect(this, ${rowIndex})" required>
+                        ${itemOptionsHtml}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" step="1" min="1" name="item_qty[]" id="qty-${rowIndex}" class="form-input-pro text-center py-1 fw-bold" value="1" oninput="calcRow(${rowIndex})" required>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" name="item_price[]" id="price-${rowIndex}" class="form-input-pro text-center py-1" value="0.00" oninput="calcRow(${rowIndex})" required>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" max="100" name="item_disc[]" id="disc-${rowIndex}" class="form-input-pro text-center py-1" value="0.00" oninput="calcRow(${rowIndex})">
+                </td>
+                <td>
+                    <input type="text" name="item_total_after_dis[]" id="tot-b-vat-${rowIndex}" class="form-input-pro text-center py-1 bg-light font-monospace" value="0.00" readonly>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" name="item_vat[]" id="vat-${rowIndex}" class="form-input-pro text-center py-1" value="14.00" oninput="calcRow(${rowIndex})">
+                </td>
+                <td>
+                    <input type="text" name="item_vat_value[]" id="vat-val-${rowIndex}" class="form-input-pro text-center py-1 bg-light font-monospace text-warning" value="0.00" readonly>
+                </td>
+                <td>
+                    <input type="text" name="item-total[]" id="tot-row-${rowIndex}" class="form-input-pro text-center py-1 bg-light font-monospace fw-bold text-primary" value="0.00" readonly>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn-pro btn-pro-danger btn-pro-sm" onclick="removeRow(${rowIndex})" title="حذف هذا البند">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+
+            document.getElementById('itemsTableBody').appendChild(tr);
+
+            // Select default first store
+            const addedStoreSelect = tr.querySelector('.store-select');
+            if (stores.length > 0) {
+                addedStoreSelect.value = stores[0].id;
+            }
+
+            rowIndex++;
+        }
+
+        function onItemSelect(selectEl, idx) {
+            const selectedOpt = selectEl.options[selectEl.selectedIndex];
+            if (!selectedOpt || !selectedOpt.value) return;
+
+            const price = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
+            const vat = parseFloat(selectedOpt.getAttribute('data-vat')) || 14;
+            const disc = parseFloat(selectedOpt.getAttribute('data-disc')) || 0;
+
+            document.getElementById(`price-${idx}`).value = price.toFixed(2);
+            document.getElementById(`vat-${idx}`).value = vat.toFixed(2);
+            document.getElementById(`disc-${idx}`).value = disc.toFixed(2);
+
+            calcRow(idx);
+        }
+
+        function removeRow(idx) {
+            const row = document.getElementById(`row-${idx}`);
+            if (row) {
+                row.remove();
+                calcTotals();
+            }
+        }
+
+        function calcRow(idx) {
+            const qty = parseFloat(document.getElementById(`qty-${idx}`)?.value) || 0;
+            const price = parseFloat(document.getElementById(`price-${idx}`)?.value) || 0;
+            const discPercent = parseFloat(document.getElementById(`disc-${idx}`)?.value) || 0;
+            const vatPercent = parseFloat(document.getElementById(`vat-${idx}`)?.value) || 0;
+
+            const baseTotal = qty * price;
+            const discAmount = baseTotal * (discPercent / 100);
+            const totalAfterDisc = baseTotal - discAmount;
+            const vatAmount = totalAfterDisc * (vatPercent / 100);
+            const totalWithVat = totalAfterDisc + vatAmount;
+
+            if (document.getElementById(`tot-b-vat-${idx}`)) {
+                document.getElementById(`tot-b-vat-${idx}`).value = totalAfterDisc.toFixed(2);
+            }
+            if (document.getElementById(`vat-val-${idx}`)) {
+                document.getElementById(`vat-val-${idx}`).value = vatAmount.toFixed(2);
+            }
+            if (document.getElementById(`tot-row-${idx}`)) {
+                document.getElementById(`tot-row-${idx}`).value = totalWithVat.toFixed(2);
+            }
+
+            calcTotals();
+        }
+
+        function calcTotals() {
+            let totalBeforeVat = 0;
+            let totalVatValue = 0;
+            let totalAfterVat = 0;
+
+            document.querySelectorAll('#itemsTableBody tr').forEach(tr => {
+                const bVatInput = tr.querySelector('[name="item_total_after_dis[]"]');
+                const vatValInput = tr.querySelector('[name="item_vat_value[]"]');
+                const totRowInput = tr.querySelector('[name="item-total[]"]');
+
+                if (bVatInput && vatValInput && totRowInput) {
+                    totalBeforeVat += parseFloat(bVatInput.value) || 0;
+                    totalVatValue += parseFloat(vatValInput.value) || 0;
+                    totalAfterVat += parseFloat(totRowInput.value) || 0;
+                }
+            });
+
+            const finalDisc = parseFloat(document.getElementById('final_discount')?.value) || 0;
+            const grandTotal = totalAfterVat - finalDisc;
+
+            document.getElementById('total-before-vat').value = totalBeforeVat.toFixed(2);
+            document.getElementById('total-vat-value').value = totalVatValue.toFixed(2);
+            document.getElementById('total-after-vat').value = totalAfterVat.toFixed(2);
+            document.getElementById('totalAll').value = Math.max(0, grandTotal).toFixed(2);
+        }
+
+        // Initialize 3 rows by default
+        document.addEventListener("DOMContentLoaded", function () {
+            addNewItemRow();
+            addNewItemRow();
+            addNewItemRow();
+
+            // Submit purchase form via AJAX
+            document.getElementById("submit-purchase").addEventListener("click", function() {
+                const supplier = document.getElementById("supplier").value;
+                if (!supplier) {
+                    alert("يرجى اختيار المورد أولاً.");
+                    document.getElementById("supplier").focus();
+                    return;
+                }
+
+                const rows = document.querySelectorAll('#itemsTableBody tr');
+                let hasValidItem = false;
+                rows.forEach(r => {
+                    const itemSel = r.querySelector('.item-select');
+                    if (itemSel && itemSel.value) hasValidItem = true;
+                });
+
+                if (!hasValidItem) {
+                    alert("يرجى اختيار صنف واحد على الأقل في الفاتورة.");
+                    return;
+                }
+
+                const submitBtn = document.getElementById("submit-purchase");
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري حفظ الفاتورة...';
+
+                const form = document.getElementById("purchase-form");
+                const formData = new FormData(form);
+
+                fetch("controller.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> حفظ واعتماد فاتورة الشراء';
+
+                    if (data.success === "1" || data.success === 1) {
+                        alert("تم حفظ واعتماد فاتورة الشراء بنجاح!");
+                        if (data.invoice) {
+                            window.open('reports/purchase.php?sd=' + encodeURIComponent(data.invoice), '_blank');
+                        }
+                        location.replace("purchase.php");
+                    } else {
+                        const errMsg = data.error || "حدث خطأ غير متوقع أثناء الحفظ.";
+                        document.querySelector(".error-red").textContent = errMsg;
+                        alert("خطأ: " + errMsg);
+                    }
+                })
+                .catch(err => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> حفظ واعتماد فاتورة الشراء';
+                    console.error("Purchase save error:", err);
+                    alert("حدث خطأ في الاتصال بالخادم.");
+                });
+            });
+        });
+    </script>
 </body>
+
 </html>

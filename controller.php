@@ -1594,11 +1594,16 @@ function getStates()
 
 	function mysqlCompatible($dated)
 	{
-                           
-		$dt 	= explode('/',$dated);
-		$d	= $dt[2]."-".$dt[1]."-".$dt[0]." 00:00:00";
-                $d = "'".$d."'";
-		return $d;
+		$dated = trim((string)$dated);
+		if (strpos($dated, '/') !== false) {
+			$dt = explode('/', $dated);
+			$d = ($dt[2] ?? date('Y')) . '-' . str_pad($dt[1] ?? '01', 2, '0', STR_PAD_LEFT) . '-' . str_pad($dt[0] ?? '01', 2, '0', STR_PAD_LEFT) . ' 00:00:00';
+		} elseif (!empty($dated)) {
+			$d = date('Y-m-d H:i:s', strtotime($dated));
+		} else {
+			$d = date('Y-m-d 00:00:00');
+		}
+		return "'" . $d . "'";
 	}
 
 //	function mailFunction($email,$subject,$msg)
@@ -1625,72 +1630,86 @@ function getStates()
 	{
 		$desc_ar	= trim($_POST['desc_ar'] ?? $_POST['desc'] ?? $_POST['desc_en'] ?? '');
 		$desc		= $desc_ar;
-		$cost		= $_POST['cost'];
-		$branch		= $_POST['branch'];
-		$dated		= $_POST['dated'];
-
-		$storeid	= $_SESSION['storeid'];
+		$cost		= floatval($_POST['cost'] ?? 0);
+		$branch		= intval($_POST['branch'] ?? 0);
+		$dated		= trim($_POST['dated'] ?? '');
+		$storeid	= intval($_SESSION['storeid'] ?? 1);
 
 		$obj = new validation();
-		$obj->add_fields($desc, 'req',DESCRIPTION_CANNOT_BE_BLANK);
-		$obj->add_fields($cost, 'req',COST_CANNOT_BE_BLANK);
-		$obj->add_fields($dated, 'req',DATE_CANNOT_BE_BLANK);
-		$obj->add_fields($desc_ar, 'is_arabic',ARABIC_DESC_NOT_IN_ARABIC);
+		$obj->add_fields($desc, 'req', (defined('DESCRIPTION_CANNOT_BE_BLANK') ? DESCRIPTION_CANNOT_BE_BLANK : 'البيان مطلوب'));
+		$obj->add_fields($_POST['cost'] ?? '', 'req', (defined('COST_CANNOT_BE_BLANK') ? COST_CANNOT_BE_BLANK : 'المبلغ مطلوب'));
+		$obj->add_fields($dated, 'req', (defined('DATE_CANNOT_BE_BLANK') ? DATE_CANNOT_BE_BLANK : 'التاريخ مطلوب'));
 
-		$error=$obj->validate();
-		if(!$error)
+		$error = $obj->validate();
+		if (!$error)
 		{
-			$dated	= $this->mysqlCompatible($dated);
-			$query="INSERT INTO `expenditure` (`store_branch`, `dated`, `desc_ar`, `cost`,  `desc_en`) "
-                                . "VALUES ('$branch', '$dated', '$desc_ar', '$cost',  '$desc')";
-			$exe = mysqli_query($this->MySQL,$query);
-			if($exe)
-				echo COST_ADDED_SUCCESSFULLY;
+			$dated = $this->mysqlCompatible($dated);
+			$safeDescAr = mysqli_real_escape_string($this->MySQL, $desc_ar);
+			$safeDescEn = mysqli_real_escape_string($this->MySQL, $desc);
+			$query = "INSERT INTO `expenditure` (`store_branch`, `dated`, `desc_ar`, `cost`, `desc_en`, `storeid`) "
+                   . "VALUES ('$branch', '$dated', '$safeDescAr', '$cost', '$safeDescEn', '$storeid')";
+			$exe = mysqli_query($this->MySQL, $query);
+			if ($exe)
+				echo defined('COST_ADDED_SUCCESSFULLY') ? COST_ADDED_SUCCESSFULLY : 'تم حفظ المصروف بنجاح';
 			else
-				echo ERROR_ADDING_COST; 
-
-
+				echo (defined('ERROR_ADDING_COST') ? ERROR_ADDING_COST : 'حدث خطأ أثناء إضافة المصروف') . ': ' . mysqli_error($this->MySQL);
 		}
 		else
 			echo $error;
-
 	}
 
 	function updateExpenditure()
 	{
 		$desc_ar	= trim($_POST['desc_ar'] ?? $_POST['desc'] ?? $_POST['desc_en'] ?? '');
 		$desc		= $desc_ar;
-		$cost		= $_POST['cost'];
-		$branch		= $_POST['branch'];
-		$dated		= $_POST['dated'];
-		$catid		= $_POST['nd'];
-		$storeid	= $_SESSION['storeid'];
+		$cost		= floatval($_POST['cost'] ?? 0);
+		$branch		= intval($_POST['branch'] ?? 0);
+		$dated		= trim($_POST['dated'] ?? '');
+		$catid		= $_POST['nd'] ?? '';
+		$storeid	= intval($_SESSION['storeid'] ?? 1);
 
-		$catid			= $this->encrypt_decrypt(2,urldecode($catid),0);
-		$catid 			= $this->encrypt_decrypt(2,$catid,0);
-		$catid			= $this->encrypt_decrypt(2,$catid,0);
+		$cleanCatId = 0;
+		if (is_numeric($catid)) {
+			$cleanCatId = intval($catid);
+		} else {
+			$tmp = urldecode($catid);
+			for ($k = 0; $k < 4; $k++) {
+				$dec = $this->encrypt_decrypt(2, $tmp, 0);
+				if (!empty($dec) && $dec !== $tmp) {
+					$tmp = $dec;
+					if (is_numeric($tmp)) {
+						$cleanCatId = intval($tmp);
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+			if ($cleanCatId <= 0 && is_numeric($tmp)) {
+				$cleanCatId = intval($tmp);
+			}
+		}
 
 		$obj = new validation();
-		$obj->add_fields($desc, 'req',DESCRIPTION_CANNOT_BE_BLANK);
-		$obj->add_fields($cost, 'req',COST_CANNOT_BE_BLANK);
-		$obj->add_fields($dated, 'req',DATE_CANNOT_BE_BLANK);
-		$obj->add_fields($desc_ar, 'is_arabic',ARABIC_DESC_NOT_IN_ARABIC);
+		$obj->add_fields($desc, 'req', (defined('DESCRIPTION_CANNOT_BE_BLANK') ? DESCRIPTION_CANNOT_BE_BLANK : 'البيان مطلوب'));
+		$obj->add_fields($_POST['cost'] ?? '', 'req', (defined('COST_CANNOT_BE_BLANK') ? COST_CANNOT_BE_BLANK : 'المبلغ مطلوب'));
+		$obj->add_fields($dated, 'req', (defined('DATE_CANNOT_BE_BLANK') ? DATE_CANNOT_BE_BLANK : 'التاريخ مطلوب'));
 
-		$error=$obj->validate();
-		if(!$error)
+		$error = $obj->validate();
+		if (!$error)
 		{
-			$dated	= $this->mysqlCompatible($dated);
-			$query="UPDATE `expenditure` SET `store_branch`='$branch', `dated`='$dated', `desc_ar`='$desc_ar', `cost`='$cost', `desc_en`='$desc' WHERE id='$catid'  ";
-			$exe = mysqli_query($this->MySQL,$query);
-			if($exe)
-				echo COST_UPDATED_SUCCESSFULLY;
+			$dated = $this->mysqlCompatible($dated);
+			$safeDescAr = mysqli_real_escape_string($this->MySQL, $desc_ar);
+			$safeDescEn = mysqli_real_escape_string($this->MySQL, $desc);
+			$query = "UPDATE `expenditure` SET `store_branch`='$branch', `dated`='$dated', `desc_ar`='$safeDescAr', `cost`='$cost', `desc_en`='$safeDescEn', `storeid`='$storeid' WHERE id='$cleanCatId' AND storeid='$storeid' ";
+			$exe = mysqli_query($this->MySQL, $query);
+			if ($exe)
+				echo defined('COST_UPDATED_SUCCESSFULLY') ? COST_UPDATED_SUCCESSFULLY : 'تم تعديل المصروف بنجاح';
 			else
-				echo ERROR_UPDATING_COST; 
-
+				echo (defined('ERROR_UPDATING_COST') ? ERROR_UPDATING_COST : 'حدث خطأ أثناء تعديل المصروف') . ': ' . mysqli_error($this->MySQL);
 		}
 		else
 			echo $error;
-
 	}
 
 	function discountAdd()
@@ -1752,28 +1771,33 @@ function getStates()
 
        	function updatepalDate()
 	{
-			$date           = $_REQUEST['date'];
-                        $date        = explode("/",$date);
-                        $date        = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";
+		$rawDate = $_REQUEST['date'] ?? '';
+		$date = $this->mysqlCompatible($rawDate);
+		if (empty($date)) {
+			$date = date("Y-m-d 00:00:00");
+		}
+		$_SESSION['open_palance_date'] = $date;
+		$storeid = (int)($_SESSION['storeid'] ?? 1);
+		
+		$query = "SELECT * FROM open_palance_date WHERE storeid='$storeid' OR storeid='0' ORDER BY id DESC LIMIT 1";
+		$res   = mysqli_query($this->MySQL, $query);
+		$num   = ($res) ? mysqli_num_rows($res) : 0;
+		if (!$num) {
+			$query = "INSERT INTO open_palance_date(date, storeid) VALUES('$date', '$storeid')";
+		} else {
+			$query = "UPDATE open_palance_date SET date='$date' WHERE storeid='$storeid' OR storeid='0'";
+		}
 
-                        $storeid	= $_SESSION['storeid'];
-			
-			$query	 	= "SELECT * FROM open_palance_date ";
-			$res		= mysqli_query($this->MySQL,$query);
-			$dataDiscount	= mysqli_fetch_assoc($res);
-			$num		= mysqli_num_rows($res);
-			if(!$num)
-					$query = "INSERT INTO open_palance_date(date) VALUES('$date')";
-			else
-					$query = "UPDATE open_palance_date SET date='$date' ";
-
-			if ($exe   = mysqli_query($this->MySQL,$query))
-                                $state = 1;
-                        $query = "UPDATE open_palance SET date='$date'";
-                        if ($exe   = mysqli_query($this->MySQL,$query))
-                                $state = 1;
-                        echo $state;		   
-
+		$state = 0;
+		if (mysqli_query($this->MySQL, $query)) {
+			$state = 1;
+		}
+		$query2 = "UPDATE open_palance SET date='$date' WHERE storeid='$storeid' OR storeid='0'";
+		if (mysqli_query($this->MySQL, $query2)) {
+			$state = 1;
+		}
+		echo $state;
+		exit();
 	}
 
 	function vatAdd()
@@ -1893,11 +1917,11 @@ function getStates()
 
 	function getExpenditure()
 	{
-		$storeid= $_SESSION['storeid'];
-		$query 	= "SELECT SUM(cost) AS allc FROM expenditure ";
-		$res	= mysqli_query($this->MySQL,$query);
-		$data	= mysqli_fetch_assoc($res);
-		echo 	round(floatval($data['allc']),2);
+		$storeid = intval($_SESSION['storeid'] ?? 1);
+		$query 	 = "SELECT SUM(cost) AS allc FROM expenditure WHERE storeid='$storeid'";
+		$res	 = mysqli_query($this->MySQL, $query);
+		$data	 = mysqli_fetch_assoc($res);
+		echo round(floatval($data['allc'] ?? 0), 2);
 	}
 
 
@@ -2644,37 +2668,37 @@ function storesUpdate()
 //--------------------------------------------------    
         function chickSales()
         {
-            $result = 1 ;
-            $customer       = $_POST['customer'];          
-            if($customer == "" )
-            {
-                $result =  SUPPLIER_COMPULSORY;
+            $result = 1;
+            $customer = $_POST['customer'] ?? '';          
+            if ($customer === "") {
+                $result = defined('CUSTOMER_COMPULSORY') ? CUSTOMER_COMPULSORY : 'يرجى اختيار العميل أولاً';
+                return $result;
             }   
-              $branch         = $_POST['branch'];
-            if( $branch == "")
-            {
-                $result=  BRUNCH_COMPULSORY;
+            $branch = $_POST['branch'] ?? '';
+            if ($branch === "") {
+                $result = defined('BRUNCH_COMPULSORY') ? BRUNCH_COMPULSORY : 'يرجى تحديد الفرع';
+                return $result;
             }          
             
-            $itemsArray     = $_POST['barcode'];
-            $atleastOne     = 0;
-            $state          = '';
-            for($i=0; $i<count($itemsArray); $i++)
-            {
-                $itemId     = $itemsArray[$i];
-                $qty        = $_POST['item_qty'][$i];
-                if( $itemId != '' && $qty != '' )
-                {
+            $itemsArray = $_POST['barcode'] ?? [];
+            if (!is_array($itemsArray)) {
+                $itemsArray = [];
+            }
+            $atleastOne = 0;
+            $state = '';
+            $enableNeg = (int)($_SESSION['enableNegative'] ?? 0);
+            for ($i = 0; $i < count($itemsArray); $i++) {
+                $itemId = $itemsArray[$i] ?? '';
+                $qty = (float)($_POST['item_qty'][$i] ?? 0);
+                if ($itemId !== '' && $qty > 0) {
                     $atleastOne = 1;
-                    
-                    $store      = $_POST['store'][$i];  
-                    $oldQty     = ($_POST['item_old'][$i]) ? $_POST['item_old'][$i] : 0 ;
-                    $balance = $this->getBalanceItem($itemId,$store , $oldQty);  
-                    $balance;
-                    if( $balance < $qty )
-                    {
+                    $store = $_POST['store'][$i] ?? 0;  
+                    $oldQty = isset($_POST['item_old'][$i]) && $_POST['item_old'][$i] !== '' ? (float)$_POST['item_old'][$i] : 0;
+                    $balance = (float)$this->getBalanceItem($itemId, $store, $oldQty);  
+                    if ($balance < $qty && $enableNeg !== 1) {
                         $itemName = $this->getItemName($itemId);
-                        $state.=  $itemName.' '. HAS_BALANCE.' : '.$balance.'<br>';  
+                        $hasBal = defined('HAS_BALANCE') ? HAS_BALANCE : 'رصيد المخزن الحالي';
+                        $state .= $itemName . ' ' . $hasBal . ' : ' . $balance . '<br>';  
                     }   
                 }
             }      
@@ -2854,7 +2878,13 @@ function storesUpdate()
                     $time        =   date("h:i:s");
                     $set = $this->setSales($invoice,$time,$outgo_No,$journalNo);
                     $this->commit();
-                    $_SESSION['result']= 'SUCCESS';                
+                    $_SESSION['result']= 'SUCCESS';
+                    
+                    if (isset($_POST['ajax']) || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')) {
+                        echo json_encode(['success' => 1, 'invoice' => $invoice]);
+                        exit();
+                    }
+                
                     if (isset($_POST['cashier']))
                     {
                         try {
@@ -2874,6 +2904,10 @@ function storesUpdate()
                 } catch (\Throwable $e) {
                     $this->rollback();
                     $_SESSION['result'] = 'ERROR: ' . $e->getMessage();
+                    if (isset($_POST['ajax']) || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')) {
+                        echo json_encode(['success' => 0, 'error' => $e->getMessage()]);
+                        exit();
+                    }
                     if (isset($_POST['cashier'])) {
                         header("Location: pos.php");
                     } else {
@@ -2883,7 +2917,11 @@ function storesUpdate()
             }
             else
             {
-                $_SESSION['result']= $chick;      
+                $_SESSION['result']= $chick;
+                if (isset($_POST['ajax']) || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')) {
+                    echo json_encode(['success' => 0, 'error' => $chick]);
+                    exit();
+                }
             }
 
         }        
@@ -2958,9 +2996,13 @@ function storesUpdate()
             $gross_total        =   $_POST['gross_total'];
             $vat_all            =   $_POST['vat_all'];
             $totalAll           =   $_POST['totalAll']; 
-            $pExpiry            = $_POST['purchase_expiry'];
-            $pExpiry            = explode("/",$pExpiry);
-            $pExpiry            = $pExpiry[2]."-".$pExpiry[1]."-".$pExpiry[0].' '.$time;
+            $rawExp = trim($_POST['purchase_expiry'] ?? '');
+            if (strpos($rawExp, '/') !== false) {
+                $pParts = explode('/', $rawExp);
+                $pExpiry = ($pParts[2] ?? date('Y')) . '-' . str_pad($pParts[1] ?? '01', 2, '0', STR_PAD_LEFT) . '-' . str_pad($pParts[0] ?? '01', 2, '0', STR_PAD_LEFT) . ' ' . $time;
+            } else {
+                $pExpiry = (!empty($rawExp) ? substr($rawExp, 0, 10) : date('Y-m-d')) . ' ' . $time;
+            }
             $allDebit           =   0;  // اجمالى الجانب المدين
             $allCredit          =   0;  // اجمالى الجانب الدائن
             
@@ -3135,9 +3177,13 @@ function storesUpdate()
             $gross_total        =   $_POST['gross_total'];
             $vat_all            =   $_POST['vat_all'];
             $totalAll           =   $_POST['totalAll']; 
-            $pExpiry            = $_POST['purchase_expiry'];
-            $pExpiry            = explode("/",$pExpiry);
-            $pExpiry            = $pExpiry[2]."-".$pExpiry[1]."-".$pExpiry[0].' '.$time;
+            $rawExp = trim($_POST['purchase_expiry'] ?? '');
+            if (strpos($rawExp, '/') !== false) {
+                $pParts = explode('/', $rawExp);
+                $pExpiry = ($pParts[2] ?? date('Y')) . '-' . str_pad($pParts[1] ?? '01', 2, '0', STR_PAD_LEFT) . '-' . str_pad($pParts[0] ?? '01', 2, '0', STR_PAD_LEFT) . ' ' . $time;
+            } else {
+                $pExpiry = (!empty($rawExp) ? substr($rawExp, 0, 10) : date('Y-m-d')) . ' ' . $time;
+            }
             $allDebit           =   0;  // اجمالى الجانب المدين
             $allCredit          =   0;  // اجمالى الجانب الدائن
              $query       = "INSERT INTO purchase(invoicenumber,branch,supplier,supplier_invoice,invoice_date,paymentType,gross_total,vat_all,dis_added,all_total,storeid"
@@ -3291,9 +3337,13 @@ function storesUpdate()
             $gross_total        =   $_POST['gross_total'];
             $vat_all            =   $_POST['vat_all'];
             $totalAll           =   $_POST['totalAll']; 
-            $pExpiry            = $_POST['purchase_expiry'];
-            $pExpiry            = explode("/",$pExpiry);
-            $pExpiry            = $pExpiry[2]."-".$pExpiry[1]."-".$pExpiry[0].' '.$time;
+            $rawExp = trim($_POST['purchase_expiry'] ?? '');
+            if (strpos($rawExp, '/') !== false) {
+                $pParts = explode('/', $rawExp);
+                $pExpiry = ($pParts[2] ?? date('Y')) . '-' . str_pad($pParts[1] ?? '01', 2, '0', STR_PAD_LEFT) . '-' . str_pad($pParts[0] ?? '01', 2, '0', STR_PAD_LEFT) . ' ' . $time;
+            } else {
+                $pExpiry = (!empty($rawExp) ? substr($rawExp, 0, 10) : date('Y-m-d')) . ' ' . $time;
+            }
             $allDebit           =   0;  // اجمالى الجانب المدين
             $allCredit          =   0;  // اجمالى الجانب الدائن
             
@@ -3423,15 +3473,17 @@ function storesUpdate()
 
 function addStoreTrans()
         {
-            $storeid      = $_SESSION['storeid'];
+            $storeid      = (int)($_SESSION['storeid'] ?? 1);
 
-            $note         = $_POST['note'];
-            $from         = $_POST['from'];
-            $to           = $_POST['to'];            
+            $note         = trim((string)($_POST['note'] ?? ''));
+            $from         = (int)($_POST['from'] ?? 0);
+            $to           = (int)($_POST['to'] ?? 0);            
             
-            $trans_date   = $_POST['trans_date'];
-            $trans_date   = explode("/",$trans_date);
-            $trans_date   = $trans_date[2]."-".$trans_date[1]."-".$trans_date[0]." 00:00:00";
+            $rawDate      = $_POST['trans_date'] ?? '';
+            $trans_date   = $this->mysqlCompatible($rawDate);
+            if (empty($trans_date)) {
+                $trans_date = date("Y-m-d 00:00:00");
+            }
 
             $invoice        = $_POST['invoice'];          
 //            $thread         = md5($invoice);
@@ -3553,15 +3605,17 @@ function addStoreTrans()
         
         function editStoreTrans()
         {
-            $storeid      = $_SESSION['storeid'];
+            $storeid      = (int)($_SESSION['storeid'] ?? 1);
 
-            $note         = $_POST['note'];
-            $from         = $_POST['from'];
-            $to           = $_POST['to'];            
+            $note         = trim((string)($_POST['note'] ?? ''));
+            $from         = (int)($_POST['from'] ?? 0);
+            $to           = (int)($_POST['to'] ?? 0);            
             
-            $trans_date   = $_POST['trans_date'];
-            $trans_date   = explode("/",$trans_date);
-            $trans_date   = $trans_date[2]."-".$trans_date[1]."-".$trans_date[0]." 00:00:00";
+            $rawDate      = $_POST['trans_date'] ?? '';
+            $trans_date   = $this->mysqlCompatible($rawDate);
+            if (empty($trans_date)) {
+                $trans_date = date("Y-m-d 00:00:00");
+            }
 
             $invoice        = $_POST['invoice'];          
             
@@ -3675,13 +3729,13 @@ function addStoreTrans()
         
 function addIncoming()
         {
-            $storeid        = $_SESSION['storeid'];
-            $branch         = $_POST['branch'];
-//            $supplier       = $_POST['supplier'];
-//            $invoiceSup     = $_POST['supplier_invoice'];
-            $date        = $_POST['date'];
-            $date        = explode("/",$date);
-            $date        = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";
+            $storeid        = (int)($_SESSION['storeid'] ?? 1);
+            $branch         = (int)($_POST['branch'] ?? 0);
+            $rawDate        = $_POST['date'] ?? '';
+            $date           = $this->mysqlCompatible($rawDate);
+            if (empty($date)) {
+                $date = date("Y-m-d 00:00:00");
+            }
 //            $final_discount     = $_POST['final_discount'];
 //            $totalAll           = $_POST['totalAll'];
             $invoice        = $_POST['invoice'];
@@ -3740,14 +3794,14 @@ function addIncoming()
         
         function editIncoming()
         {
-            $idcoming       = $_POST['sd'];
-            $storeid        = $_SESSION['storeid'];
-            $branch         = $_POST['branch'];
-//            $supplier       = $_POST['supplier'];
-//            $invoiceSup     = $_POST['supplier_invoice'];
-            $date        = $_POST['date'];
-            $date        = explode("/",$date);
-            $date        = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";
+            $idcoming       = $_POST['sd'] ?? '';
+            $storeid        = (int)($_SESSION['storeid'] ?? 1);
+            $branch         = (int)($_POST['branch'] ?? 0);
+            $rawDate        = $_POST['date'] ?? '';
+            $date           = $this->mysqlCompatible($rawDate);
+            if (empty($date)) {
+                $date = date("Y-m-d 00:00:00");
+            }
             
 //            $final_discount     = $_POST['final_discount'];
 //            $totalAll           = $_POST['totalAll'];
@@ -3834,15 +3888,20 @@ function addIncoming()
         }    
 
 //--------------------------------------------------
-function addUotgoing()
+function addOutgoing()
         {
-            $storeid        = $_SESSION['storeid'];
-            $branch         = $_POST['branch'];
-//            $supplier       = $_POST['supplier'];
-//            $invoiceSup     = $_POST['supplier_invoice'];
-            $date        = $_POST['date'];
-            $date        = explode("/",$date);
-            $date        = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";
+            return $this->addUotgoing();
+        }
+
+        function addUotgoing()
+        {
+            $storeid        = (int)($_SESSION['storeid'] ?? 1);
+            $branch         = (int)($_POST['branch'] ?? 0);
+            $rawDate        = $_POST['date'] ?? '';
+            $date           = $this->mysqlCompatible($rawDate);
+            if (empty($date)) {
+                $date = date("Y-m-d 00:00:00");
+            }
             
             $invoice        = $_POST['invoice'];
 //            $thread         = md5($invoice);
@@ -3902,14 +3961,14 @@ function addUotgoing()
         
         function editOutgoing()
         {
-            $idcoming       = $_POST['sd'];
-            $storeid        = $_SESSION['storeid'];
-            $branch         = $_POST['branch'];
-//            $supplier       = $_POST['supplier'];
-//            $invoiceSup     = $_POST['supplier_invoice'];
-            $date        = $_POST['date'];
-            $date        = explode("/",$date);
-            $date        = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";
+            $idcoming       = $_POST['sd'] ?? '';
+            $storeid        = (int)($_SESSION['storeid'] ?? 1);
+            $branch         = (int)($_POST['branch'] ?? 0);
+            $rawDate        = $_POST['date'] ?? '';
+            $date           = $this->mysqlCompatible($rawDate);
+            if (empty($date)) {
+                $date = date("Y-m-d 00:00:00");
+            }
             
 //            $final_discount     = $_POST['final_discount'];
 //            $totalAll           = $_POST['totalAll'];
@@ -4031,7 +4090,7 @@ function addUotgoing()
 			for ($i = 0; $i < count($itemsArray); $i++) {
 				$itemRaw = $itemsArray[$i] ?? '';
 				$parts = explode("@@", $itemRaw);
-				$itemId = $parts[1] ?? '';
+				$itemId = (strpos($itemRaw, "@@") !== false) ? ($parts[1] ?? '') : $itemRaw;
 				$qty = $_POST['item_qty'][$i] ?? '';
 				$store = $_POST['store'][$i] ?? '';
 				if ($store != '' && $itemId != '' && $qty != '') {
@@ -4046,10 +4105,12 @@ function addUotgoing()
 			return;
 		}
 		
-		if ($customer <= 0 || $invoiceSup == "") {
-			echo SUPPLIER_NAME_COMPULSORY . "<br>";
-			echo INVOICE_NUMBER_COMPULSORY;
+		if ($customer <= 0) {
+			echo defined('CUSTOMER_COMPULSORY') ? CUSTOMER_COMPULSORY : 'يرجى اختيار العميل أولاً';
 			return;
+		}
+		if ($invoiceSup === "") {
+			$invoiceSup = "-";
 		}
 		
 		$this->MySQL->begin_transaction();
@@ -4065,7 +4126,7 @@ function addUotgoing()
 			for ($i = 0; $i < count($itemsArray); $i++) {
 				$itemRaw = $itemsArray[$i] ?? '';
 				$parts = explode("@@", $itemRaw);
-				$itemId = intval($parts[1] ?? 0);
+				$itemId = intval((strpos($itemRaw, "@@") !== false) ? ($parts[1] ?? 0) : $itemRaw);
 				
 				$store = intval($_POST['store'][$i] ?? 0);
 				$qty = floatval($_POST['item_qty'][$i] ?? 0);
@@ -4122,7 +4183,7 @@ function addUotgoing()
 			for ($i = 0; $i < count($itemsArray); $i++) {
 				$itemRaw = $itemsArray[$i] ?? '';
 				$parts = explode("@@", $itemRaw);
-				$itemId = $parts[1] ?? '';
+				$itemId = (strpos($itemRaw, "@@") !== false) ? ($parts[1] ?? '') : $itemRaw;
 				$qty = $_POST['item_qty'][$i] ?? '';
 				$store = $_POST['store'][$i] ?? '';
 				if ($store != '' && $itemId != '' && $qty != '') {
@@ -4137,10 +4198,12 @@ function addUotgoing()
 			return;
 		}
 		
-		if ($customer <= 0 || $invoiceSup == "") {
-			echo SUPPLIER_NAME_COMPULSORY . "<br>";
-			echo INVOICE_NUMBER_COMPULSORY;
+		if ($customer <= 0) {
+			echo defined('CUSTOMER_COMPULSORY') ? CUSTOMER_COMPULSORY : 'يرجى اختيار العميل أولاً';
 			return;
+		}
+		if ($invoiceSup === "") {
+			$invoiceSup = "-";
 		}
 		
 		$this->MySQL->begin_transaction();
@@ -4157,7 +4220,7 @@ function addUotgoing()
 			for ($i = 0; $i < count($itemsArray); $i++) {
 				$itemRaw = $itemsArray[$i] ?? '';
 				$parts = explode("@@", $itemRaw);
-				$itemId = intval($parts[1] ?? 0);
+				$itemId = intval((strpos($itemRaw, "@@") !== false) ? ($parts[1] ?? 0) : $itemRaw);
 				
 				$store = intval($_POST['store'][$i] ?? 0);
 				$qty = floatval($_POST['item_qty'][$i] ?? 0);
@@ -4203,61 +4266,91 @@ function addUotgoing()
 
 function addOpenPalance()
         {
-            $storeid        = $_SESSION['storeid'];
-            $store          = $_POST['store'];
-            $itemsArray     = $_POST['barcode']; 
-            $date       = $_SESSION['open_palance_date'];
-            $date        = explode("/",$date);
-            $date        = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";            
-            $insertedItem=0;
-            for($i=0; $i<count($itemsArray); $i++)
-            {
-                $itemId     = $itemsArray[$i];
-                $itemId     = explode("@@",$itemId);
-                $itemId     = $itemId[1];
+            $storeid = (int)($_SESSION['storeid'] ?? 1);
+            $store   = (int)($_POST['store'] ?? 0);
+            $itemsArray = $_POST['barcode'] ?? [];
+            if (!is_array($itemsArray)) {
+                $itemsArray = [];
+            }
 
-                
-                $qty        = $_POST['item_qty'][$i];
-                //echo "erte ".$qty;
-                $price      = $_POST['item_price'][$i];
-                $disc       = $_POST['item_disc'][$i];
-                $tax        = $_POST['item_vat'][$i];
-                if($itemId != '' && $qty != '' )
-                {
-                    $query          = "SELECT itemid FROM open_palance WHERE itemid =$itemId AND storeid='$storeid'";
-                    $res            = mysqli_query($this->MySQL,$query);
-                    $num            = mysqli_num_rows($res);
-                    if(!$num)
-                    {
-                        $query      = "INSERT INTO open_palance (itemid, quantity, cost,    discount, tax, date,  store,  storeid) VALUES"
-                                                           . "('$itemId','$qty',   '$price','$disc',  '$tax','$date', '$store','$storeid')";
-                        $exe = mysqli_query($this->MySQL,$query) or die(mysqli_error($this->MySQL));
-                        if($exe)
-                        {
-                                $insertedItem++;
+            $rawDate = $_SESSION['open_palance_date'] ?? ($_POST['date'] ?? date('Y-m-d'));
+            $date = $this->mysqlCompatible($rawDate);
+            if (empty($date)) {
+                $date = date("Y-m-d 00:00:00");
+            }
+
+            $insertedItem = 0;
+            for ($i = 0; $i < count($itemsArray); $i++) {
+                $itemRaw = $itemsArray[$i];
+                if (strpos($itemRaw, "@@") !== false) {
+                    $parts = explode("@@", $itemRaw);
+                    $itemId = (int)($parts[1] ?? 0);
+                } else {
+                    $itemId = (int)$itemRaw;
+                }
+
+                $qty   = (float)($_POST['item_qty'][$i] ?? 0);
+                $price = (float)($_POST['item_price'][$i] ?? 0);
+                $disc  = (float)($_POST['item_disc'][$i] ?? 0);
+                $tax   = (float)($_POST['item_vat'][$i] ?? 0);
+
+                if ($itemId > 0 && $qty > 0) {
+                    $query = "SELECT id FROM open_palance WHERE itemid = '$itemId' AND store = '$store' AND (storeid='$storeid' OR storeid='0') LIMIT 1";
+                    $res = mysqli_query($this->MySQL, $query);
+                    $num = $res ? mysqli_num_rows($res) : 0;
+                    if ($num > 0) {
+                        $queryUp = "UPDATE open_palance SET quantity='$qty', cost='$price', discount='$disc', tax='$tax', date='$date' WHERE itemid='$itemId' AND store='$store' AND (storeid='$storeid' OR storeid='0')";
+                        if (mysqli_query($this->MySQL, $queryUp)) {
+                            $insertedItem++;
+                        }
+                    } else {
+                        $queryIns = "INSERT INTO open_palance (itemid, quantity, cost, discount, tax, date, store, storeid) 
+                                     VALUES ('$itemId', '$qty', '$price', '$disc', '$tax', '$date', '$store', '$storeid')";
+                        if (mysqli_query($this->MySQL, $queryIns)) {
+                            $insertedItem++;
                         }
                     }
-                }                       
-        }
-        if($insertedItem > 0)
-			echo "1";
-		else
-			echo ERROR_IN_ADDING_ITEM;
+                }
+            }
+
+            if ($insertedItem > 0) {
+                if (isset($_REQUEST['is_ajax'])) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['success' => 1, 'message' => 'تم حفظ الأرصدة الافتتاحية بنجاح']);
+                    exit();
+                }
+                echo "1";
+            } else {
+                if (isset($_REQUEST['is_ajax'])) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['success' => 0, 'error' => (defined('ERROR_IN_ADDING_ITEM') ? ERROR_IN_ADDING_ITEM : 'لم يتم إدخال كميات صحيحة')]);
+                    exit();
+                }
+                echo (defined('ERROR_IN_ADDING_ITEM') ? ERROR_IN_ADDING_ITEM : 'لم يتم إدخال كميات صحيحة');
+            }
         } 
         
 	function update_openPalance()
 	{
-            $qty   = $_REQUEST['q'];
-            $price = $_REQUEST['p'];
-            $disc  = $_REQUEST['d'];
-            $idVal = $_REQUEST['id'];
-            $date       = $_SESSION['open_palance_date'];
-            $date        = explode("/",$date);
-            $date        = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";  
-            echo $date;
+            $qty   = (float)($_REQUEST['q'] ?? 0);
+            $price = (float)($_REQUEST['p'] ?? 0);
+            $disc  = (float)($_REQUEST['d'] ?? 0);
+            $idVal = (int)($_REQUEST['id'] ?? 0);
 
-            $query  = "UPDATE open_palance SET quantity='$qty', cost='$price' ,discount='$disc',date= '$date' WHERE id='$idVal'";                                
-            echo mysqli_query($this->MySQL,$query);
+            $rawDate = $_SESSION['open_palance_date'] ?? date('Y-m-d');
+            $date = $this->mysqlCompatible($rawDate);
+            if (empty($date)) {
+                $date = date("Y-m-d 00:00:00");
+            }
+
+            $query = "UPDATE open_palance SET quantity='$qty', cost='$price', discount='$disc', date='$date' WHERE id='$idVal'";
+            $res = mysqli_query($this->MySQL, $query);
+            if ($res) {
+                echo "1";
+            } else {
+                echo "0";
+            }
+            exit();
 	}      
         
         function fill_parent_account()
@@ -4529,11 +4622,13 @@ function addOpenPalance()
    {
 		$this->checkAuthorized('accounting');
             $journalNo      = $_POST['journalNo'];
-            $document       = $_POST['document'];           
-            $branch         = $_POST['branch'];
-            $date           = $_POST['date'];
-            $date           = explode("/",$date);
-            $date           = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";
+            $document       = $_POST['document'] ?? '';           
+            $branch         = $_POST['branch'] ?? 0;
+            $rawDate        = $_POST['date'] ?? '';
+            $date           = $this->mysqlCompatible($rawDate);
+            if (empty($date)) {
+                $date = date("Y-m-d 00:00:00");
+            }
             $cost           = $_POST['cost'];
             $disc           = $_POST['disc'];
             $totalDebit     = $_POST['total-debit'];
@@ -4599,11 +4694,13 @@ function addOpenPalance()
         {
 		$this->checkAuthorized('accounting');
             $journalNo   = $_POST['journalNo'];
-            $document    = $_POST['document'];           
-            $branch      = $_POST['branch'];
-            $date        = $_POST['date'];
-            $date        = explode("/",$date);
-            $date        = $date[2]."-".$date[1]."-".$date[0]." 00:00:00";
+            $document    = $_POST['document'] ?? '';           
+            $branch      = $_POST['branch'] ?? 0;
+            $rawDate     = $_POST['date'] ?? '';
+            $date        = $this->mysqlCompatible($rawDate);
+            if (empty($date)) {
+                $date = date("Y-m-d 00:00:00");
+            }
             $cost     = $_POST['cost'];
             $disc     = $_POST['disc'];
             $totalDebit     = $_POST['total-debit'];

@@ -1,13 +1,14 @@
 <?php
+error_reporting(E_ALL);
 require_once("top.php");
 require_once("redirection.php");
 require_once("controller.php");
 
-$language = $_SESSION['lang'] ?? 'ar';
+$language = $_SESSION['lang'] ?? (defined('LANG') ? LANG : 'ar');
 $storeid  = intval($_SESSION['storeid'] ?? 1);
 
 $rawInvoice = $_REQUEST['sd'] ?? '';
-$decrypted = $adController->encrypt_decrypt(2, urldecode($rawInvoice), 0);
+$decrypted  = $adController->encrypt_decrypt(2, urldecode($rawInvoice), 0);
 if (!empty($decrypted)) {
     $decrypted2 = $adController->encrypt_decrypt(2, $decrypted, 0);
     $invoice = !empty($decrypted2) ? $decrypted2 : $decrypted;
@@ -17,42 +18,58 @@ if (!empty($decrypted)) {
 
 $safeInvoice = mysqli_real_escape_string($adController->MySQL, $invoice);
 
-$query   = "SELECT * FROM store_trans WHERE trans_number='$safeInvoice' AND storeid='$storeid' LIMIT 1";
+$query   = "SELECT * FROM store_trans WHERE trans_number='$safeInvoice' AND (storeid='$storeid' OR storeid='0') LIMIT 1";
 $resP    = mysqli_query($adController->MySQL, $query);
-$dataPur = mysqli_fetch_assoc($resP);
+$dataPur = $resP ? mysqli_fetch_assoc($resP) : null;
 
-$itemsListArray = [];
-$query = "SELECT * FROM store_trans_items WHERE storeid='$storeid' AND trans_number='$safeInvoice' ORDER BY id ASC";
-$ress  = mysqli_query($adController->MySQL, $query);
-if ($ress) {
-    while ($dataItemsList = mysqli_fetch_assoc($ress)) {
-        $itemsListArray[] = $dataItemsList;
+if (!$dataPur) {
+    die("<div style='text-align:center; padding:50px; font-family:sans-serif;'><h3>خطأ: إذن التحويل غير موجود أو تم حذفه مسبقاً.</h3><a href='stores-transfer.php'>العودة لقائمة التحويلات</a></div>");
+}
+
+$trans_date = !empty($dataPur['trans_date']) ? date('Y-m-d', strtotime($dataPur['trans_date'])) : date('Y-m-d');
+$fromStore  = (int)($dataPur['storeFrom'] ?? 0);
+$toStore    = (int)($dataPur['storeTo'] ?? 0);
+$note       = $dataPur['note'] ?? '';
+
+// Pre-cache stores
+$stores = [];
+$resStores = mysqli_query($adController->MySQL, "SELECT id, name_ar, name_en FROM stores WHERE storeid='$storeid' OR storeid='0' ORDER BY id ASC");
+if ($resStores) {
+    while ($st = mysqli_fetch_assoc($resStores)) {
+        $stores[] = $st;
     }
 }
-$numAlready = count($itemsListArray);
 
-// جلب وتخزين الأصناف ووحداتها مؤقتاً باستعلام واحد لتسريع التحميل
+// Fetch existing items for this transfer
+$savedItems = [];
+$query = "SELECT * FROM store_trans_items WHERE trans_number='$safeInvoice' AND (storeid='$storeid' OR storeid='0') ORDER BY id ASC";
+$ress  = mysqli_query($adController->MySQL, $query);
+if ($ress) {
+    while ($it = mysqli_fetch_assoc($ress)) {
+        $savedItems[] = [
+            'itemid'   => (int)$it['itemid'],
+            'quantity' => (float)$it['quantity']
+        ];
+    }
+}
+
+// Pre-cache all catalog items
 $itemsQuery = "SELECT i.id, i.barcode, i.name_ar, i.name_en, u.name_ar AS unit_ar, u.name_en AS unit_en
                FROM items i
-               LEFT JOIN units u ON u.id = i.unit AND u.storeid = '$storeid'
-               WHERE i.storeid = '$storeid'
+               LEFT JOIN units u ON u.id = i.unit
+               WHERE i.storeid = '$storeid' OR i.storeid = '0'
                ORDER BY i.name_ar ASC";
 $resItems = mysqli_query($adController->MySQL, $itemsQuery);
 
 $cachedItems = [];
 if ($resItems) {
     while ($it = mysqli_fetch_assoc($resItems)) {
-        $bCode = !empty($it['barcode']) ? $it['barcode'] : '-----';
-        $iName = ($language == 'en' && !empty($it['name_en'])) ? $it['name_en'] : (!empty($it['name_ar']) ? $it['name_ar'] : $it['name_en']);
-        if (empty($iName) || $iName == '`') {
-            $iName = '-----';
-        }
-        $uName = ($language == 'en' && !empty($it['unit_en'])) ? $it['unit_en'] : (!empty($it['unit_ar']) ? $it['unit_ar'] : $it['unit_en']);
-        if (empty($uName)) {
-            $uName = '-----';
-        }
+        $bCode = !empty($it['barcode']) ? $it['barcode'] : '---';
+        $iName = ($language == 'en' && !empty($it['name_en'])) ? $it['name_en'] : (!empty($it['name_ar']) ? $it['name_ar'] : 'صنف');
+        $uName = ($language == 'en' && !empty($it['unit_en'])) ? $it['unit_en'] : (!empty($it['unit_ar']) ? $it['unit_ar'] : 'وحدة');
+        
         $cachedItems[] = [
-            'id'      => $it['id'],
+            'id'      => (int)$it['id'],
             'barcode' => $bCode,
             'name'    => $iName,
             'unit'    => $uName
@@ -64,204 +81,347 @@ if ($resItems) {
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
-    <title>WAM Tech Soft - <?=EDIT_STORE_TRANSFAIR?></title>
-    <?php require_once("script_php_variables.php"); ?>
-    <?php require_once("header.php"); ?>	
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل إذن تحويل مخزني | WAM Tech ERP</title>
+    <link rel="stylesheet" href="css/admin-pro.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <style>
-        .mult-padding {
-            padding: 4px !important;
+        .table-custom {
+            border: 1px solid #edf2f7;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .table-custom th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 12px;
             text-align: center;
         }
-        .del-palance-item, .more-palance-item {
-            cursor: pointer;
-            text-align: center;
-            width: 32px;
-        }
-        .del-palance-item label, .more-palance-item label {
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
-            margin: 0;
-            display: block;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-        .del-palance-item label {
-            color: #fff;
-            background-color: #d9534f;
-        }
-        .more-palance-item label {
-            color: #fff;
-            background-color: #5cb85c;
-        }
-        .error-red {
-            color: #d9534f;
-            font-weight: bold;
-            margin-top: 10px;
+        .table-custom td {
+            padding: 8px;
+            vertical-align: middle;
         }
     </style>
-    <script type="text/javascript">
-        var numAlready = <?= max(0, $numAlready - 1) ?>;
-    </script>    
 </head>
-<body>
-    <?php require_once("header_top.php"); ?>	
-    <div class="container-fluid-full">
-        <div class="row-fluid">
-            <?php require_once("left_menu.php"); ?>
-            <div id="content" class="span10">
-                <div>
-                    <div class="box span12">
-                        <div class="box-header" data-original-title>
-                            <h2><i class="halflings-icon edit"></i><span class="break"></span><?=EDIT_STORE_TRANSFAIR?></h2>
-                        </div>
-                        <div class="box-content">
-                            <form class="form-horizontal" id="storeTrans-form">
-                                <input type="hidden" value="editStoreTrans" name="f">
-                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
-                                <fieldset>                                                      
-                                    <div class="control-group" style="display:flex; flex-wrap:wrap; gap:20px;">
-                                        <div class="salesOptions">
-                                            <label class="control-label" for="invoice" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=TRANSFAIR_NUMBER?> : </label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <input type="text" class="input-medium" name='invoice' id='invoice' value='<?=htmlspecialchars($dataPur['trans_number'] ?? $invoice)?>' readonly style="background:#eee;">
-                                            </div>
-                                        </div>  
-                                        
-                                        <div class="salesOptions">
-                                            <label class="control-label" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=INVOICE_DATE?></label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <?php
-                                                $tDate = !empty($dataPur['trans_date']) ? date("d/m/Y", strtotime($dataPur['trans_date'])) : date("d/m/Y");
-                                                ?>
-                                                <input type="text" class="input-medium datepicker-nobar" name="trans_date" value='<?=htmlspecialchars($tDate)?>'>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="control-group" style="display:flex; flex-wrap:wrap; gap:20px; margin-top:15px;">
-                                        <div class="salesOptions" style="min-width:250px;">
-                                            <label class="control-label" for="from" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=FROM_STORE?></label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <select class='span12' name="from" id="from" data-rel="chosen">
-                                                    <option value="">-- <?=CHOOSE_STORE ?? 'من مخزن'?> --</option>
-                                                    <?php
-                                                    $query = "SELECT * FROM stores WHERE storeid='$storeid' ORDER BY id ASC";
-                                                    $res   = mysqli_query($adController->MySQL, $query);
-                                                    $selectedFrom = $dataPur['storeFrom'] ?? '';
-                                                    while ($data = mysqli_fetch_assoc($res)) {
-                                                        $name = $data["name_" . $language] ?? $data["name_ar"];
-                                                        $sel  = ($data['id'] == $selectedFrom) ? " selected='selected' " : "";
-                                                        echo "<option value='" . htmlspecialchars($data['id']) . "' $sel>" . htmlspecialchars($name) . "</option>";
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>        
-                                        
-                                        <div class="salesOptions" style="min-width:250px;">
-                                            <label class="control-label" for="to" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=TO_STORE?></label>
-                                            <div class="controls" style="margin-right:0;">
-                                                <select class='span12' name="to" id="to" data-rel="chosen">
-                                                    <option value="">-- <?=CHOOSE_STORE ?? 'إلى مخزن'?> --</option>
-                                                    <?php
-                                                    if ($res) {
-                                                        mysqli_data_seek($res, 0);
-                                                        $selectedTo = $dataPur['storeTo'] ?? '';
-                                                        while ($data = mysqli_fetch_assoc($res)) {
-                                                            $name = $data["name_" . $language] ?? $data["name_ar"];
-                                                            $sel  = ($data['id'] == $selectedTo) ? " selected='selected' " : "";
-                                                            echo "<option value='" . htmlspecialchars($data['id']) . "' $sel>" . htmlspecialchars($name) . "</option>";
-                                                        }
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                        </div>                                           
-                                    </div>
-
-                                    <div class="control-group" style="margin-top:15px;">
-                                        <label class="control-label" for="note" style="width:auto; float:none; margin-bottom:5px; font-weight:bold;"><?=NOTES?></label>
-                                        <div class="controls" style="margin-right:0;">
-                                            <textarea class="span8" name="note" id="note" rows="2"><?=htmlspecialchars($dataPur['note'] ?? '')?></textarea>                                            
-                                        </div>
-                                    </div>
-                                    <hr>
-
-                                    <div class="control-group">
-                                        <h4 style="margin-bottom:15px;"><?=INCOMING_ITEMS ?? 'أصناف التحويل المخزني'?></h4>
-                                        <div class="controls" style="margin-right:0;">	
-                                            <table class="table table-bordered table-striped" style="width:100%;">                                                
-                                                <thead>
-                                                    <tr style="background:#f5f5f5;">
-                                                        <th style="width:50px;">#</th>
-                                                        <th style="width:65%;"><?=BARCODE?> | <?=ITEM_NAME?> | <?=UNITS?></th>    
-                                                        <th style="width:25%;"><?=QUANTITY?></th>
-                                                        <th style="width:35px;"></th>
-                                                        <th style="width:35px;"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                <?php
-                                                for ($i = 0; $i < 10; $i++) {
-                                                    $hasItem = isset($itemsListArray[$i]);
-                                                    $rowStyle = ($i > 0 && !$hasItem) ? "style='display:none;'" : "";
-                                                    $currentItemId = $hasItem ? $itemsListArray[$i]['itemid'] : '';
-                                                    $currentQty    = $hasItem ? $itemsListArray[$i]['quantity'] : '';
-                                                ?>
-                                                    <tr <?= $rowStyle ?> id='row-v-<?= $i ?>'>
-                                                        <td style="text-align:center; vertical-align:middle;"><?= $i + 1 ?></td>
-                                                        <td>
-                                                            <select id='barcode-<?= $i ?>' name="barcode[]" data-rel="chosen" class="span12" style="width:100%">
-                                                                <option value=''>-- اختر الصنف --</option>
-                                                                <?php
-                                                                foreach ($cachedItems as $item) {
-                                                                    $sel = ($item['id'] == $currentItemId) ? " selected='selected' " : "";
-                                                                    $optText = "{$item['barcode']} | {$item['name']} | {$item['unit']}";
-                                                                    echo "<option value='" . htmlspecialchars($item['id']) . "' $sel>" . htmlspecialchars($optText) . "</option>";
-                                                                }
-                                                                ?>
-                                                            </select>
-                                                        </td>
-                                                        <td class="mult-padding">
-                                                            <input type="text" id='item-qty-<?= $i ?>' class="item-qty span12" maxlength="100" name='item_qty[]' style="text-align:center;" value="<?= htmlspecialchars($currentQty) ?>">
-                                                        </td>
-                                                        <td class='del-palance-item mult-padding' prop='<?= $i ?>'><label title="<?=DELETE ?? 'حذف السطر'?>">×</label></td>
-                                                        <td class='more-palance-item mult-padding' prop='<?= $i ?>'><label title="<?=ADD ?? 'إضافة سطر'?>">+</label></td>
-                                                    </tr>
-                                                <?php } ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>                                  				
-                                    <hr>
-                                    
-                                    <div class="form-actions" style="margin-top:20px;">
-                                        <button type="button" id='submit-storeTrans' class="btn btn-primary"><i class="icon-save"></i> <?=SAVE?></button>
-                                        <a href="stores-transfer.php" class="btn"><?=CANCEL?></a>
-                                    </div>
-                                    <p class='error-red'></p>
-                                </fieldset>
-                            </form>   
-                        </div>
+<body class="admin-pro-body">
+    <?php require_once("components/header_pro.php"); ?>
+    
+    <div class="admin-wrapper">
+        <?php require_once("components/sidebar_pro.php"); ?>
+        
+        <main class="admin-main">
+            <div class="container-fluid px-4 py-4">
+                
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold text-dark mb-1">
+                            <i class="fas fa-edit text-primary me-2"></i> تعديل إذن التحويل المخزني: <span class="font-monospace text-primary"><?= htmlspecialchars($invoice) ?></span>
+                        </h2>
+                        <p class="text-muted mb-0">تعديل تفاصيل النقل، الكميات المحولة، والمخازن المشتركة في العملية</p>
+                    </div>
+                    <div>
+                        <a href="stores-transfer.php" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> العودة لسجل التحويلات
+                        </a>
                     </div>
                 </div>
+
+                <form id="editStoreTransForm">
+                    <input type="hidden" name="f" value="editStoreTrans">
+                    <input type="hidden" name="invoice" value="<?= htmlspecialchars($invoice) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+
+                    <!-- Transfer Header Card -->
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-header bg-white py-3 border-bottom">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="fas fa-info-circle text-primary me-2"></i> بيانات إذن التحويل
+                            </h6>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-hashtag me-1"></i> رقم إذن التحويل
+                                    </label>
+                                    <input type="text" class="form-control font-monospace bg-light fw-bold text-primary" value="<?= htmlspecialchars($invoice) ?>" readonly>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-calendar-alt me-1"></i> تاريخ التحويل <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" name="trans_date" class="form-control" value="<?= htmlspecialchars($trans_date) ?>" required>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-warehouse text-danger me-1"></i> من مخزن (المصدر) <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="from" id="fromStore" class="form-select select2-basic" required>
+                                        <option value="">-- اختر مخزن المصدر --</option>
+                                        <?php foreach ($stores as $st): 
+                                            $stName = $st['name_' . $language] ?? $st['name_ar'];
+                                            $sel = ($fromStore == $st['id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $st['id'] ?>" <?= $sel ?>><?= htmlspecialchars($stName) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-warehouse text-success me-1"></i> إلى مخزن (الوجهة) <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="to" id="toStore" class="form-select select2-basic" required>
+                                        <option value="">-- اختر مخزن الوجهة --</option>
+                                        <?php foreach ($stores as $st): 
+                                            $stName = $st['name_' . $language] ?? $st['name_ar'];
+                                            $sel = ($toStore == $st['id']) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $st['id'] ?>" <?= $sel ?>><?= htmlspecialchars($stName) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-secondary">
+                                        <i class="fas fa-comment-alt me-1"></i> ملاحظات وبيان سبب التحويل
+                                    </label>
+                                    <textarea name="note" class="form-control" rows="2"><?= htmlspecialchars($note) ?></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Dynamic Table -->
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="fas fa-boxes text-primary me-2"></i> الأصناف والكميات المحولة
+                            </h6>
+                            <button type="button" id="btnAddRow" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus me-1"></i> إضافة بند للتحويل
+                            </button>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="table-responsive table-custom mb-3">
+                                <table class="table table-bordered align-middle mb-0" id="itemsTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;">#</th>
+                                            <th style="width: 60%;">الصنف (الباركود | الاسم | الوحدة) <span class="text-danger">*</span></th>
+                                            <th style="width: 30%;">الكمية المحولة <span class="text-danger">*</span></th>
+                                            <th style="width: 60px;">حذف</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemsTableBody">
+                                        <!-- Dynamic Rows Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <button type="button" id="btnAddRowBottom" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-1"></i> إضافة سطر آخر
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Actions & Footer -->
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-7">
+                                    <div class="d-flex gap-4">
+                                        <div>
+                                            <span class="text-muted d-block small">عدد الأصناف:</span>
+                                            <span class="fw-bold fs-5 text-dark" id="displayTotalRows">0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted d-block small">إجمالي الكميات:</span>
+                                            <span class="fw-bold fs-5 text-success font-monospace" id="displayTotalQty">0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                                    <button type="submit" id="btnSubmitForm" class="btn btn-primary px-4 py-2 fs-6">
+                                        <i class="fas fa-save me-1"></i> حفظ تعديلات التحويل
+                                    </button>
+                                    <a href="stores-transfer.php" class="btn btn-outline-secondary px-4 py-2 fs-6 ms-2">
+                                        إلغاء
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+
             </div>
-        </div>
+        </main>
     </div>
-	
-    <div class="clearfix"></div>
-    <?php require_once("footer.php"); ?>
-    
-    <script type="text/javascript">
-        $(document).ready(function() {
-            var config = {
-                '.span12': { width: '100%' },
-                '.span3':  { width: '95%' }
-            };
-            for (var selector in config) {
-                $(selector).chosen(config[selector]);
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        var cachedItems = <?= json_encode($cachedItems, JSON_UNESCAPED_UNICODE) ?>;
+        var savedItems  = <?= json_encode($savedItems, JSON_UNESCAPED_UNICODE) ?>;
+        var rowCount = 0;
+
+        function buildItemOptions(selectedId) {
+            var html = '<option value="">-- اختر الصنف --</option>';
+            for (var i = 0; i < cachedItems.length; i++) {
+                var it = cachedItems[i];
+                var sel = (selectedId && selectedId == it.id) ? 'selected' : '';
+                var optVal = it.id;
+                var optText = it.barcode + ' | ' + it.name + ' (' + it.unit + ')';
+                html += '<option value="' + optVal + '" ' + sel + '>' + optText + '</option>';
             }
+            return html;
+        }
+
+        function addRow(prefill) {
+            rowCount++;
+            var idx = rowCount;
+            var tr = $('<tr id="row-' + idx + '"></tr>');
+
+            var tdSeq = $('<td class="text-center text-muted fw-bold row-seq"></td>');
+            
+            var tdItem = $('<td></td>');
+            var select = $('<select name="barcode[]" class="form-select select2-item-row" required></select>');
+            select.html(buildItemOptions(prefill ? prefill.itemid : null));
+            tdItem.append(select);
+
+            var qtyVal = (prefill && prefill.quantity) ? prefill.quantity : '';
+            var tdQty = $('<td><input type="number" step="0.01" min="0.01" name="item_qty[]" class="form-control text-center item-qty-input font-monospace fw-bold" required placeholder="0.00" value="' + qtyVal + '"></td>');
+            var tdDel = $('<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-remove-row"><i class="fas fa-times"></i></button></td>');
+
+            tr.append(tdSeq, tdItem, tdQty, tdDel);
+            $('#itemsTableBody').append(tr);
+
+            select.select2({
+                dir: 'rtl',
+                width: '100%'
+            });
+
+            renumberRows();
+            calculateAll();
+        }
+
+        function renumberRows() {
+            $('#itemsTableBody tr').each(function(index) {
+                $(this).find('.row-seq').text(index + 1);
+            });
+        }
+
+        function calculateAll() {
+            var totalQty = 0;
+            var count = 0;
+
+            $('#itemsTableBody tr').each(function() {
+                var itId = $(this).find('.select2-item-row').val();
+                var q = parseFloat($(this).find('.item-qty-input').val()) || 0;
+                if (itId && q > 0) {
+                    count++;
+                    totalQty += q;
+                }
+            });
+
+            $('#displayTotalRows').text(count);
+            $('#displayTotalQty').text(totalQty.toFixed(2));
+        }
+
+        $(document).ready(function() {
+            $('.select2-basic').select2({
+                dir: 'rtl',
+                width: '100%'
+            });
+
+            if (savedItems && savedItems.length > 0) {
+                for (var i = 0; i < savedItems.length; i++) {
+                    addRow(savedItems[i]);
+                }
+            } else {
+                addRow();
+            }
+
+            $('#btnAddRow, #btnAddRowBottom').on('click', function() {
+                addRow();
+            });
+
+            $(document).on('click', '.btn-remove-row', function() {
+                if ($('#itemsTableBody tr').length <= 1) {
+                    alert('يجب أن يحتوي إذن التحويل على صنف واحد على الأقل.');
+                    return;
+                }
+                $(this).closest('tr').remove();
+                renumberRows();
+                calculateAll();
+            });
+
+            $(document).on('input', '.item-qty-input', function() {
+                calculateAll();
+            });
+
+            // Form Submit with Validation
+            $('#editStoreTransForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var fromSt = $('#fromStore').val();
+                var toSt   = $('#toStore').val();
+
+                if (!fromSt || !toSt) {
+                    alert('يرجى تحديد مخزن المصدر ومخزن الوجهة.');
+                    return;
+                }
+
+                if (fromSt === toSt) {
+                    alert('خطأ: لا يمكن التحويل لنفس المخزن! يجب أن يكون مخزن الوجهة مختلفاً عن مخزن المصدر.');
+                    return;
+                }
+
+                var hasValidRow = false;
+                $('#itemsTableBody tr').each(function() {
+                    var itId = $(this).find('.select2-item-row').val();
+                    var q = parseFloat($(this).find('.item-qty-input').val()) || 0;
+                    if (itId && q > 0) {
+                        hasValidRow = true;
+                    }
+                });
+
+                if (!hasValidRow) {
+                    alert('يرجى إدخال صنف واحد على الأقل مع تحديد كمية التحويل.');
+                    return;
+                }
+
+                var btn = $('#btnSubmitForm');
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> جاري حفظ التعديل...');
+
+                $.ajax({
+                    url: 'controller.php',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(resp) {
+                        btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> حفظ تعديلات التحويل');
+                        if ($.trim(resp) === '1' || parseInt(resp) > 0) {
+                            alert('تم تحديث إذن التحويل المخزني بنجاح.');
+                            window.location.href = 'stores-transfer.php';
+                        } else {
+                            alert(resp || 'حدث خطأ أثناء حفظ التعديل.');
+                        }
+                    },
+                    error: function() {
+                        btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> حفظ تعديلات التحويل');
+                        alert('تعذر الاتصال بالخادم.');
+                    }
+                });
+            });
         });
     </script>
 </body>
