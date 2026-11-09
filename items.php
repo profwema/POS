@@ -11,7 +11,7 @@ Auth::requireLogin();
 Auth::requirePermission('inventory.view');
 
 // Handle POST Requests (Create, Update, Delete)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     Security::verifyCsrf();
     $action = $_POST['action'] ?? '';
 

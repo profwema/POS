@@ -9,7 +9,7 @@ $pageTitle = "طباعة ملصقات الباركود";
 <div class="barcode-print-page">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
                 <i class="fas fa-barcode" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
                 طباعة ملصقات الباركود والأسعار
             </h1>
@@ -73,11 +73,11 @@ $pageTitle = "طباعة ملصقات الباركود";
 
             <!-- Toggles -->
             <div class="form-group" style="margin-bottom: 0; display: flex; gap: 1.5rem; align-items: center; padding-bottom: 0.5rem;">
-                <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: #cbd5e1; font-size: 0.88rem; margin: 0;">
+                <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-main); font-size: 0.88rem; font-weight: 700; margin: 0;">
                     <input type="checkbox" id="showPrice" checked onchange="renderLabels()">
                     إظهار السعر (ج.م)
                 </label>
-                <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: #cbd5e1; font-size: 0.88rem; margin: 0;">
+                <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-main); font-size: 0.88rem; font-weight: 700; margin: 0;">
                     <input type="checkbox" id="showStoreName" checked onchange="renderLabels()">
                     إظهار اسم المتجر
                 </label>
@@ -88,8 +88,8 @@ $pageTitle = "طباعة ملصقات الباركود";
     <!-- Live Preview Area -->
     <div class="card" style="padding: 1.5rem;">
         <div class="no-print" style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-weight: 700; color: #fff;">
-                <i class="fas fa-eye" style="color: #38bdf8; margin-left: 0.4rem;"></i>
+            <div style="font-weight: 800; color: var(--text-main);">
+                <i class="fas fa-eye" style="color: var(--brand-blue); margin-left: 0.4rem;"></i>
                 معاينة الطباعة المباشرة (Live Print Preview)
             </div>
             <div style="font-size: 0.82rem; color: var(--text-muted);">

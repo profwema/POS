@@ -10,7 +10,7 @@ $pageTitle = "إدارة المنتجات والمخزون";
     <!-- Header Section with Breadcrumbs and Quick Actions -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
                 <i class="fas fa-boxes" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
                 إدارة الأصناف والمنتجات والمخزون
             </h1>
@@ -19,15 +19,15 @@ $pageTitle = "إدارة المنتجات والمخزون";
             </p>
         </div>
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-            <a href="<?= BASE_URL ?>barcode_print.php" class="btn btn-outline" style="border-color: rgba(255,255,255,0.15);">
+            <a href="<?= BASE_URL ?>barcode_print.php" class="btn btn-outline">
                 <i class="fas fa-barcode"></i>
                 طباعة ملصقات الباركود
             </a>
-            <a href="<?= BASE_URL ?>stores.php" class="btn btn-outline" style="border-color: rgba(255,255,255,0.15);">
+            <a href="<?= BASE_URL ?>stores.php" class="btn btn-outline">
                 <i class="fas fa-warehouse"></i>
                 المستودعات (<?= count($stores) ?>)
             </a>
-            <a href="<?= BASE_URL ?>transfers.php" class="btn btn-outline" style="border-color: rgba(255,255,255,0.15);">
+            <a href="<?= BASE_URL ?>transfers.php" class="btn btn-outline">
                 <i class="fas fa-exchange-alt"></i>
                 تحويلات المخازن
             </a>
@@ -39,62 +39,63 @@ $pageTitle = "إدارة المنتجات والمخزون";
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem;">
         <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8;">
+            <div class="stat-icon blue">
                 <i class="fas fa-box-open"></i>
             </div>
             <div>
-                <div class="stat-value"><?= number_format($valuation['total_items_count']) ?></div>
-                <div class="stat-label">إجمالي الأصناف بالمخازن</div>
+                <div class="stat-val"><?= number_format($valuation['total_items_count']) ?></div>
+                <div class="stat-title">إجمالي الأصناف بالمخازن</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+            <div class="stat-icon emerald">
                 <i class="fas fa-cubes"></i>
             </div>
             <div>
-                <div class="stat-value"><?= number_format($valuation['total_units_in_stock'], 2) ?></div>
-                <div class="stat-label">إجمالي الوحدات في المستودعات</div>
+                <div class="stat-val"><?= number_format($valuation['total_units_in_stock'], 2) ?></div>
+                <div class="stat-title">إجمالي الوحدات في المستودعات</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+            <div class="stat-icon amber">
                 <i class="fas fa-wallet"></i>
             </div>
             <div>
-                <div class="stat-value"><?= Helpers::formatCurrency($valuation['total_cost_valuation']) ?></div>
-                <div class="stat-label">تقييم المخزون بسعر الشراء</div>
+                <div class="stat-val"><?= Helpers::formatCurrency($valuation['total_cost_valuation']) ?></div>
+                <div class="stat-title">تقييم المخزون بسعر الشراء</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
+            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
                 <i class="fas fa-chart-line"></i>
             </div>
             <div>
-                <div class="stat-value"><?= Helpers::formatCurrency($valuation['total_retail_valuation']) ?></div>
-                <div class="stat-label">تقييم المخزون بسعر البيع (ربح +<?= $valuation['profit_margin_pct'] ?>%)</div>
+                <div class="stat-val"><?= Helpers::formatCurrency($valuation['total_retail_valuation']) ?></div>
+                <div class="stat-title">تقييم المخزون بسعر البيع (ربح +<?= $valuation['profit_margin_pct'] ?>%)</div>
             </div>
         </div>
     </div>
 
     <!-- Alerts Banner if any low stock or expiring -->
     <?php if (!empty($lowStockAlerts) || !empty($expiringAlerts)): ?>
-    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div class="alert-banner alert-amber">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; color: #f59e0b;"></i>
+            <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; color: #d97706;"></i>
             <div>
-                <span style="font-weight: 700; color: #fde68a;">تنبيهات المخزون النشطة:</span>
-                <span style="color: #cbd5e1; font-size: 0.9rem; margin-right: 0.5rem;">
-                    يوجد <strong style="color: #f87171;"><?= count($lowStockAlerts) ?></strong> أصناف قاربت على النفاد، و
-                    <strong style="color: #fbbf24;"><?= count($expiringAlerts) ?></strong> تشغيلات تقترب صلاحيتها من الانتهاء خلال 60 يوماً.
+                <span class="alert-title">تنبيهات المخزون النشطة:</span>
+                <span class="alert-text">
+                    يوجد <strong style="color: var(--brand-danger); font-weight: 800;"><?= count($lowStockAlerts) ?></strong> أصناف قاربت على النفاد، و
+                    <strong style="font-weight: 800;"><?= count($expiringAlerts) ?></strong> تشغيلات تقترب صلاحيتها من الانتهاء خلال 60 يوماً.
                 </span>
             </div>
         </div>
-        <a href="<?= BASE_URL ?>items.php?low_stock_only=1" class="btn btn-outline btn-sm" style="border-color: #f59e0b; color: #fde68a;">
+        <a href="<?= BASE_URL ?>items.php?low_stock_only=1" class="btn-alert">
+            <i class="fas fa-exclamation-circle"></i>
             عرض الأصناف النافذة فقط
         </a>
     </div>
@@ -160,16 +161,17 @@ $pageTitle = "إدارة المنتجات والمخزون";
     <!-- Items Table Card -->
     <div class="card" style="padding: 0; overflow: hidden;">
         <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-weight: 700; color: #fff;">
+            <div style="font-weight: 800; color: var(--text-main); font-size: 1.05rem;">
+                <i class="fas fa-list-ul" style="color: var(--brand-blue); margin-left: 0.4rem;"></i>
                 قائمة الأصناف (إجمالي النتائج: <?= number_format($totalCount) ?>)
             </div>
-            <div style="font-size: 0.82rem; color: var(--text-muted);">
+            <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">
                 الصفحة <?= $page ?> من <?= max(1, $totalPages) ?>
             </div>
         </div>
 
         <div class="table-responsive">
-            <table class="data-table">
+            <table class="table-pro data-table">
                 <thead>
                     <tr>
                         <th style="width: 50px;">#</th>
@@ -203,49 +205,49 @@ $pageTitle = "إدارة المنتجات والمخزون";
                         $isZero = $stock <= 0;
                     ?>
                     <tr>
-                        <td style="color: var(--text-muted); font-size: 0.85rem;">
+                        <td style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">
                             <?= ($offset + $idx + 1) ?>
                         </td>
                         <td>
-                            <div style="font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="item-title">
                                 <?= htmlspecialchars($item['name']) ?>
                                 <?php if ($item['is_scale']): ?>
-                                    <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.7rem;" title="صنف ميزان باركود وزني">
+                                    <span class="badge badge-emerald" style="font-size: 0.7rem;" title="صنف ميزان باركود وزني">
                                         ⚖️ ميزان
                                     </span>
                                 <?php endif; ?>
                             </div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-                                الوحدة: <span style="color: #94a3b8;"><?= htmlspecialchars($item['unit_name']) ?> (<?= htmlspecialchars($item['unit_symbol']) ?>)</span>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; font-weight: 500;">
+                                الوحدة: <strong style="color: var(--text-main);"><?= htmlspecialchars($item['unit_name']) ?> (<?= htmlspecialchars($item['unit_symbol']) ?>)</strong>
                                 <?php if ($item['tax_rate'] > 0): ?>
-                                    | ضريبة: <span style="color: #38bdf8;"><?= $item['tax_rate'] ?>%</span>
+                                    | ضريبة: <strong style="color: var(--brand-blue);"><?= $item['tax_rate'] ?>%</strong>
                                 <?php else: ?>
-                                    | <span style="color: #10b981;">معفى من الضريبة</span>
+                                    | <strong style="color: var(--brand-emerald);">معفى</strong>
                                 <?php endif; ?>
                             </div>
                         </td>
                         <td>
-                            <span style="font-family: monospace; font-size: 0.88rem; color: var(--brand-amber); background: rgba(245, 158, 11, 0.08); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                            <span class="barcode-tag">
                                 <?= htmlspecialchars($item['barcode']) ?>
                             </span>
                             <?php if ($item['is_scale'] && !empty($item['scale_plu'])): ?>
-                                <div style="font-size: 0.72rem; color: #34d399; margin-top: 2px;">PLU: <?= htmlspecialchars($item['scale_plu']) ?></div>
+                                <div style="font-size: 0.75rem; color: var(--brand-emerald); font-weight: 700; margin-top: 3px;">PLU: <?= htmlspecialchars($item['scale_plu']) ?></div>
                             <?php elseif (!empty($item['sku'])): ?>
-                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">SKU: <?= htmlspecialchars($item['sku']) ?></div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">SKU: <?= htmlspecialchars($item['sku']) ?></div>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <span class="badge badge-sky" style="font-size: 0.75rem;">
+                            <span class="badge badge-blue" style="font-size: 0.78rem;">
                                 <?= htmlspecialchars($item['category_name'] ?? 'عام') ?>
                             </span>
                         </td>
-                        <td style="color: #cbd5e1; font-weight: 600;">
+                        <td class="price-cost">
                             <?= Helpers::formatCurrency($item['cost_price']) ?>
                         </td>
-                        <td style="color: #38bdf8; font-weight: 700; font-size: 0.95rem;">
+                        <td class="price-retail">
                             <?= Helpers::formatCurrency($item['retail_price']) ?>
                         </td>
-                        <td style="color: #94a3b8; font-weight: 500;">
+                        <td class="price-wholesale">
                             <?= Helpers::formatCurrency($item['wholesale_price']) ?>
                         </td>
                         <td>
@@ -323,14 +325,14 @@ $pageTitle = "إدارة المنتجات والمخزون";
 </div>
 
 <!-- ================= MODAL 1: إضافة / تعديل صنف ================= -->
-<div id="itemModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 780px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-            <h3 id="itemModalTitle" style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">
-                <i class="fas fa-plus-circle" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
-                إضافة صنف جديد
+<div id="itemModal" class="modal-backdrop" style="display: none;">
+    <div class="card modal-dialog">
+        <div class="modal-header">
+            <h3 id="itemModalTitle" class="modal-title">
+                <i class="fas fa-plus-circle" style="color: var(--brand-amber);"></i>
+                <span>إضافة صنف جديد</span>
             </h3>
-            <button type="button" class="btn btn-outline btn-sm" onclick="closeItemModal()" style="border: none; font-size: 1.1rem;">
+            <button type="button" class="modal-close-btn" onclick="closeItemModal()" title="إغلاق">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -386,15 +388,15 @@ $pageTitle = "إدارة المنتجات والمخزون";
                 </div>
 
                 <!-- خيار الميزان الإلكتروني -->
-                <div class="form-group" style="grid-column: 1 / -1; background: rgba(16, 185, 129, 0.08); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #a7f3d0; font-weight: 700; margin: 0;">
+                <div class="form-group" style="grid-column: 1 / -1; background: rgba(16, 185, 129, 0.1); padding: 0.85rem 1rem; border-radius: 8px; border: 1.5px solid rgba(16, 185, 129, 0.35);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--brand-emerald); font-weight: 800; margin: 0;">
                             <input type="checkbox" name="is_scale" id="itemIsScale" value="1" onchange="toggleScalePlu(this.checked)">
-                            صنف ميزان باركود وزني (أجبان، لحوم، فواكه، خضار)
+                            <span>صنف ميزان باركود وزني (أجبان، لحوم، فواكه، خضار) ⚖️</span>
                         </label>
                         <div id="scalePluWrap" style="display: none; align-items: center; gap: 0.5rem;">
-                            <label class="form-label" style="margin: 0; font-size: 0.8rem; color: #6ee7b7;">كود PLU للميزان (5 أرقام):</label>
-                            <input type="text" name="scale_plu" id="itemScalePlu" class="form-control" placeholder="00001" maxlength="5" style="width: 100px; padding: 4px 8px; height: 32px; font-family: monospace;">
+                            <label class="form-label" style="margin: 0; font-size: 0.82rem; color: var(--text-main); font-weight: 700;">كود PLU للميزان (5 أرقام):</label>
+                            <input type="text" name="scale_plu" id="itemScalePlu" class="form-control" placeholder="00001" maxlength="5" style="width: 100px; padding: 4px 8px; height: 32px; font-family: var(--font-mono); font-weight: 700;">
                         </div>
                     </div>
                 </div>
@@ -403,8 +405,8 @@ $pageTitle = "إدارة المنتجات والمخزون";
                 <div class="form-group">
                     <label class="form-label required">سعر التكلفة (سعر الشراء)</label>
                     <div style="position: relative;">
-                        <input type="number" step="0.01" min="0" name="cost_price" id="itemCostPrice" class="form-control" placeholder="0.00" oninput="calculateMargin()" required>
-                        <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;">ج.م</span>
+                        <input type="number" step="0.01" min="0" name="cost_price" id="itemCostPrice" class="form-control" placeholder="0.00" oninput="calculateMargin()" required style="font-weight: 700;">
+                        <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; font-weight: 700;">ج.م</span>
                     </div>
                 </div>
 
@@ -412,18 +414,18 @@ $pageTitle = "إدارة المنتجات والمخزون";
                 <div class="form-group">
                     <label class="form-label required">سعر البيع القطاعي (للجمهور)</label>
                     <div style="position: relative;">
-                        <input type="number" step="0.01" min="0" name="retail_price" id="itemRetailPrice" class="form-control" placeholder="0.00" oninput="calculateMargin()" required>
-                        <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;">ج.م</span>
+                        <input type="number" step="0.01" min="0" name="retail_price" id="itemRetailPrice" class="form-control" placeholder="0.00" oninput="calculateMargin()" required style="color: var(--brand-blue); font-weight: 800;">
+                        <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--brand-blue); font-size: 0.8rem; font-weight: 800;">ج.م</span>
                     </div>
                 </div>
 
                 <!-- حاسبة هامش الربح الحي -->
-                <div style="grid-column: 1 / -1; background: rgba(56, 189, 248, 0.08); padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.2); display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem;">
-                    <span style="color: #bae6fd;">مؤشر الربحية التقديرية:</span>
+                <div style="grid-column: 1 / -1; background: rgba(2, 132, 199, 0.08); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(2, 132, 199, 0.25); display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <span style="color: var(--text-main); font-weight: 700;">مؤشر الربحية التقديرية:</span>
                     <div>
-                        قيمة الربح: <strong id="profitValue" style="color: #38bdf8;">0.00 ج.م</strong>
+                        قيمة الربح: <strong id="profitValue" style="color: var(--brand-blue); font-weight: 800;">0.00 ج.م</strong>
                         <span style="margin: 0 0.5rem; color: var(--border-color);">|</span>
-                        نسبة هامش الربح: <strong id="profitPercent" style="color: #10b981;">0.0%</strong>
+                        نسبة هامش الربح: <strong id="profitPercent" style="color: var(--brand-emerald); font-weight: 800;">0.0%</strong>
                     </div>
                 </div>
 
@@ -460,7 +462,7 @@ $pageTitle = "إدارة المنتجات والمخزون";
                 </div>
 
                 <!-- الرصيد الافتتاحي (يظهر فقط عند إضافة صنف جديد) -->
-                <div id="openingStockSection" style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: rgba(255,255,255,0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed var(--border-color);">
+                <div id="openingStockSection" style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: var(--bg-body); padding: 0.85rem 1rem; border-radius: 8px; border: 1.5px dashed var(--border-color);">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">الرصيد الافتتاحي الأولي (اختياري)</label>
                         <input type="number" step="0.01" min="0" name="opening_stock" id="itemOpeningStock" class="form-control" placeholder="0.00">
@@ -477,9 +479,9 @@ $pageTitle = "إدارة المنتجات والمخزون";
 
                 <!-- تفعيل الصنف -->
                 <div class="form-group" style="grid-column: 1 / -1; margin-bottom: 0;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #fff;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-main); font-weight: 700;">
                         <input type="checkbox" name="is_active" id="itemIsActive" value="1" checked>
-                        صنف نشط ومتاح للبيع في الكاشير
+                        <span>صنف نشط ومتاح للبيع في الكاشير</span>
                     </label>
                 </div>
             </div>
@@ -495,14 +497,14 @@ $pageTitle = "إدارة المنتجات والمخزون";
 </div>
 
 <!-- ================= MODAL 2: تسوية جردية سريعة ================= -->
-<div id="quickAdjustModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 520px; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-            <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0;">
-                <i class="fas fa-sliders-h" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
-                تسوية جردية سريعة للمخزون
+<div id="quickAdjustModal" class="modal-backdrop" style="display: none;">
+    <div class="card modal-dialog" style="max-width: 520px;">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-sliders-h" style="color: var(--brand-amber);"></i>
+                <span>تسوية جردية سريعة للمخزون</span>
             </h3>
-            <button type="button" class="btn btn-outline btn-sm" onclick="closeQuickAdjustModal()" style="border: none; font-size: 1.1rem;">
+            <button type="button" class="modal-close-btn" onclick="closeQuickAdjustModal()" title="إغلاق">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -510,9 +512,9 @@ $pageTitle = "إدارة المنتجات والمخزون";
         <form id="quickAdjustForm" onsubmit="submitQuickAdjust(event)">
             <input type="hidden" id="adjustItemId" value="">
             
-            <div style="margin-bottom: 1rem; background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 8px;">
-                <div style="font-size: 0.8rem; color: var(--text-muted);">الصنف:</div>
-                <div id="adjustItemName" style="font-weight: 700; color: #fff; font-size: 1rem;"></div>
+            <div style="margin-bottom: 1rem; background: var(--bg-body); padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">الصنف:</div>
+                <div id="adjustItemName" style="font-weight: 800; color: var(--text-main); font-size: 1.05rem;"></div>
             </div>
 
             <div class="form-group">
@@ -527,11 +529,11 @@ $pageTitle = "إدارة المنتجات والمخزون";
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
                     <label class="form-label">الرصيد الدفتري الحالي</label>
-                    <input type="text" id="adjustCurrentStock" class="form-control" readonly style="background: rgba(255,255,255,0.05); color: #cbd5e1; font-weight: 700;">
+                    <input type="text" id="adjustCurrentStock" class="form-control" readonly style="background: var(--bg-body); color: var(--text-main); font-weight: 800;">
                 </div>
                 <div class="form-group">
                     <label class="form-label required">الرصيد الفعلي بعد الجرد</label>
-                    <input type="number" step="0.01" id="adjustActualQty" class="form-control" required placeholder="0.00" style="color: #38bdf8; font-weight: 700; font-size: 1.1rem;">
+                    <input type="number" step="0.01" id="adjustActualQty" class="form-control" required placeholder="0.00" style="color: var(--brand-blue); font-weight: 800; font-size: 1.15rem;">
                 </div>
             </div>
 
@@ -558,21 +560,21 @@ $pageTitle = "إدارة المنتجات والمخزون";
 </div>
 
 <!-- ================= MODAL 3: كارت الصنف وسجل الحركات ================= -->
-<div id="itemCardModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 850px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+<div id="itemCardModal" class="modal-backdrop" style="display: none;">
+    <div class="card modal-dialog" style="max-width: 850px;">
+        <div class="modal-header">
             <div>
-                <h3 id="cardItemName" style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;"></h3>
-                <div id="cardItemBarcode" style="font-size: 0.85rem; color: var(--brand-amber); font-family: monospace; margin-top: 2px;"></div>
+                <h3 id="cardItemName" class="modal-title"></h3>
+                <div id="cardItemBarcode" class="barcode-tag" style="margin-top: 4px;"></div>
             </div>
-            <button type="button" class="btn btn-outline btn-sm" onclick="closeItemCardModal()" style="border: none; font-size: 1.1rem;">
+            <button type="button" class="modal-close-btn" onclick="closeItemCardModal()" title="إغلاق">
                 <i class="fas fa-times"></i>
             </button>
         </div>
 
         <!-- Stock in Each Store -->
-        <h4 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem;">
-            <i class="fas fa-warehouse" style="color: #38bdf8; margin-left: 0.5rem;"></i>
+        <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">
+            <i class="fas fa-warehouse" style="color: var(--brand-blue); margin-left: 0.5rem;"></i>
             الأرصدة الحالية في المستودعات
         </h4>
         <div id="cardStoreStocks" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
@@ -580,12 +582,12 @@ $pageTitle = "إدارة المنتجات والمخزون";
         </div>
 
         <!-- Stock Movement History Table -->
-        <h4 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem;">
-            <i class="fas fa-history" style="color: #10b981; margin-left: 0.5rem;"></i>
+        <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">
+            <i class="fas fa-history" style="color: var(--brand-emerald); margin-left: 0.5rem;"></i>
             سجل آخر حركات المخزون للصنف (Audit Trail)
         </h4>
         <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
-            <table class="data-table" style="font-size: 0.82rem;">
+            <table class="table-pro data-table" style="font-size: 0.82rem;">
                 <thead>
                     <tr>
                         <th>التاريخ والوقت</th>
@@ -773,10 +775,10 @@ async function showItemCard(itemId) {
         if (item.store_stocks && item.store_stocks.length > 0) {
             item.store_stocks.forEach(st => {
                 storesHtml += `
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem;">
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">${st.store_name}</div>
-                        <div style="font-size: 1.15rem; font-weight: 700; color: #38bdf8; margin-top: 4px;">
-                            ${parseFloat(st.current_stock).toFixed(2)} <span style="font-size: 0.8rem; color: #94a3b8;">${item.unit_symbol}</span>
+                    <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.85rem;">
+                        <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">${st.store_name}</div>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-blue); margin-top: 4px;">
+                            ${parseFloat(st.current_stock).toFixed(2)} <span style="font-size: 0.8rem; color: var(--text-main); font-weight: 600;">${item.unit_symbol}</span>
                         </div>
                     </div>
                 `;
@@ -795,9 +797,9 @@ async function showItemCard(itemId) {
                     <tr>
                         <td>${m.created_at}</td>
                         <td>${m.store_name}</td>
-                        <td><span class="badge badge-sky">${m.move_type}</span></td>
-                        <td style="font-weight: 700; color: ${qtyColor};">${sign}${parseFloat(m.quantity).toFixed(2)}</td>
-                        <td style="font-weight: 700; color: #fff;">${parseFloat(m.balance_after).toFixed(2)}</td>
+                        <td><span class="badge badge-blue">${m.move_type}</span></td>
+                        <td style="font-weight: 800; color: ${qtyColor};">${sign}${parseFloat(m.quantity).toFixed(2)}</td>
+                        <td style="font-weight: 800; color: var(--text-main);">${parseFloat(m.balance_after).toFixed(2)}</td>
                         <td>${m.notes || '---'} <span style="color: var(--text-muted); font-size: 0.75rem;">(${m.user_name || 'نظام'})</span></td>
                     </tr>
                 `;

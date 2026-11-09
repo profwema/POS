@@ -866,6 +866,43 @@
             </div>
         </div>
 
+        <!-- روابط تشغيل شاشات النظام المباشرة في السلايد بار -->
+        <div style="padding: 0 1rem 0.5rem 1rem;">
+            <div style="font-size: 0.72rem; font-weight: 800; color: #fbbf24; text-transform: uppercase; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i class="fas fa-play-circle"></i> شاشات النظام المباشرة (Live)
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <a href="http://localhost/myworks/POS/index.php" target="_blank" class="nav-link" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(2, 132, 199, 0.15); color: #38bdf8; border: 1px solid rgba(2, 132, 199, 0.3);">
+                    <i class="fas fa-chart-pie" style="font-size: 0.85rem;"></i>
+                    <span>لوحة التحكم المالية</span>
+                </a>
+                <a href="http://localhost/myworks/POS/pos.php" target="_blank" class="nav-link" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 800;">
+                    <i class="fas fa-bolt" style="font-size: 0.85rem;"></i>
+                    <span>الكاشير السريع (POS)</span>
+                </a>
+                <a href="http://localhost/myworks/POS/items.php" target="_blank" class="nav-link" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="fas fa-boxes" style="font-size: 0.85rem;"></i>
+                    <span>المنتجات والمخزون</span>
+                </a>
+                <a href="http://localhost/myworks/POS/sales.php" target="_blank" class="nav-link" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                    <i class="fas fa-file-invoice-dollar" style="font-size: 0.85rem;"></i>
+                    <span>سجل فواتير المبيعات</span>
+                </a>
+                <a href="http://localhost/myworks/POS/barcode_print.php" target="_blank" class="nav-link" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                    <i class="fas fa-barcode" style="font-size: 0.85rem;"></i>
+                    <span>طباعة ملصقات الباركود</span>
+                </a>
+                <a href="http://localhost/myworks/POS/stores.php" target="_blank" class="nav-link" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                    <i class="fas fa-warehouse" style="font-size: 0.85rem;"></i>
+                    <span>المستودعات والمخازن</span>
+                </a>
+                <a href="http://localhost/myworks/POS/categories.php" target="_blank" class="nav-link" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                    <i class="fas fa-tags" style="font-size: 0.85rem;"></i>
+                    <span>الأقسام والوحدات</span>
+                </a>
+            </div>
+        </div>
+
         <ul class="nav-sections" id="sidebarNav">
             <li class="nav-item">
                 <a href="#almubarmig-brand" class="nav-link" style="color: #fbbf24;">
@@ -951,6 +988,13 @@
                     <span class="nav-badge">Setup</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="#ai-handover-prompt" class="nav-link" style="color: #38bdf8;">
+                    <i class="fas fa-robot" style="color: var(--brand-blue);"></i>
+                    <span>12. برومبت تسليم الراية للـ AI</span>
+                    <span class="nav-badge" style="background: rgba(56, 189, 248, 0.25); color: #38bdf8;">Handover</span>
+                </a>
+            </li>
         </ul>
 
         <div class="sidebar-footer">
@@ -980,6 +1024,10 @@
             </div>
 
             <div class="nav-actions">
+                <a href="http://localhost/myworks/POS/index.php" target="_blank" class="btn-action" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #fff; font-weight: 800; border: none; text-decoration: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);">
+                    <i class="fas fa-play"></i>
+                    <span>تشغيل المنظومة (Live System)</span>
+                </a>
                 <button class="btn-action" id="themeToggleBtn" title="تبديل الوضع الليلي">
                     <i class="fas fa-moon"></i>
                     <span>الوضع الليلي</span>
@@ -1041,6 +1089,118 @@
                         <span class="val">عربي 100% RTL | admin-pro</span>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        
+
+        <!-- LIVE SYSTEM QUICK LAUNCH HUB (بوابة التشغيل الفوري للنظام) -->
+        <section style="background: linear-gradient(135deg, rgba(2, 6, 23, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); border: 2px solid var(--brand-amber); border-radius: var(--radius-xl); padding: 1.75rem; margin-bottom: 2.5rem; box-shadow: 0 15px 35px rgba(245, 158, 11, 0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 0.6rem;">
+                        <i class="fas fa-rocket" style="color: var(--brand-amber);"></i>
+                        بوابة الروابط المباشرة لتشغيل واختبار شاشات النظام
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 4px 0 0 0;">
+                        اضغط على أي شاشة أدناه لفتحها مباشرة في متصفحك (بيانات الدخول: المستخدم <code>admin</code> • كلمة المرور <code>admin123</code>)
+                    </p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="badge badge-success" style="padding: 6px 12px; font-size: 0.82rem;">خادم WAMP نشط (127.0.0.1)</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                
+                <!-- 1. لوحة التحكم -->
+                <a href="http://localhost/myworks/POS/index.php" target="_blank" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">لوحة التحكم المالية</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">index.php</div>
+                    </div>
+                </a>
+
+                <!-- 2. الكاشير POS -->
+                <a href="http://localhost/myworks/POS/pos.php" target="_blank" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(2, 6, 23, 0.8) 100%); border: 1.5px solid var(--brand-amber); border-radius: var(--radius-md); padding: 1rem; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: var(--brand-amber); color: #000; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900;">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #fbbf24; font-size: 1rem;">نقطة البيع السريعة (POS)</div>
+                        <div style="font-size: 0.75rem; color: #fde68a;">pos.php (F1-F10)</div>
+                    </div>
+                </a>
+
+                <!-- 3. الأصناف والمخزون -->
+                <a href="http://localhost/myworks/POS/items.php" target="_blank" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">المنتجات والمخزون</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">items.php</div>
+                    </div>
+                </a>
+
+                <!-- 4. طباعة ملصقات الباركود -->
+                <a href="http://localhost/myworks/POS/barcode_print.php" target="_blank" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">طباعة ملصقات الباركود</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">barcode_print.php</div>
+                    </div>
+                </a>
+
+                <!-- 5. فواتير المبيعات -->
+                <a href="http://localhost/myworks/POS/sales.php" target="_blank" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">سجل فواتير المبيعات</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">sales.php</div>
+                    </div>
+                </a>
+
+                <!-- 6. المستودعات والمخازن -->
+                <a href="http://localhost/myworks/POS/stores.php" target="_blank" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">المستودعات والمخازن</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">stores.php</div>
+                    </div>
+                </a>
+
+                <!-- 7. تحويلات المخزون -->
+                <a href="http://localhost/myworks/POS/transfers.php" target="_blank" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">تحويلات المخزون</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">transfers.php</div>
+                    </div>
+                </a>
+
+                <!-- 8. الأقسام والوحدات -->
+                <a href="http://localhost/myworks/POS/categories.php" target="_blank" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.85rem; transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(236, 72, 153, 0.15); color: #ec4899; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #fff; font-size: 0.95rem;">الأقسام ووحدات القياس</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">categories.php</div>
+                    </div>
+                </a>
+
             </div>
         </section>
 
@@ -1648,24 +1808,24 @@ ALTER TABLE `items` ADD INDEX `idx_items_barcode` (`barcode`);</code></pre>
                 </div>
 
                 <div class="timeline-step">
-                    <div class="timeline-dot" style="background: #f59e0b; box-shadow: 0 0 10px #f59e0b;"></div>
-                    <div class="timeline-content">
+                    <div class="timeline-dot" style="background: #10b981; box-shadow: 0 0 10px #10b981;"></div>
+                    <div class="timeline-content" style="border-right-color: #10b981;">
                         <div class="phase-title">
                             <h4>المرحلة 2: محرك نقطة البيع السريعة (POS) والورديات</h4>
-                            <span class="badge badge-warning" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b;">🔄 المرحلة القادمة</span>
+                            <span class="badge badge-success" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981;">✅ مكتمل 100%</span>
                         </div>
-                        <p>شاشة الكاشير السريعة pos.php بزمن استجابة 0s، قارئ باركود الكاميرا html5-qrcode، الدفع المتعدد (كاش، ميزة، إنستاباي، محافظ، آجل)، الورديات، وطباعة الإيصال الحراري 80mm.</p>
+                        <p>شاشة الكاشير السريعة pos.php بزمن استجابة 0s، الورديات والعُهد النقدية، اختصارات F1-F10، قارئ باركود الكاميرا، الدفع المتعدد (كاش، ميزة، إنستاباي، محافظ ذكية، آجل)، السلات المعلقة، وطباعة الإيصال الحراري 80mm بهوية براند «المبرمج».</p>
                     </div>
                 </div>
 
                 <div class="timeline-step">
-                    <div class="timeline-dot"></div>
+                    <div class="timeline-dot" style="background: #f59e0b; box-shadow: 0 0 10px #f59e0b;"></div>
                     <div class="timeline-content">
                         <div class="phase-title">
-                            <h4>المرحلة 3: المخزون، بطاقة الصنف، وتنبيهات النواقص (Inventory & Barcode)</h4>
-                            <span class="badge badge-success">المستودعات</span>
+                            <h4>المرحلة 3: المبيعات والمشتريات وإدارة سلاسل الإمداد</h4>
+                            <span class="badge badge-warning" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b;">🔄 المرحلة القادمة</span>
                         </div>
-                        <p>بطاقة الصنف الشاملة بهامش الربح، فك باركود الموازين، شاشة تنبيهات المخزون وجرس الإشعارات الحي، وجدول الحركات اللحظية <code>stock_moves</code>.</p>
+                        <p>عروض الأسعار، مرتجعات المبيعات والمشتريات، أوامر الشراء، فواتير الموردين، كشوف حسابات العملاء والموردين، وتقارير أعمار الديون (30، 60، 90، +120 يوماً).</p>
                     </div>
                 </div>
 
@@ -1721,12 +1881,27 @@ ALTER TABLE `items` ADD INDEX `idx_items_barcode` (`barcode`);</code></pre>
 USE `wamtech_db`;
 SOURCE d:/wamp/www/myworks/POS/database/wamtech_db.sql;</code></pre>
                 </li>
-                <li><strong>روابط النظام المباشرة:</strong>
-                    <ul>
-                        <li>لوحة التحكم (Dashboard): <code>http://localhost/myworks/POS/index.php</code></li>
-                        <li>شاشة نقطة البيع السريعة (POS): <code>http://localhost/myworks/POS/pos.php</code></li>
-                        <li>شاشة تسجيل الدخول: <code>http://localhost/myworks/POS/login.php</code></li>
-                    </ul>
+                <li><strong>روابط النظام المباشرة (اضغط لفتح الشاشة مباشرة):</strong>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.75rem;">
+                        <a href="http://localhost/myworks/POS/index.php" target="_blank" class="btn-action" style="background: var(--brand-blue); color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="fas fa-chart-pie"></i> لوحة التحكم (index.php)
+                        </a>
+                        <a href="http://localhost/myworks/POS/pos.php" target="_blank" class="btn-action" style="background: var(--brand-amber); color: #000; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="fas fa-bolt"></i> الكاشير السريع (pos.php)
+                        </a>
+                        <a href="http://localhost/myworks/POS/items.php" target="_blank" class="btn-action" style="background: #10b981; color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="fas fa-boxes"></i> الأصناف والمخزون (items.php)
+                        </a>
+                        <a href="http://localhost/myworks/POS/barcode_print.php" target="_blank" class="btn-action" style="background: #38bdf8; color: #000; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="fas fa-barcode"></i> طباعة الباركود (barcode_print.php)
+                        </a>
+                        <a href="http://localhost/myworks/POS/sales.php" target="_blank" class="btn-action" style="background: #f59e0b; color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="fas fa-file-invoice-dollar"></i> سجل المبيعات (sales.php)
+                        </a>
+                        <a href="http://localhost/myworks/POS/login.php" target="_blank" class="btn-action" style="background: #64748b; color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class="fas fa-sign-in-alt"></i> تسجيل الدخول (login.php)
+                        </a>
+                    </div>
                 </li>
             </ol>
 
@@ -1737,6 +1912,118 @@ SOURCE d:/wamp/www/myworks/POS/database/wamtech_db.sql;</code></pre>
                     هذه الوثيقة هي المرجع الهندسي النظيف والموحد 100%. كل متطلب ووظيفة وفجوة تم تحديد مكانها ومعيارها البرمجي بدقة تامة.
                 </div>
             </div>
+        </section>
+
+        <!-- SECTION 12: AI HANDOVER PROMPT -->
+        <section id="ai-handover-prompt" class="section-block">
+            <div class="section-title-wrap">
+                <div class="section-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h2>12. برومبت تسليم الراية واستكمال التطوير (AI Continuation Prompt)</h2>
+                <span class="section-tag">Handover Ready</span>
+            </div>
+
+            <p>
+                تمت صياغة هذا البرومبت الهندسي بدقة متناهية لتقوم بنسخه وإرساله لأي وكيل ذكاء اصطناعي (AI Agent) في جلسة جديدة، ليفهم فوراً كافة الأبعاد المعمارية للمنظومة، وما تم إنجازه، والخطوة التالية المطلوبة بدقة (المرحلة 3: المبيعات والمشتريات وسلاسل الإمداد).
+            </p>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+                <button type="button" class="btn btn-primary" onclick="copyHandoverPrompt()" id="copyPromptBtn" style="gap: 0.5rem;">
+                    <i class="fas fa-copy"></i>
+                    <span>نسخ البرومبت بالكامل</span>
+                </button>
+            </div>
+
+            <div class="code-header">
+                <span><i class="fas fa-terminal"></i> AI_HANDOVER_PROMPT.md (نص البرومبت المعتمد)</span>
+                <span style="color: var(--brand-amber); font-weight: 700;">جاهز للنسخ الفوري</span>
+            </div>
+            <pre class="code-block" id="promptTextContent" style="max-height: 480px; overflow-y: auto; font-size: 0.82rem; white-space: pre-wrap; line-height: 1.7; background: #070d18; color: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md);">أنت تعمل كمساعد برمجي أول وكبير مهندسي نظم (Senior Software Architect) لاستكمال تطوير النظام التجاري والمحاسبي المتكامل:
+نظام «WAM Tech POS & ERP Enterprise - إصدار السوق المصري v2.1»
+المشروع مبني تحت مظلة وهوية براند المطور: «المبرمج | Almubarmig» (م/ وئام محمد السوداني - 01002283766 - almubarmig.com).
+الشعار المعتمد: "من الفكرة إلى نظام يعمل".
+
+=======================================================
+📍 أولاً: بيئة العمل والمعمارية الهندسية الصارمة (System Architecture)
+=======================================================
+- مسار المشروع المحلي: d:\wamp\www\myworks\POS
+- البيئة التشغيلية: WampServer (Apache, PHP 8.2+, MySQL 8 على البورت 3306)
+- قاعدة البيانات النشطة والمعتمدة حصرياً: wamtech_pos_db (محرك InnoDB لجميع الجداول لدعم المعاملات الذرية Transactions).
+- معمارية الكود: Clean MVC Modular Architecture:
+  * النواة المشتركة: core/ (Database.php Singleton PDO, Auth.php Bcrypt/RBAC, Security.php CSRF/AES, View.php, Helpers.php, Logger.php)
+  * طبقة الخدمات ومنطق الأعمال: app/Services/ (تغليف كافة العمليات المالية والمخزنية داخل Database::transaction مع قفل السطور FOR UPDATE)
+  * النماذج: app/Models/
+  * الواجهات: views/ (واجهات عربية RTL 100% بالخط العربي Cairo ونظام التصميم admin-pro.css مع Dynamic Cache-Busting)
+- معايير السوق المصري:
+  * العملة: الجنيه المصري (ج.م / EGP) عبر Helpers::formatCurrency().
+  * ضريبة القيمة المضافة: 14% قياسية.
+  * باركود الموازين الإلكترونية: يبدأ بـ 20 أو 99 مع فك تلقائي للوزن المدمج بالجرام والكيلو.
+  * طرق الدفع: كاش، بطاقات ميزة / فيزا، إنستاباي InstaPay IPN، محافظ إلكترونية، وآجل.
+
+=======================================================
+✅ ثانياً: المراحل المنجزة والمفحوصة بالكامل (Done & Verified)
+=======================================================
+1. المرحلة 0 (النواة التأسيسية): 
+   - قاعدة البيانات wamtech_pos_db، جداول branches, roles, permissions, role_permissions, users, system_settings, audit_logs.
+   - تشفير كلمات المرور Bcrypt، حماية CSRF، قواطع الصلاحيات Auth::requirePermission().
+   - بوابة الدخول login.php، لوحة القيادة index.php، وقالب main.php.
+2. المرحلة 1 (المخازن والأصناف والموازين): 
+   - جداول categories, units, stores, items, item_batches, stock_moves, store_transfers, store_transfer_items.
+   - سجل حركات المخزون الموحد stock_moves وإلغاء الطرق القديمة في الحساب.
+   - شاشة items.php (كارت الصنف الشامل، التسوية الجردية، حاسبة هامش الربح).
+   - شاشات stores.php (تقييم المخزون المالي)، transfers.php (تحويلات المستودعات)، categories.php، ومولد ملصقات الباركود barcode_print.php لطابعات 38×25مم و 50×25مم و A4.
+3. المرحلة 2 (محرك البيع السريع POS والورديات): 
+   - جداول customers, shifts, sales, sale_items, sale_payments, held_carts, invoice_sequences.
+   - شاشة الكاشير السريعة pos.php (60FPS، اختصارات F1-F10، قارئ الكاميرا html5-qrcode، نغمات صوتية Web Audio).
+   - الدفع المتعدد، إدارة عُهد وتقفيل الورديات Shift Management مع احتساب العجز والزيادة.
+   - مصمم الإيصال الحراري 80mm receipt.php بهوية «المبرمج»، وسجل فواتير المبيعات sales.php، ونقطة نهاية api/pos.php.
+4. تحسينات الواجهة وكسر الكاش: 
+   - تباين فائق (WCAG AAA) للوضعين النهاري والليلي.
+   - كسر كاش المتصفح تلقائياً عبر Dynamic Cache-Busting (filemtime) في main.php.
+   - فرض الإخفاء الصريح للنوافذ المنبثقة style="display: none;" لضمان عدم ظهورها في متن الصفحة.
+   - توزيع كروت الإحصائيات أفقياً كشبكة متجاوبة (4 أعمدة).
+
+=======================================================
+🎯 ثالثاً: مهمتك المباشرة والمطلوبة الآن بدقة (Your Task)
+=======================================================
+المطلوب منك هو بناء وتفعيل: «المرحلة 3: المبيعات والمشتريات وسلاسل الإمداد ومردودات البيع والشراء (Supply Chain Module)»:
+
+1. ملف الميجريشن والبيانات:
+   - إنشاء database/migrations/04_supply_chain.sql يحتوي على:
+     * suppliers: الموردين (id, name, company_name, phone, email, address, tax_number, balance, opening_balance, is_active, created_at...)
+     * purchases: فواتير المشتريات (id, invoice_number فريد, supplier_id, store_id, invoice_date, subtotal, discount, tax_amount, grand_total, paid_amount, remaining_amount, payment_status, notes, created_by...)
+     * purchase_items: بنود فاتورة الشراء (purchase_id, item_id, quantity, unit_cost, total_cost, expire_date, batch_number...)
+     * quotations: عروض أسعار العملاء (id, quotation_number, customer_id, expiry_date, total, status: draft/sent/accepted/converted...)
+     * quotation_items: بنود عرض السعر
+     * sales_returns: مرتجعات المبيعات (id, return_number, sale_id, customer_id, store_id, total_refund, refund_method, reason, created_by...)
+     * sales_return_items: بنود مرتجع البيع
+     * purchase_returns & purchase_return_items: مرتجعات المشتريات للموردين.
+   - إنشاء ملف البذور التجريبية database/seeds/04_supply_chain_seed.sql بموردين مصريين وفواتير شراء واقعية وتوريدات.
+
+2. طبقة النماذج والخدمات (Models & Services):
+   - app/Models/Supplier.php: إدارة الموردين، الأرصدة، كشوف الحساب، وأعمار الديون.
+   - app/Models/Quotation.php: إدارة عروض الأسعار والتحويل الفوري لفاتورة بيع.
+   - app/Services/PurchaseService.php:
+     * تسجيل فاتورة المشتريات ذرياً (Atomic Transaction).
+     * إضافة البضاعة فوراً لرصيد المستودع عبر stock_moves بنوع 'purchase'.
+     * تحديث متوسط التكلفة المرجح (Weighted Average Cost) للصنف في جدول items تلقائياً:
+       [New_Cost = ((Old_Stock * Old_Cost) + (In_Qty * In_Cost)) / (Old_Stock + In_Qty)].
+     * تحديث رصيد مديونية المورد وتوثيق الحركة في سجل التدقيق Logger::audit.
+   - app/Services/ReturnService.php:
+     * مرتجع المبيعات: التحقق من الفاتورة الأصلية، إرجاع الكميات للمخزن عبر stock_moves بنوع 'sale_return'، وتعديل رصيد الخزينة أو العميل.
+     * مرتجع المشتريات: خصم البضاعة من المخزن وتسجيل إشعار دائن لحساب المورد.
+
+3. الواجهات والمتحكمات (Controllers & Views):
+   - purchases.php & views/modules/purchases/: قائمة فواتير المشتريات + نموذج تسجيل فاتورة توريد جديدة مع سداد دفعات نقدية/آجلة.
+   - suppliers.php & views/modules/suppliers/: دليل الموردين، بطاقة المورد، كشف الحساب التفصيلي، وأعمار الديون (30، 60، 90، +120 يوماً).
+   - quotations.php & views/modules/quotations/: إنشاء عروض الأسعار مع زر إجراء واحد: "تحويل لفاتورة بيع معتمدة".
+   - returns.php & views/modules/returns/: إدارة مرتجعات البيع والشراء.
+   - ربط كافة الروابط في القائمة الجانبية views/components/sidebar.php.
+
+التزم بالمعايير الصارمة: لغة الواجهة عربية 100%، استعلامات PDO المجهزة فقط، إغلاق العمليات الذرية بـ Database::transaction، الحفاظ على علامة وهوية «المبرمج | Almubarmig»، وضمان التباين العالي وإخفاء النوافذ المنبثقة افتراضياً بـ style="display: none;".
+
+ابدأ الآن بفحص مسارات المشروع والملفات المذكورة وانطلق في تنفيذ المرحلة 3 بالترتيب.</pre>
         </section>
 
         <!-- BRAND FOOTER -->
@@ -1858,6 +2145,23 @@ SOURCE d:/wamp/www/myworks/POS/database/wamtech_db.sql;</code></pre>
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
+        // Copy Handover Prompt to Clipboard
+        function copyHandoverPrompt() {
+            const promptText = document.getElementById('promptTextContent').innerText;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.getElementById('copyPromptBtn');
+                const origHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> <span>تم النسخ بنجاح!</span>';
+                btn.style.backgroundColor = 'var(--brand-emerald)';
+                setTimeout(() => {
+                    btn.innerHTML = origHtml;
+                    btn.style.backgroundColor = '';
+                }, 2500);
+            }).catch(err => {
+                alert('تعذر النسخ التلقائي: ' + err);
+            });
+        }
     </script>
 </body>
 </html>

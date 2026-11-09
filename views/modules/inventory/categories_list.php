@@ -9,7 +9,7 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
 <div class="categories-units-page">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
                 <i class="fas fa-tags" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
                 التصنيفات وأقسام المنتجات ووحدات القياس
             </h1>
@@ -22,7 +22,7 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
                 <i class="fas fa-boxes"></i>
                 قائمة المنتجات
             </a>
-            <button type="button" class="btn btn-outline" onclick="openCreateUnitModal()" style="border-color: rgba(56,189,248,0.3); color: #38bdf8;">
+            <button type="button" class="btn btn-outline" onclick="openCreateUnitModal()" style="border-color: var(--brand-blue); color: var(--brand-blue);">
                 <i class="fas fa-ruler-combined"></i>
                 إضافة وحدة قياس
             </button>
@@ -39,7 +39,7 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
         <!-- SECTION 1: Categories -->
         <div class="card" style="padding: 0; overflow: hidden;">
             <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                <div style="font-weight: 700; color: #fff;">
+                <div style="font-weight: 800; color: var(--text-main);">
                     <i class="fas fa-folder-open" style="color: var(--brand-amber); margin-left: 0.4rem;"></i>
                     أقسام وتصنيفات المنتجات (<?= count($categories) ?>)
                 </div>
@@ -49,7 +49,7 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
             </div>
 
             <div class="table-responsive">
-                <table class="data-table">
+                <table class="table-pro data-table">
                     <thead>
                         <tr>
                             <th>الكود</th>
@@ -62,12 +62,12 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
                     <tbody>
                         <?php foreach ($categories as $cat): ?>
                         <tr>
-                            <td style="font-family: monospace; color: var(--brand-amber); font-weight: 700;">
+                            <td style="font-family: var(--font-mono); color: var(--brand-amber); font-weight: 700;">
                                 <?= htmlspecialchars($cat['code'] ?: '---') ?>
                             </td>
                             <td>
-                                <div style="font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="<?= htmlspecialchars($cat['icon']) ?>" style="color: #38bdf8;"></i>
+                                <div style="font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="<?= htmlspecialchars($cat['icon']) ?>" style="color: var(--brand-blue);"></i>
                                     <?= htmlspecialchars($cat['name']) ?>
                                 </div>
                                 <?php if (!empty($cat['description'])): ?>
@@ -77,7 +77,7 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="<?= BASE_URL ?>items.php?category_id=<?= $cat['id'] ?>" class="badge badge-sky" style="text-decoration: none;">
+                                <a href="<?= BASE_URL ?>items.php?category_id=<?= $cat['id'] ?>" class="badge badge-blue" style="text-decoration: none;">
                                     <?= $cat['items_count'] ?> صنف
                                 </a>
                             </td>
@@ -85,7 +85,7 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
                                 <?php if ($cat['is_active']): ?>
                                     <span class="badge badge-emerald">نشط</span>
                                 <?php else: ?>
-                                    <span class="badge badge-rose">معطل</span>
+                                    <span class="badge badge-danger">معطل</span>
                                 <?php endif; ?>
                             </td>
                             <td style="text-align: center;">
@@ -103,8 +103,8 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
         <!-- SECTION 2: Units of Measure -->
         <div class="card" style="padding: 0; overflow: hidden;">
             <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                <div style="font-weight: 700; color: #fff;">
-                    <i class="fas fa-balance-scale" style="color: #10b981; margin-left: 0.4rem;"></i>
+                <div style="font-weight: 800; color: var(--text-main);">
+                    <i class="fas fa-balance-scale" style="color: var(--brand-emerald); margin-left: 0.4rem;"></i>
                     وحدات القياس (<?= count($units) ?>)
                 </div>
                 <button type="button" class="btn btn-outline btn-sm" onclick="openCreateUnitModal()">
@@ -113,7 +113,7 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
             </div>
 
             <div class="table-responsive">
-                <table class="data-table">
+                <table class="table-pro data-table">
                     <thead>
                         <tr>
                             <th>الوحدة</th>
@@ -125,15 +125,15 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
                     <tbody>
                         <?php foreach ($units as $u): ?>
                         <tr>
-                            <td style="font-weight: 700; color: #fff;">
+                            <td style="font-weight: 700; color: var(--text-main);">
                                 <?= htmlspecialchars($u['name']) ?>
                             </td>
                             <td>
-                                <span class="badge" style="background: rgba(255,255,255,0.08); color: #cbd5e1; font-family: monospace;">
+                                <span class="badge" style="background: rgba(2, 132, 199, 0.1); color: var(--brand-blue); font-family: var(--font-mono); font-weight: 700;">
                                     <?= htmlspecialchars($u['symbol']) ?>
                                 </span>
                             </td>
-                            <td style="color: #38bdf8; font-weight: 700;">
+                            <td style="color: var(--brand-blue); font-weight: 800;">
                                 <?= $u['items_count'] ?> صنف
                             </td>
                             <td style="text-align: center;">
@@ -151,14 +151,14 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
 </div>
 
 <!-- ================= MODAL 1: إضافة / تعديل قسم ================= -->
-<div id="catModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 480px; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-            <h3 id="catModalTitle" style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0;">
-                <i class="fas fa-folder-plus" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
-                إضافة قسم جديد
+<div id="catModal" class="modal-backdrop" style="display: none;">
+    <div class="card modal-dialog" style="max-width: 480px;">
+        <div class="modal-header">
+            <h3 id="catModalTitle" class="modal-title">
+                <i class="fas fa-folder-plus" style="color: var(--brand-amber);"></i>
+                <span>إضافة قسم جديد</span>
             </h3>
-            <button type="button" class="btn btn-outline btn-sm" onclick="closeCatModal()" style="border: none; font-size: 1.1rem;">
+            <button type="button" class="modal-close-btn" onclick="closeCatModal()" title="إغلاق">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -175,7 +175,7 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
 
             <div class="form-group">
                 <label class="form-label">كود القسم التعريفي</label>
-                <input type="text" name="code" id="catCodeInput" class="form-control" placeholder="CAT-JUICE" style="font-family: monospace; text-transform: uppercase;">
+                <input type="text" name="code" id="catCodeInput" class="form-control" placeholder="CAT-JUICE" style="font-family: var(--font-mono); text-transform: uppercase;">
             </div>
 
             <div class="form-group">
@@ -189,9 +189,9 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #fff;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-main); font-weight: 700;">
                     <input type="checkbox" name="is_active" id="catIsActive" value="1" checked>
-                    قسم نشط ومتاح في فلاتر النظام
+                    <span>قسم نشط ومتاح في فلاتر النظام</span>
                 </label>
             </div>
 
@@ -206,14 +206,14 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
 </div>
 
 <!-- ================= MODAL 2: إضافة / تعديل وحدة قياس ================= -->
-<div id="unitModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 440px; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-            <h3 id="unitModalTitle" style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0;">
-                <i class="fas fa-ruler-combined" style="color: #38bdf8; margin-left: 0.5rem;"></i>
-                إضافة وحدة قياس
+<div id="unitModal" class="modal-backdrop" style="display: none;">
+    <div class="card modal-dialog" style="max-width: 440px;">
+        <div class="modal-header">
+            <h3 id="unitModalTitle" class="modal-title">
+                <i class="fas fa-ruler-combined" style="color: var(--brand-blue);"></i>
+                <span>إضافة وحدة قياس</span>
             </h3>
-            <button type="button" class="btn btn-outline btn-sm" onclick="closeUnitModal()" style="border: none; font-size: 1.1rem;">
+            <button type="button" class="modal-close-btn" onclick="closeUnitModal()" title="إغلاق">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -238,6 +238,10 @@ $pageTitle = "إدارة التصنيفات ووحدات القياس";
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> حفظ الوحدة
                 </button>
+            </div>
+        </form>
+    </div>
+</div>
             </div>
         </form>
     </div>

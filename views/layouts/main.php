@@ -14,8 +14,35 @@
     <!-- FontAwesome 6 Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
-    <!-- Admin Pro Main Stylesheet -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin-pro.css?v=2.1">
+    <!-- Admin Pro Main Stylesheet (Dynamic Versioning to prevent browser cache) -->
+    <?php
+    $cssFile = ROOT_PATH . '/assets/css/admin-pro.css';
+    $cssVer = file_exists($cssFile) ? filemtime($cssFile) : time();
+    $jsFile = ROOT_PATH . '/assets/js/app.js';
+    $jsVer = file_exists($jsFile) ? filemtime($jsFile) : time();
+    ?>
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin-pro.css?v=<?= $cssVer ?>">
+    
+    <style>
+    /* Critical Structural Rules: Guaranteed Modals & Grids */
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 1200;
+        align-items: center;
+        justify-content: center;
+        padding: 1.25rem;
+    }
+    .stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 1.75rem;
+    }
+    </style>
 </head>
 <body>
 
@@ -39,7 +66,7 @@
     </div>
 
     <!-- Client Scripts -->
-    <script src="<?= BASE_URL ?>assets/js/app.js?v=2.1"></script>
+    <script src="<?= BASE_URL ?>assets/js/app.js?v=<?= $jsVer ?>"></script>
 </body>
 </html>
 

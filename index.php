@@ -18,16 +18,45 @@ if (Auth::isCashier()) {
 }
 
 $db = Database::getInstance();
+$userId = (int)Auth::id();
 
-// جلب إحصائيات النواة التأسيسية
-$totalUsers = $db->fetchColumn("SELECT COUNT(*) FROM `users` WHERE `is_active` = 1");
-$totalSettings = $db->fetchColumn("SELECT COUNT(*) FROM `system_settings`");
+// 1. إحصائيات عامة
+$totalUsers = (int)$db->fetchColumn("SELECT COUNT(*) FROM `users` WHERE `is_active` = 1");
+$totalStores = (int)$db->fetchColumn("SELECT COUNT(*) FROM `stores` WHERE `is_active` = 1");
+
+// 2. إحصائيات مبيعات اليوم
+$today = date('Y-m-d');
+$todayStats = $db->fetchOne("
+    SELECT 
+        COUNT(*) AS invoices_count,
+        COALESCE(SUM(grand_total), 0) AS total_revenue,
+        COALESCE(SUM(tax_amount), 0) AS total_tax,
+        COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN grand_total ELSE 0 END), 0) AS cash_revenue
+    FROM sales
+    WHERE DATE(created_at) = ?
+", [$today]);
+
+// 3. إحصائيات المخزون والتقييم المالي
+$inventoryValuation = InventoryService::getInventoryValuation();
+$lowStockAlerts = InventoryService::getLowStockAlerts();
+$expiringAlerts = InventoryService::getExpiringBatchesAlerts(60);
+
+// 4. أحدث الفواتير الصادرة
+$recentSales = Sale::getRecentSales(6);
+
+// 5. الوردية الحالية
+$activeShift = Shift::getActiveShift($userId);
 
 // عرض لوحة التحكم الرئيسية
 View::render('modules/dashboard/index', [
-    'pageTitle'     => 'لوحة التحكم المالية والإدارية',
-    'currentUser'   => Auth::user(),
-    'totalUsers'    => $totalUsers,
-    'totalSettings' => $totalSettings
+    'pageTitle'          => 'لوحة التحكم المالية والإدارية',
+    'currentUser'        => Auth::user(),
+    'totalUsers'         => $totalUsers,
+    'totalStores'        => $totalStores,
+    'todayStats'         => $todayStats,
+    'inventoryValuation' => $inventoryValuation,
+    'lowStockCount'      => count($lowStockAlerts),
+    'expiringCount'      => count($expiringAlerts),
+    'recentSales'        => $recentSales,
+    'activeShift'        => $activeShift
 ], 'main');
-

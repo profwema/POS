@@ -87,10 +87,24 @@ class Database {
     }
 
     /**
+     * اسم بديل لجلب سجل مفرد
+     */
+    public function fetch(string $sql, array $params = []): ?array {
+        return $this->fetchOne($sql, $params);
+    }
+
+    /**
      * جلب قيمة حقل مفرد (Single Column)
      */
     public function fetchColumn(string $sql, array $params = [], int $column = 0): mixed {
         return $this->query($sql, $params)->fetchColumn($column);
+    }
+
+    /**
+     * اسم بديل لجلب قيمة حقل مفرد
+     */
+    public function fetchValue(string $sql, array $params = [], int $column = 0): mixed {
+        return $this->fetchColumn($sql, $params, $column);
     }
 
     /**
@@ -128,8 +142,19 @@ class Database {
             $params[":set_$key"] = $val;
         }
 
-        foreach ($whereParams as $key => $val) {
-            $params[$key] = $val;
+        // تحويل علامات الاستفهام ? إلى أسماء متغيرات مجهزة لتجنب تعارض PDO بين المسمى والموضعي
+        if (str_contains($where, '?') && array_is_list($whereParams)) {
+            $counter = 0;
+            $where = preg_replace_callback('/\?/', function() use (&$counter, &$params, $whereParams) {
+                $token = ":where_param_{$counter}";
+                $params[$token] = $whereParams[$counter] ?? null;
+                $counter++;
+                return $token;
+            }, $where);
+        } else {
+            foreach ($whereParams as $key => $val) {
+                $params[$key] = $val;
+            }
         }
 
         $sql = sprintf("UPDATE `%s` SET %s WHERE %s", $table, implode(', ', $setClauses), $where);

@@ -188,6 +188,38 @@ class Auth {
     }
 
     /**
+     * اشتراط صلاحية وظيفية دقيقة مع حماية الجلسة وقطع التنفيذ
+     */
+    public static function requirePermission(string|array $permissions): void {
+        self::requireLogin();
+        if (self::isAdmin()) return; // مدير النظام يتمتع بكافة الصلاحيات تلقائياً
+
+        $perms = (array)$permissions;
+        $hasAny = false;
+        foreach ($perms as $perm) {
+            if (self::hasPermission($perm)) {
+                $hasAny = true;
+                break;
+            }
+        }
+
+        if (!$hasAny) {
+            if (Helpers::isAjax()) {
+                header('Content-Type: application/json; charset=utf-8');
+                http_response_code(403);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'عذراً، ليس لديك الصلاحية الكافية لتنفيذ هذا الإجراء.'
+                ], JSON_UNESCAPED_UNICODE);
+            } else {
+                http_response_code(403);
+                die("عذراً، ليس لديك الصلاحية الكافية للوصول إلى هذه الشاشة أو تنفيذ هذا الإجراء.");
+            }
+            exit();
+        }
+    }
+
+    /**
      * تسجيل الخروج وإنهاء الجلسة بالكامل
      */
     public static function logout(): void {

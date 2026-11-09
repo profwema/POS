@@ -9,7 +9,7 @@ $pageTitle = "إدارة المستودعات والمخازن";
 <div class="stores-management-page">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
                 <i class="fas fa-warehouse" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
                 المستودعات والمخازن
             </h1>
@@ -39,15 +39,15 @@ $pageTitle = "إدارة المستودعات والمخازن";
             $stats = $st['stats'];
         ?>
         <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
-            <div style="position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: <?= $st['is_active'] ? 'var(--brand-amber)' : '#f87171' ?>;"></div>
+            <div style="position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: <?= $st['is_active'] ? 'var(--brand-amber)' : 'var(--brand-danger)' ?>;"></div>
 
             <div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                     <div>
-                        <span class="badge" style="font-family: monospace; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 0.75rem; margin-bottom: 0.25rem; display: inline-block;">
+                        <span class="badge" style="font-family: var(--font-mono); background: rgba(2, 132, 199, 0.12); color: var(--brand-blue); font-size: 0.75rem; margin-bottom: 0.25rem; display: inline-block; font-weight: 700;">
                             <?= htmlspecialchars($st['code']) ?>
                         </span>
-                        <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0;">
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0;">
                             <?= htmlspecialchars($st['name']) ?>
                         </h3>
                     </div>
@@ -55,46 +55,46 @@ $pageTitle = "إدارة المستودعات والمخازن";
                         <?php if ($st['is_active']): ?>
                             <span class="badge badge-emerald">نشط</span>
                         <?php else: ?>
-                            <span class="badge badge-rose">معطل</span>
+                            <span class="badge badge-danger">معطل</span>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6;">
                     <?php if (!empty($st['location'])): ?>
-                        <div><i class="fas fa-map-marker-alt" style="width: 16px; color: #94a3b8;"></i> <?= htmlspecialchars($st['location']) ?></div>
+                        <div><i class="fas fa-map-marker-alt" style="width: 16px; color: var(--text-muted);"></i> <?= htmlspecialchars($st['location']) ?></div>
                     <?php endif; ?>
                     <?php if (!empty($st['manager_name'])): ?>
-                        <div><i class="fas fa-user-tie" style="width: 16px; color: #94a3b8;"></i> المسؤول: <?= htmlspecialchars($st['manager_name']) ?></div>
+                        <div><i class="fas fa-user-tie" style="width: 16px; color: var(--text-muted);"></i> المسؤول: <?= htmlspecialchars($st['manager_name']) ?></div>
                     <?php endif; ?>
                     <?php if (!empty($st['phone'])): ?>
-                        <div><i class="fas fa-phone" style="width: 16px; color: #94a3b8;"></i> <?= htmlspecialchars($st['phone']) ?></div>
+                        <div><i class="fas fa-phone" style="width: 16px; color: var(--text-muted);"></i> <?= htmlspecialchars($st['phone']) ?></div>
                     <?php endif; ?>
                 </div>
 
                 <!-- Store Stock Metrics -->
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                     <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">الأصناف المتوفرة</div>
-                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-top: 2px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">الأصناف المتوفرة</div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-top: 2px;">
                             <?= number_format($stats['total_items']) ?> صنف
                         </div>
                     </div>
                     <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">إجمالي الوحدات</div>
-                        <div style="font-size: 1.1rem; font-weight: 700; color: #38bdf8; margin-top: 2px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">إجمالي الوحدات</div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--brand-blue); margin-top: 2px;">
                             <?= number_format($stats['total_stock_qty'], 1) ?>
                         </div>
                     </div>
-                    <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">القيمة بسعر التكلفة</div>
-                        <div style="font-size: 0.95rem; font-weight: 700; color: #fbbf24; margin-top: 2px;">
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">القيمة بسعر التكلفة</div>
+                        <div style="font-size: 1rem; font-weight: 800; color: var(--brand-amber); margin-top: 2px;">
                             <?= Helpers::formatCurrency($stats['total_cost_value']) ?>
                         </div>
                     </div>
-                    <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">القيمة بسعر البيع</div>
-                        <div style="font-size: 0.95rem; font-weight: 700; color: #34d399; margin-top: 2px;">
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">القيمة بسعر البيع</div>
+                        <div style="font-size: 1rem; font-weight: 800; color: var(--brand-emerald); margin-top: 2px;">
                             <?= Helpers::formatCurrency($stats['total_retail_value']) ?>
                         </div>
                     </div>
@@ -116,14 +116,14 @@ $pageTitle = "إدارة المستودعات والمخازن";
 </div>
 
 <!-- ================= MODAL: إضافة / تعديل مستودع ================= -->
-<div id="storeModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 500px; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-            <h3 id="storeModalTitle" style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0;">
-                <i class="fas fa-warehouse" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
-                إضافة مستودع جديد
+<div id="storeModal" class="modal-backdrop" style="display: none;">
+    <div class="card modal-dialog" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 id="storeModalTitle" class="modal-title">
+                <i class="fas fa-warehouse" style="color: var(--brand-amber);"></i>
+                <span>إضافة مستودع جديد</span>
             </h3>
-            <button type="button" class="btn btn-outline btn-sm" onclick="closeStoreModal()" style="border: none; font-size: 1.1rem;">
+            <button type="button" class="modal-close-btn" onclick="closeStoreModal()" title="إغلاق">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -160,9 +160,9 @@ $pageTitle = "إدارة المستودعات والمخازن";
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #fff;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-main); font-weight: 700;">
                     <input type="checkbox" name="is_active" id="storeIsActive" value="1" checked>
-                    مستودع نشط ويعمل بالنظام
+                    <span>مستودع نشط ويعمل بالنظام</span>
                 </label>
             </div>
 

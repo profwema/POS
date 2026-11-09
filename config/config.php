@@ -74,3 +74,18 @@ require_once CORE_PATH . DIRECTORY_SEPARATOR . 'Auth.php';
 require_once CORE_PATH . DIRECTORY_SEPARATOR . 'Helpers.php';
 require_once CORE_PATH . DIRECTORY_SEPARATOR . 'Logger.php';
 require_once CORE_PATH . DIRECTORY_SEPARATOR . 'View.php';
+
+// تحميل تلقائي لموديلات وخدمات التطبيق (Models & Services Autoloader)
+spl_autoload_register(function ($class) {
+    $paths = [
+        APP_PATH . DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . $class . '.php',
+        APP_PATH . DIRECTORY_SEPARATOR . 'Services' . DIRECTORY_SEPARATOR . $class . '.php',
+        CORE_PATH . DIRECTORY_SEPARATOR . $class . '.php'
+    ];
+    foreach ($paths as $file) {
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
+    }
+});

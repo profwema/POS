@@ -19,6 +19,13 @@ class Security {
     }
 
     /**
+     * اسم بديل لتوليد رمز CSRF
+     */
+    public static function generateCsrf(): string {
+        return self::csrfToken();
+    }
+
+    /**
      * توليد حقل مخفي لرموز CSRF لاستخدامه داخل النماذج
      */
     public static function csrfInput(): string {
@@ -58,6 +65,13 @@ class Security {
             }
             exit();
         }
+    }
+
+    /**
+     * اسم بديل للتحقق الصارم من CSRF
+     */
+    public static function verifyCsrf(): void {
+        self::requireCsrf();
     }
 
     /**

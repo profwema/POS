@@ -1,6 +1,7 @@
 <?php
 /**
- * القائمة الجانبية - Sidebar Component
+ * القائمة الجانبية للتطبيق - Application Sidebar
+ * WAM Tech POS & ERP - Cyber-Luxe Arabic RTL Design
  */
 $currentPage = basename($_SERVER['PHP_SELF'] ?? 'index.php');
 ?>
@@ -17,6 +18,7 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? 'index.php');
     </div>
 
     <ul class="sidebar-nav">
+        <!-- قسم الرئيسية ونقاط البيع -->
         <li class="nav-header">الرئيسية ونقاط البيع</li>
         
         <li class="nav-item">
@@ -28,27 +30,59 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? 'index.php');
 
         <li class="nav-item">
             <a href="<?= BASE_URL ?>pos.php" class="nav-link <?= ($currentPage === 'pos.php') ? 'active' : '' ?>" style="color: #fbbf24;">
-                <i class="fas fa-barcode" style="color: var(--brand-amber);"></i>
+                <i class="fas fa-bolt" style="color: var(--brand-amber);"></i>
                 <span>نقطة البيع السريعة (POS)</span>
                 <span class="badge badge-amber">F1-F10</span>
-            </a>
-        </li>
-
-        <li class="nav-header">إدارة العمليات التجارية</li>
-
-        <li class="nav-item">
-            <a href="<?= BASE_URL ?>items.php" class="nav-link <?= ($currentPage === 'items.php') ? 'active' : '' ?>">
-                <i class="fas fa-boxes"></i>
-                <span>المنتجات والمخازن</span>
             </a>
         </li>
 
         <li class="nav-item">
             <a href="<?= BASE_URL ?>sales.php" class="nav-link <?= ($currentPage === 'sales.php') ? 'active' : '' ?>">
                 <i class="fas fa-file-invoice-dollar"></i>
-                <span>المبيعات والفواتير</span>
+                <span>سجل فواتير المبيعات</span>
             </a>
         </li>
+
+        <!-- قسم إدارة المخازن والأصناف (المرحلة 1) -->
+        <li class="nav-header">إدارة المخازن والأصناف</li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>items.php" class="nav-link <?= ($currentPage === 'items.php') ? 'active' : '' ?>">
+                <i class="fas fa-boxes"></i>
+                <span>المنتجات والأصناف</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>barcode_print.php" class="nav-link <?= ($currentPage === 'barcode_print.php') ? 'active' : '' ?>">
+                <i class="fas fa-barcode"></i>
+                <span>طباعة ملصقات الباركود</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>categories.php" class="nav-link <?= ($currentPage === 'categories.php') ? 'active' : '' ?>">
+                <i class="fas fa-tags"></i>
+                <span>الأقسام ووحدات القياس</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>stores.php" class="nav-link <?= ($currentPage === 'stores.php') ? 'active' : '' ?>">
+                <i class="fas fa-warehouse"></i>
+                <span>المستودعات والمخازن</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>transfers.php" class="nav-link <?= ($currentPage === 'transfers.php') ? 'active' : '' ?>">
+                <i class="fas fa-exchange-alt"></i>
+                <span>تحويلات المخزون</span>
+            </a>
+        </li>
+
+        <!-- قسم العمليات التجارية والتوريد -->
+        <li class="nav-header">المشتريات والتوريد</li>
 
         <li class="nav-item">
             <a href="<?= BASE_URL ?>purchases.php" class="nav-link <?= ($currentPage === 'purchases.php') ? 'active' : '' ?>">
@@ -57,6 +91,7 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? 'index.php');
             </a>
         </li>
 
+        <!-- قسم المالية والحسابات -->
         <li class="nav-header">المالية والحسابات العامة</li>
 
         <li class="nav-item">
@@ -69,10 +104,11 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <li class="nav-item">
             <a href="<?= BASE_URL ?>reports.php" class="nav-link <?= ($currentPage === 'reports.php') ? 'active' : '' ?>">
                 <i class="fas fa-file-excel"></i>
-                <span>التقارير التحليلية والضرائب</span>
+                <span>التقارير والضرائب</span>
             </a>
         </li>
 
+        <!-- قسم الإدارة والأمان -->
         <li class="nav-header">الإدارة والأمان</li>
 
         <li class="nav-item">
@@ -98,4 +134,3 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <span style="font-size: 0.72rem; color: #64748b;">من الفكرة إلى نظام يعمل</span>
     </div>
 </aside>
-

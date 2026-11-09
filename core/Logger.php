@@ -14,7 +14,7 @@ class Logger {
     public static function audit(
         string $action,
         string $module,
-        ?int $recordId = null,
+        int|string|null $recordId = null,
         mixed $oldValues = null,
         mixed $newValues = null
     ): void {

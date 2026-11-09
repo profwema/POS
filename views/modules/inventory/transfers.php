@@ -9,7 +9,7 @@ $pageTitle = "تحويلات المخزون بين المستودعات";
 <div class="transfers-management-page">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
                 <i class="fas fa-exchange-alt" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
                 أذونات تحويل المخزون بين المستودعات
             </h1>
@@ -31,12 +31,12 @@ $pageTitle = "تحويلات المخزون بين المستودعات";
 
     <!-- Transfers List Card -->
     <div class="card" style="padding: 0; overflow: hidden;">
-        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); font-weight: 700; color: #fff;">
+        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); font-weight: 800; color: var(--text-main);">
             سجل أذونات التحويل السابقة
         </div>
 
         <div class="table-responsive">
-            <table class="data-table">
+            <table class="table-pro data-table">
                 <thead>
                     <tr>
                         <th>رقم الإذن</th>
@@ -63,30 +63,30 @@ $pageTitle = "تحويلات المخزون بين المستودعات";
                     <?php else: ?>
                     <?php foreach ($transfers as $tr): ?>
                     <tr>
-                        <td style="font-family: monospace; font-weight: 700; color: var(--brand-amber);">
+                        <td style="font-family: var(--font-mono); font-weight: 700; color: var(--brand-amber);">
                             <?= htmlspecialchars($tr['transfer_number']) ?>
                         </td>
-                        <td style="font-weight: 600; color: #fff;">
-                            <i class="fas fa-arrow-circle-right" style="color: #f87171; margin-left: 0.35rem;"></i>
+                        <td style="font-weight: 700; color: var(--text-main);">
+                            <i class="fas fa-arrow-circle-right" style="color: var(--brand-danger); margin-left: 0.35rem;"></i>
                             <?= htmlspecialchars($tr['from_store_name']) ?>
                         </td>
-                        <td style="font-weight: 600; color: #fff;">
-                            <i class="fas fa-arrow-circle-left" style="color: #10b981; margin-left: 0.35rem;"></i>
+                        <td style="font-weight: 700; color: var(--text-main);">
+                            <i class="fas fa-arrow-circle-left" style="color: var(--brand-emerald); margin-left: 0.35rem;"></i>
                             <?= htmlspecialchars($tr['to_store_name']) ?>
                         </td>
-                        <td style="color: #38bdf8; font-weight: 700;">
+                        <td style="color: var(--brand-blue); font-weight: 800;">
                             <?= $tr['total_items'] ?> صنف
                         </td>
                         <td>
                             <span class="badge badge-emerald">معتمد ومنفذ</span>
                         </td>
-                        <td style="color: #cbd5e1;">
+                        <td style="color: var(--text-main); font-weight: 600;">
                             <?= htmlspecialchars($tr['created_by_name'] ?? 'مدير النظام') ?>
                         </td>
-                        <td style="color: var(--text-muted); font-size: 0.82rem;">
+                        <td style="color: var(--text-muted); font-size: 0.82rem; font-weight: 600;">
                             <?= date('Y-m-d h:i A', strtotime($tr['created_at'])) ?>
                         </td>
-                        <td style="color: #94a3b8; font-size: 0.82rem;">
+                        <td style="color: var(--text-muted); font-size: 0.82rem;">
                             <?= htmlspecialchars($tr['notes'] ?: '---') ?>
                         </td>
                     </tr>
@@ -99,14 +99,14 @@ $pageTitle = "تحويلات المخزون بين المستودعات";
 </div>
 
 <!-- ================= MODAL: إذن تحويل جديد ================= -->
-<div id="transferModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 780px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-            <h3 style="font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0;">
-                <i class="fas fa-exchange-alt" style="color: var(--brand-amber); margin-left: 0.5rem;"></i>
-                إنشاء إذن تحويل مخزني جديد
+<div id="transferModal" class="modal-backdrop" style="display: none;">
+    <div class="card modal-dialog" style="max-width: 780px;">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-exchange-alt" style="color: var(--brand-amber);"></i>
+                <span>إنشاء إذن تحويل مخزني جديد</span>
             </h3>
-            <button type="button" class="btn btn-outline btn-sm" onclick="closeTransferModal()" style="border: none; font-size: 1.1rem;">
+            <button type="button" class="modal-close-btn" onclick="closeTransferModal()" title="إغلاق">
                 <i class="fas fa-times"></i>
             </button>
         </div>
