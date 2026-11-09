@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>وثيقة المواصفات الهندسية والمعمارية المحدثة | WAM Tech POS & ERP Enterprise (براند المبرمج)</title>
+    <!-- Google Fonts: Cairo, Plus Jakarta Sans, Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Al-Mubarmig Brand Identity Tokens (Cyber-Luxe & Clean Modern Light) */
+            --brand-blue: #0284c7;
+            --brand-blue-deep: #00509d;
+            --brand-blue-hover: #38bdf8;
+            --brand-blue-glow: rgba(2, 132, 199, 0.4);
+            --brand-amber: #f59e0b;
+            --brand-amber-light: #fbbf24;
+            --brand-amber-hover: #d97706;
+            --brand-amber-glow: rgba(245, 158, 11, 0.35);
+            --brand-cyan: #06b6d4;
+            --brand-cyan-glow: rgba(6, 182, 212, 0.3);
+            --brand-emerald: #10b981;
+            --brand-emerald-glow: rgba(16, 185, 129, 0.3);
+            --brand-purple: #8b5cf6;
+
+            --primary: var(--brand-blue);
+            --primary-dark: var(--brand-blue-deep);
+            --primary-light: #eff6ff;
+            --primary-border: #bfdbfe;
+            --success: var(--brand-emerald);
+            --success-dark: #047857;
+            --success-light: #ecfdf5;
+            --warning: var(--brand-amber);
+            --warning-dark: #b45309;
+            --warning-light: #fffbeb;
+            --danger: #ef4444;
+            --danger-dark: #b91c1c;
+            --danger-light: #fef2f2;
+            --info: var(--brand-cyan);
+            --info-light: #ecfeff;
+            --purple: var(--brand-purple);
+            --purple-light: #f5f3ff;
+            
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-sidebar: #070d18;
+            --bg-sidebar-hover: #0f1c34;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-sidebar: #94a3b8;
+            --text-sidebar-active: #ffffff;
+            --border-color: #e2e8f0;
+            --border-dark: #cbd5e1;
+            
+            --font-sans: 'Cairo', system-ui, -apple-system, sans-serif;
+            --font-en: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.625rem;
+            --radius-lg: 0.875rem;
+            --radius-xl: 1.25rem;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #070d18;
+            --bg-card: #101e38;
+            --bg-sidebar: #050a12;
+            --bg-sidebar-hover: #0d182e;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --border-dark: #1e293b;
+            --primary-light: rgba(2, 132, 199, 0.18);
+            --success-light: rgba(16, 185, 129, 0.18);
+            --warning-light: rgba(245, 158, 11, 0.18);
+            --danger-light: rgba(239, 68, 68, 0.18);
+            --info-light: rgba(6, 182, 212, 0.18);
+            --purple-light: rgba(139, 92, 246, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.75;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            color: #fff;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 1.4rem 1.25rem;
+            background: linear-gradient(135deg, #070d18 0%, #0b1528 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .sidebar-header .brand-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .sidebar-header .title-box h2 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .sidebar-header .title-box span {
+            font-size: 0.72rem;
+            color: #38bdf8;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .sidebar-search {
+            padding: 0.85rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .sidebar-search-wrapper {
+            position: relative;
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            padding: 0.6rem 0.85rem 0.6rem 2.25rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255,255,255,0.12);
+            background-color: rgba(255,255,255,0.05);
+            color: #fff;
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar-search input:focus {
+            border-color: var(--primary);
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-search-wrapper i {
+            position: absolute;
+            left: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .nav-sections {
+            list-style: none;
+            padding: 0.85rem 0.65rem;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 0.2rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            color: var(--text-sidebar);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            font-size: 0.86rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link i {
+            width: 18px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            background-color: var(--bg-sidebar-hover);
+            transform: translateX(-3px);
+        }
+
+        .nav-link.active {
+            color: #fff;
+            background: linear-gradient(90deg, var(--brand-blue) 0%, rgba(2, 132, 199, 0.7) 100%);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+        }
+
+        .nav-badge {
+            margin-right: auto;
+            font-size: 0.68rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 9999px;
+            background: rgba(255,255,255,0.12);
+            color: #e2e8f0;
+            font-weight: 700;
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.78rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            background: rgba(0,0,0,0.25);
+        }
+
+        /* Main Content */
+        #main-wrapper {
+            margin-right: 320px;
+            flex-grow: 1;
+            padding: 2.5rem 3rem;
+            max-width: 1440px;
+            transition: margin-right 0.3s;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.86rem;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb span.current {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.84rem;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            color: #fff;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            background: linear-gradient(135deg, #070d18 0%, #00366b 50%, #0284c7 100%);
+            border-radius: var(--radius-xl);
+            padding: 2.75rem 2.5rem;
+            color: #fff;
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(2, 132, 199, 0.35);
+        }
+
+        .hero-banner::after {
+            content: "\f121";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: -20px;
+            bottom: -30px;
+            font-size: 14rem;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(2, 132, 199, 0.25);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .hero-banner h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin: 1rem 0 0.75rem 0;
+            line-height: 1.3;
+        }
+
+        .hero-banner p {
+            font-size: 1.05rem;
+            opacity: 0.92;
+            max-width: 960px;
+            margin-bottom: 1.75rem;
+            line-height: 1.8;
+        }
+
+        .hero-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            padding-top: 1.5rem;
+        }
+
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .hero-meta-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-md);
+            background: rgba(255,255,255,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .hero-meta-text .label {
+            font-size: 0.74rem;
+            opacity: 0.75;
+            display: block;
+        }
+
+        .hero-meta-text .val {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        /* KPI Quick Cards */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .kpi-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .kpi-icon.blue { background-color: var(--primary-light); color: var(--primary); }
+        .kpi-icon.green { background-color: var(--success-light); color: var(--success); }
+        .kpi-icon.yellow { background-color: var(--warning-light); color: var(--warning); }
+        .kpi-icon.red { background-color: var(--danger-light); color: var(--danger); }
+        .kpi-icon.purple { background-color: var(--purple-light); color: var(--purple); }
+
+        .kpi-details .val {
+            font-size: 1.45rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: var(--text-main);
+        }
+
+        .kpi-details .title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        /* Content Sections */
+        .section-block {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 2.25rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow-sm);
+            scroll-margin-top: 2rem;
+            transition: all 0.3s;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .section-title-wrap .icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-md);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .section-title-wrap h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .section-tag {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        /* Typography */
+        h3 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin: 1.6rem 0 0.85rem 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h3::before {
+            content: "";
+            display: inline-block;
+            width: 5px;
+            height: 18px;
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+
+        p, ul, ol {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            padding-right: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.45rem;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            margin: 1.25rem 0 1.75rem 0;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: right;
+        }
+
+        thead {
+            background-color: var(--bg-body);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        th {
+            padding: 0.85rem 1rem;
+            font-weight: 800;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(2, 132, 199, 0.04);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-success { background-color: var(--success-light); color: var(--success-dark); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-primary { background-color: var(--primary-light); color: var(--primary-dark); border: 1px solid rgba(2, 132, 199, 0.3); }
+        .badge-warning { background-color: var(--warning-light); color: var(--warning-dark); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-danger { background-color: var(--danger-light); color: var(--danger-dark); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-purple { background-color: var(--purple-light); color: var(--purple); border: 1px solid rgba(139, 92, 246, 0.3); }
+
+        /* Alerts & Notice Boxes */
+        .alert-box {
+            padding: 1.15rem 1.4rem;
+            border-radius: var(--radius-lg);
+            margin: 1.25rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            font-size: 0.92rem;
+            line-height: 1.7;
+        }
+
+        .alert-box.primary { background-color: var(--primary-light); border: 1px solid var(--primary-border); color: #00366b; }
+        .alert-box.success { background-color: var(--success-light); border: 1px solid #a7f3d0; color: #065f46; }
+        .alert-box.warning { background-color: var(--warning-light); border: 1px solid #fde68a; color: #92400e; }
+        .alert-box.danger { background-color: var(--danger-light); border: 1px solid #fecaca; color: #991b1b; }
+
+        .alert-box i {
+            font-size: 1.35rem;
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: #070d18;
+            color: #f8fafc;
+            padding: 1.25rem;
+            border-radius: var(--radius-lg);
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            margin: 1.15rem 0;
+            border: 1px solid rgba(255,255,255,0.12);
+            line-height: 1.6;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.86em;
+            background-color: rgba(2, 132, 199, 0.08);
+            color: var(--primary);
+            padding: 0.15rem 0.35rem;
+            border-radius: var(--radius-sm);
+            direction: ltr;
+            display: inline-block;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Feature Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+            gap: 1.25rem;
+            margin: 1.25rem 0;
+        }
+
+        .feature-item-card {
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.35rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .feature-item-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
+        }
+
+        .feature-item-card .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .feature-item-card .card-head h4 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-item-card p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        .feature-item-card .details-list {
+            margin-top: 0.5rem;
+            font-size: 0.82rem;
+            color: var(--text-main);
+            list-style-type: none;
+            padding-right: 0;
+        }
+
+        .feature-item-card .details-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .feature-item-card .details-list li i {
+            color: var(--success);
+            font-size: 0.8rem;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-right: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            right: 8px;
+            width: 3px;
+            background: linear-gradient(180deg, var(--brand-blue) 0%, #38bdf8 100%);
+            border-radius: 2px;
+        }
+
+        .timeline-step {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            right: -2rem;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid var(--brand-blue);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .timeline-content {
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.4rem;
+        }
+
+        .timeline-content .phase-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content .phase-title h4 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Print styles */
+        @media print {
+            #sidebar { display: none !important; }
+            #main-wrapper { margin-right: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .top-navbar, .btn-action, .theme-toggle, #backToTop { display: none !important; }
+            .section-block { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; }
+            body { background: #fff !important; color: #000 !important; }
+        }
+
+        /* Mobile */
+        @media (max-width: 1024px) {
+            #sidebar { transform: translateX(100%); }
+            #sidebar.open { transform: translateX(0); }
+            #main-wrapper { margin-right: 0; padding: 1.5rem; }
+            .mobile-toggle-btn { display: inline-flex !important; }
+        }
+
+        .mobile-toggle-btn {
+            display: none;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        #backToTop {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            width: 45px;
+            height: 45px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 999;
+        }
+
+        #backToTop.show { opacity: 1; visibility: visible; }
+        #backToTop:hover { transform: scale(1.1); background: var(--primary-dark); }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-row">
+                <img src="assets/brand/logo-horizontal-light.png" alt="المبرمج | Almubarmig" style="height: 36px; max-width: 160px; object-fit: contain;">
+                <span class="badge" style="background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); font-size: 0.65rem;">المبرمج</span>
+            </div>
+            <div class="title-box">
+                <h2>WAM Tech POS & ERP</h2>
+                <span>Clean Enterprise v2.1 • مصر</span>
+            </div>
+        </div>
+
+        <div class="sidebar-search">
+            <div class="sidebar-search-wrapper">
+                <input type="text" id="sidebarSearchInput" placeholder="بحث سريع في المرجع الهيكلي...">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+
+        <ul class="nav-sections" id="sidebarNav">
+            <li class="nav-item">
+                <a href="#almubarmig-brand" class="nav-link" style="color: #fbbf24;">
+                    <i class="fas fa-crown" style="color: var(--brand-amber);"></i>
+                    <span>0. هوية براند «المبرمج»</span>
+                    <span class="nav-badge" style="background: rgba(245, 158, 11, 0.25); color: #fbbf24;">Brand</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#evaluation-and-vision" class="nav-link active">
+                    <i class="fas fa-microscope"></i>
+                    <span>1. تقييم الوضع والرؤية النظيفة</span>
+                    <span class="nav-badge">التقييم</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#architecture-pattern" class="nav-link">
+                    <i class="fas fa-cubes"></i>
+                    <span>2. المعمارية الهندسية الحديثة</span>
+                    <span class="nav-badge">Clean MVC</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#directory-tree" class="nav-link">
+                    <i class="fas fa-folder-tree"></i>
+                    <span>3. هيكلية وشجرة ملفات المشروع</span>
+                    <span class="nav-badge">File Tree</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#features-and-gaps" class="nav-link">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <span>4. النواقص والوظائف المعززة</span>
+                    <span class="nav-badge">موازين وأعمار</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#modules-matrix" class="nav-link">
+                    <i class="fas fa-th-large"></i>
+                    <span>5. مصفوفة الموديولات الستة</span>
+                    <span class="nav-badge">Core 6</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#egypt-edition" class="nav-link">
+                    <i class="fas fa-flag"></i>
+                    <span>6. حزمة متطلبات السوق المصري</span>
+                    <span class="nav-badge">EGP & IPN</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#fast-pos-engine" class="nav-link">
+                    <i class="fas fa-bolt"></i>
+                    <span>7. محرك الكاشير فائق السرعة</span>
+                    <span class="nav-badge">0s Latency</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#database-schema" class="nav-link">
+                    <i class="fas fa-database"></i>
+                    <span>8. نموذج قاعدة البيانات المحدثة</span>
+                    <span class="nav-badge">InnoDB & Ledger</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#security-rbac" class="nav-link">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>9. الأمان وحوكمة الصلاحيات</span>
+                    <span class="nav-badge">Audit & RBAC</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#implementation-roadmap" class="nav-link">
+                    <i class="fas fa-tasks"></i>
+                    <span>10. خارطة الطريق لبناء المشروع</span>
+                    <span class="nav-badge">7 مراحل</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#developer-quickstart" class="nav-link">
+                    <i class="fas fa-terminal"></i>
+                    <span>11. دليل البدء الفوري والتشغيل</span>
+                    <span class="nav-badge">Setup</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <span style="font-weight: 800; color: #fff;">المبرمج | Almubarmig</span>
+                <span style="color: #38bdf8; font-weight: 700;">v2.1 Stable</span>
+            </div>
+            <span style="font-size: 0.72rem; color: #94a3b8;">شعارنا: "من الفكرة إلى نظام يعمل"</span>
+        </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <main id="main-wrapper">
+
+        <!-- TOP NAVBAR -->
+        <header class="top-navbar">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button class="mobile-toggle-btn" id="mobileMenuBtn" aria-label="Toggle Navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="breadcrumb">
+                    <i class="fas fa-folder-open"></i>
+                    <span>المرجع الشامل للمشروع</span>
+                    <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+                    <span class="current">المواصفات المعمارية النظيفة وهيكلية الملفات المعتمدة</span>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" id="themeToggleBtn" title="تبديل الوضع الليلي">
+                    <i class="fas fa-moon"></i>
+                    <span>الوضع الليلي</span>
+                </button>
+                <button class="btn-action" onclick="window.print()" title="طباعة الوثيقة">
+                    <i class="fas fa-print"></i>
+                    <span>طباعة المرجع (PDF)</span>
+                </button>
+                <a href="docs/README.md" target="_blank" class="btn-action btn-primary">
+                    <i class="fas fa-book-open"></i>
+                    <span>دليل التوثيق (Markdown)</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- HERO BANNER -->
+        <section class="hero-banner">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                <div class="hero-tag">
+                    <i class="fas fa-code"></i>
+                    <span>هندسة وتطوير برمجيات: <strong>المبرمج | Almubarmig</strong></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.88rem; color: #fde68a; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"><i class="fas fa-quote-right" style="margin-left: 6px;"></i>من الفكرة إلى نظام يعمل</span>
+                    <img src="assets/brand/logo-icon.png" alt="Almubarmig Icon" style="width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));">
+                </div>
+            </div>
+            <h1>وثيقة المعمارية الهندسية النظيفة (Clean Architecture Blueprint)</h1>
+            <p>
+                نظام <strong>WAM Tech POS & ERP Enterprise (v2.1)</strong> بعد التقييم الجذري وتصفية الأخطاء الموروثة، مبني بنمط <strong>Clean Modular MVC</strong> متكامل يدعم إدارة نقاط البيع، المخازن، المشتريات، المبيعات، الحسابات العامة، وباركود الموازين، مطابقاً بنسبة 100% لاحتياجات بيئة التجارة المصرية.
+            </p>
+            
+            <div class="hero-meta-grid">
+                <div class="hero-meta-item">
+                    <div class="hero-meta-icon"><i class="fas fa-cubes"></i></div>
+                    <div class="hero-meta-text">
+                        <span class="label">النمط المعماري المعتمد</span>
+                        <span class="val">Modular MVC & Services</span>
+                    </div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-icon"><i class="fas fa-coins"></i></div>
+                    <div class="hero-meta-text">
+                        <span class="label">العملة والضريبة المعتمدة</span>
+                        <span class="val">الجنيه المصري (ج.م) | 14% VAT</span>
+                    </div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-icon"><i class="fas fa-server"></i></div>
+                    <div class="hero-meta-text">
+                        <span class="label">بيئة التشغيل والتقنيات</span>
+                        <span class="val">PHP 8.2+ | PDO | InnoDB</span>
+                    </div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-icon"><i class="fas fa-laptop-code"></i></div>
+                    <div class="hero-meta-text">
+                        <span class="label">نظام الواجهات واللغة</span>
+                        <span class="val">عربي 100% RTL | admin-pro</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPI SUMMARY CARDS -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-icon blue"><i class="fas fa-layer-group"></i></div>
+                <div class="kpi-details">
+                    <div class="val">3 طبقات</div>
+                    <div class="title">فصل كامل (Core, Services, Views)</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon green"><i class="fas fa-database"></i></div>
+                <div class="kpi-details">
+                    <div class="val">InnoDB + Ledger</div>
+                    <div class="title">جداول الحركات اللحظية الموحدة</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon purple"><i class="fas fa-balance-scale"></i></div>
+                <div class="kpi-details">
+                    <div class="val">موازين + أعمار</div>
+                    <div class="title">باركود الموازين وأعمار الديون</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon yellow"><i class="fas fa-bolt"></i></div>
+                <div class="kpi-details">
+                    <div class="val">0s Latency</div>
+                    <div class="title">محرك البيع السريع عبر api.php</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon red"><i class="fas fa-shield-halved"></i></div>
+                <div class="kpi-details">
+                    <div class="val">ACID & Audit</div>
+                    <div class="title">معاملات ذرية وسجل تدقيق كامل</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 0. ALMUBARMIG BRAND IDENTITY -->
+        <section id="almubarmig-brand" class="section-block" style="border: 2px solid rgba(2, 132, 199, 0.35); position: relative; overflow: hidden;">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon" style="background: rgba(245, 158, 11, 0.15); color: var(--brand-amber);"><i class="fas fa-crown"></i></div>
+                    <h2>0. هوية وعلامة «المبرمج» ومعايير الدمج البرمجي (Al-Mubarmig Brand Standards)</h2>
+                </div>
+                <span class="section-tag" style="background: rgba(2, 132, 199, 0.15); color: var(--brand-blue); border-color: rgba(2, 132, 199, 0.3);">Official Brand Guidelines</span>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; background: linear-gradient(135deg, rgba(7, 13, 24, 0.95) 0%, rgba(16, 30, 56, 0.95) 100%); padding: 1.5rem 1.75rem; border-radius: var(--radius-lg); border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 1.25rem;">
+                    <img src="assets/brand/logo-full.png" alt="شعار المبرمج الكامل" style="height: 56px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(2, 132, 199, 0.3));">
+                    <div>
+                        <h3 style="margin: 0; color: #fff; font-size: 1.2rem; font-weight: 800;">المبرمج | Almubarmig</h3>
+                        <p style="margin: 0.25rem 0 0 0; color: #38bdf8; font-weight: 700; font-size: 0.85rem;">م/ وئام محمد السوداني • مهندس برمجيات واستشاري أنظمة مؤسسية</p>
+                    </div>
+                </div>
+                <div style="text-align: left;">
+                    <span style="display: inline-block; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; padding: 0.35rem 0.85rem; border-radius: 9999px; font-weight: 800; font-size: 0.82rem;">
+                        <i class="fas fa-quote-right" style="margin-left: 5px;"></i> من الفكرة إلى نظام يعمل
+                    </span>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #94a3b8; direction: ltr; text-align: left;">
+                        <a href="https://almubarmig.com" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: 700;">almubarmig.com</a> | +201002283766
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                تم تصميم النظام وفق الطابع البصري والهندسي المميز لبراند <strong>«المبرمج | Almubarmig»</strong> المعتمد في موقعه الرسمي <code>almubarmig.com</code>:
+            </p>
+
+            <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                <div class="feature-item-card" style="border-right: 4px solid var(--brand-blue);">
+                    <div class="card-head">
+                        <h4>الأزرق الكهربائي (Brand Blue)</h4>
+                        <span class="badge" style="background:#0284c7; color:#fff;">#0284c7</span>
+                    </div>
+                    <p>اللون الأساسي للأزرار الرئيسية، الروابط النشطة، وبطاقات التركيز، مع توهج أزرق ناعم (Blue Glow).</p>
+                </div>
+                <div class="feature-item-card" style="border-right: 4px solid var(--brand-amber);">
+                    <div class="card-head">
+                        <h4>الذهبي العنبري (Brand Amber)</h4>
+                        <span class="badge" style="background:#f59e0b; color:#fff;">#f59e0b</span>
+                    </div>
+                    <p>لون التميز، شارات الحالات الخاصة، التنبيهات الذكية، والأرقام المالية الهامة وشعار البراند.</p>
+                </div>
+                <div class="feature-item-card" style="border-right: 4px solid #070d18;">
+                    <div class="card-head">
+                        <h4>الخلفية الليلية (Cyber Dark)</h4>
+                        <span class="badge" style="background:#070d18; color:#fff;">#070d18</span>
+                    </div>
+                    <p>اللون الأساسي للوضع الليلي الفاخر، مع أسطح البطاقات <code>#101e38</code> والأسطح المرتفعة <code>#16284a</code>.</p>
+                </div>
+                <div class="feature-item-card" style="border-right: 4px solid #10b981;">
+                    <div class="card-head">
+                        <h4>الأخضر الزمردي (Emerald)</h4>
+                        <span class="badge" style="background:#10b981; color:#fff;">#10b981</span>
+                    </div>
+                    <p>لحالات نجاح العمليات، الأرباح الصافية، والمدفوعات المسددة بالكامل وحالة النظام المتصل.</p>
+                </div>
+            </div>
+
+            <h3>معايير دمج البراند في شاشات النظام:</h3>
+            <ul>
+                <li><strong>شاشة تسجيل الدخول (`login.php`):</strong> بطاقة زجاجية فاخرة (Cyber Glassmorphism) تتوسطها علامة المبرمج مع عبارة <em>Powered by Almubarmig</em>.</li>
+                <li><strong>الترويسة العلوية (`header.php`):</strong> الشعار الأفقي الرسمي بجوار شارة النظام.</li>
+                <li><strong>شاشة الكاشير السريعة (`pos.php`):</strong> شارة أيقونة المبرمج <code>logo-icon.png</code> أعلى الشاشة مؤكدة على جاهزية النظام والاتصال المالي.</li>
+                <li><strong>إيصال الفاتورة الحرارية (Thermal Receipt):** سطر تذييل مطبوع: <code>*** برمجة وتطوير: المبرمج (01002283766) almubarmig.com ***</code>.</li>
+            </ul>
+        </section>
+
+        <!-- 1. EVALUATION & CLEAN VISION -->
+        <section id="evaluation-and-vision" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-microscope"></i></div>
+                    <h2>1. تقييم الوضع، استئصال الأخطاء، والرؤية النظيفة (Assessment & Pure Vision)</h2>
+                </div>
+                <span class="section-tag">التشخيص والتنقية</span>
+            </div>
+
+            <p>
+                بعد التدقيق التحليلي لكود وقواعد بيانات النظام، تبين وجود فكرة تجارية ومحاسبية ممتازة، ولكنها كانت محاطة بأخطاء معمارية موروثة قاتلة. تم اتخاذ قرار حاسم <strong>باستئصال كافة الممارسات الخاطئة وبناء النظام على معايير حديثة 100%</strong>:
+            </p>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>المحور</th>
+                            <th>الوضع الموروث القديم (المستأصل ❌)</th>
+                            <th>المعيار المعماري النظيف الجديد (المعتمد ✅)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>هيكلية الكود والملفات</strong></td>
+                            <td>ملف متحكم واحد <code>controller.php</code> يحتوي على 4,712 سطراً يدير كل شيء، مع 80 ملفاً مبعثراً في المجلد الرئيسي.</td>
+                            <td>معمارية <strong>Clean Modular MVC</strong> مفصولة؛ طبقة الخدمات (Services)، طبقة النماذج (Models)، وطبقة القوالب (Views).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>محرك قاعدة البيانات</strong></td>
+                            <td>محرك <code>MyISAM</code> القديم بدون معاملات ذرية (No ACID)، مع قفل الجدول بالكامل عند كل عملية بيع (Table Locks).</td>
+                            <td>محرك <strong>`InnoDB`</strong> حصرياً لدعم المعاملات الذرية (Commit/Rollback)، المفاتيح الأجنبية، وقفل السطور <code>FOR UPDATE</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>احتساب أرصدة المخازن</strong></td>
+                            <td>حساب الرصيد عبر حلقة تقرأ كل حركات المتجر من تاريخ إنشائه وتجمعها في PHP عند كل مسحة باركود للكاشير!</td>
+                            <td>جدول حركات المخزون اللحظية المفهرس <strong>`stock_moves`</strong> برصيد متحرك مستمر يُستعلم في أجزاء من الميلي ثانية.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>تقارير الجرد والحركات</strong></td>
+                            <td>أوامر <code>TRUNCATE TABLE</code> كارثية تحذف بيانات تقارير الفروع الأخرى عند مجرد فتح الصفحة من أي مستخدم.</td>
+                            <td>استعلامات تجميعية مباشرة (Direct Aggregations) بدون تفريغ جداول أو التأثير على المستخدمين المتزامنين.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>أمان الاستعلامات و SQL</strong></td>
+                            <td>دمج مباشر لمتغيرات <code>$_GET</code> و <code>$_POST</code> داخل نصوص الاستعلامات (SQL Injection عالي الخطورة).</td>
+                            <td>اعتماد الاستعلامات المجهزة حصرياً <strong>(PDO Prepared Statements)</strong> مع فحص وتعقيم صارم لكافة المدخلات.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>أمان كلمات المرور</strong></td>
+                            <td>تشفير بـ <code>md5()</code> الضعيف والمهجور بدون Salt.</td>
+                            <td>تشفير عسكري حديث بخوارزمية <strong>`Bcrypt`</strong> عبر <code>password_hash()</code> مع حماية من هجمات القاموس.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 2. MODERN ARCHITECTURE PATTERN -->
+        <section id="architecture-pattern" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-cubes"></i></div>
+                    <h2>2. المعمارية الهندسية الحديثة (Clean Modular MVC & Service-Repository Pattern)</h2>
+                </div>
+                <span class="section-tag">Architecture</span>
+            </div>
+
+            <p>
+                تم اعتماد معمارية متعددة الطبقات (Multi-Layered Architecture) تفصل تماماً بين واجهة العرض، منطق الأعمال، وطبقة البيانات:
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-microchip" style="color:var(--brand-blue);"></i> 1. طبقة النواة (Core Framework)</h4>
+                        <span class="badge badge-primary">Foundation</span>
+                    </div>
+                    <p>تدير الاتصال الآمن بقاعدة البيانات (PDO)، إدارة الجلسات وصلاحيات الأدوار (RBAC)، رموز الحماية من التزوير (CSRF)، وفئات التسجيل والمساعدة.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-cogs" style="color:var(--brand-amber);"></i> 2. طبقة الخدمات (Service Layer)</h4>
+                        <span class="badge badge-warning">Business Logic</span>
+                    </div>
+                    <p>تحتوي على كافة الحسابات والمنطق التجاري: دورة البيع، توليد القيود المزدوجة، قفل التزامن للفواتير، واحتساب متوسط التكلفة المرجح.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-database" style="color:var(--brand-emerald);"></i> 3. طبقة النماذج (Model Layer)</h4>
+                        <span class="badge badge-success">Data Access</span>
+                    </div>
+                    <p>تتعامل مباشرة مع جداول قاعدة البيانات عبر Prepared Statements، وتوفر دوال CRUD المعيارية مع القيود المرجعية والفهارس.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-desktop" style="color:var(--brand-purple);"></i> 4. طبقة الواجهات (View Layer)</h4>
+                        <span class="badge badge-purple">UI / Templates</span>
+                    </div>
+                    <p>قوالب HTML5/CSS3 نقية لا تحتوي على أي كود استعلام SQL؛ تتلقى البيانات الجاهزة من الخدمات بنظام <code>admin-pro</code> المتناسق.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. DETAILED DIRECTORY TREE -->
+        <section id="directory-tree" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-folder-tree"></i></div>
+                    <h2>3. هيكلية وشجرة ملفات المشروع المعتمدة (Clean Project Directory Tree)</h2>
+                </div>
+                <span class="section-tag">File Structure</span>
+            </div>
+
+            <p>
+                تم تنظيم المشروع بهيكلية واضحة وموحدة باللغة الإنجليزية في أسماء الملفات، مع تعريب كامل 100% لواجهات المستخدم:
+            </p>
+
+            <pre><code>POS/
+├── assets/                                 # الأصول والمكتبات العامة للواجهة
+│   ├── brand/                              # شعارات براند «المبرمج» الرسمية (PNG & SVG)
+│   ├── css/                                # ملفات التنسيق (admin-pro.css, dark-mode.css, pos.css)
+│   ├── js/                                 # سكربتات التفاعل (pos-engine.js, shortcuts.js, app.js)
+│   └── vendor/                             # مكتبات CDN المحلية (Bootstrap 5, SweetAlert2, html5-qrcode)
+│
+├── config/                                 # إعدادات النظام المحمية
+│   ├── config.php                          # إعدادات السيرفر، العملة (ج.م)، والضريبة (14%)
+│   ├── database.php                        # فئة الاتصال PDO الآمن ومحرك الـ Transactions
+│   └── constants.php                       # ثوابت النظام وحالات الفواتير ومصفوفة الصلاحيات
+│
+├── core/                                   # النواة البرمجية المشتركة (The Framework Core)
+│   ├── Database.php                        # منفذ الاستعلامات المجهزة PDO مع حماية الحقن
+│   ├── Auth.php                            # إدارة الجلسات وتشفير Bcrypt وصلاحيات RBAC
+│   ├── Security.php                        # رموز CSRF، تنظيف المدخلات، وتشفير AES-256
+│   ├── View.php                            # محرك تضمين وعرض القوالب مع البيانات
+│   ├── Logger.php                          # مسجل سجلات التدقيق والأخطاء (Audit Logger)
+│   └── Helpers.php                         # دوال مساعدة (تنسيق العملة، التواريخ، الباركود)
+│
+├── app/                                    # منطق الأعمال الحقيقي (Business & Service Layer)
+│   ├── Services/                           # خدمات العمليات المحاسبية والذرية
+│   │   ├── PosService.php                  # محرك البيع السريع، الورديات، وقفل الفواتير FOR UPDATE
+│   │   ├── SalesService.php                # الفواتير الكبرى، عروض الأسعار، والمرتجعات
+│   │   ├── PurchaseService.php             # المشتريات، الموردين، وتحديث متوسط التكلفة
+│   │   ├── InventoryService.php            # أرصدة المخازن، التحويلات، وتنبيهات النواقص
+│   │   ├── AccountingService.php           # شجرة الحسابات، قيود اليومية المتزنة، وميزان المراجعة
+│   │   └── ReportService.php               # محرك تجميع الإحصائيات ولوحة القيادة
+│   │
+│   └── Models/                             # طبقة التعامل مع جداول قاعدة البيانات
+│       ├── Item.php                        # المنتجات، الأسعار، الوحدات، والباركود
+│       ├── Customer.php                    # العملاء، الحدود الائتمانية، وكشوف الحساب
+│       ├── Supplier.php                    # الموردين، الفواتير، ومستحقات السداد
+│       ├── Invoice.php                     # فواتير البيع وبنود السلة
+│       ├── PurchaseOrder.php               # فواتير الشراء والواردات
+│       ├── Shift.php                       # الورديات، العُهد، وتسويات العجز والزيادة
+│       ├── Account.php                     # دليل وشجرة الحسابات
+│       └── Journal.php                     # القيود المزدوجة اليومية
+│
+├── views/                                  # واجهات المستخدم (عربية 100% بنظام admin-pro)
+│   ├── layouts/                            # القوالب الأساسية
+│   │   ├── main.php                        # الهيكل العام للوحة التحكم (الترويسة + السايدبار + المحتوى)
+│   │   ├── pos_layout.php                  # هيكل شاشة الكاشير المخصصة لملء الشاشة
+│   │   └── blank.php                       # الصفحات المستقلة (تسجيل الدخول، شاشات الطباعة)
+│   │
+│   ├── components/                         # الأجزاء المشتركة
+│   │   ├── header.php                      # شريط الملاحة العلوي وشارة المبرمج وجرس الإشعارات
+│   │   ├── sidebar.php                     # القائمة الجانبية الديناميكية حسب الصلاحيات
+│   │   └── footer.php                      # حقوق براند المبرمج "من الفكرة إلى نظام يعمل"
+│   │
+│   └── modules/                            # صفحات النظام مقسمة حسب الوحدات
+│       ├── pos/                            # شاشات نقطة البيع (الكاشير، الورديات، تعليق الفواتير)
+│       ├── sales/                          # فواتير المبيعات، عروض الأسعار، المرتجعات، العملاء
+│       ├── purchases/                      # فواتير الشراء، الموردين، كشوف الحساب
+│       ├── inventory/                      # بطاقة الصنف، الجرد، التحويلات، الباركود، النواقص
+│       ├── accounting/                     # شجرة الحسابات، قيود اليومية، المصروفات، الميزانيات
+│       ├── reports/                        # تقارير الأرباح، المبيعات التفصيلية، الضرائب
+│       └── settings/                       # إعدادات المنشأة، المستخدمين، النسخ الاحتياطي
+│
+├── database/                               # ملفات قاعدة البيانات ومخطط التطوير
+│   ├── wamtech_db.sql                      # الداتابيز الأصلية المرجعية
+│   ├── schema_modern_v2.sql                # المخطط الجديد المحسن (InnoDB + Foreign Keys + Indexes)
+│   └── seed_defaults.sql                   # البيانات الافتراضية (الفرع الرئيسي، شجرة الحسابات، المدير)
+│
+├── storage/                                # الملفات الناتجة والنسخ الاحتياطية (محمية)
+│   ├── backups/                            # ملفات النسخ الاحتياطي (SQL & JSON)
+│   ├── logs/                               # سجلات الأخطاء وسجلات العمليات (Audit Logs)
+│   └── uploads/                            # صور الأصناف والشعارات
+│
+├── index.php                               # لوحة التحكم الرئيسية (Dashboard)
+├── pos.php                                 # شاشة نقطة البيع السريعة للكاشير (Direct Fast Access)
+├── login.php                               # شاشة الدخول بهوية براند «المبرمج»
+├── logout.php                              # تسجيل الخروج الآمن وإنهاء الجلسة
+├── api.php                                 # نقطة نهاية موحدة لمعالجة طلبات AJAX السريعة للكاشير
+├── PROJECT_MASTER_SPECIFICATION.html       # المرجع الشامل المعتمد للمشروع
+└── README.md                               # الدليل العام للمشروع</code></pre>
+        </section>
+
+        <!-- 4. ENHANCED GAPS & NEW FEATURES -->
+        <section id="features-and-gaps" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-puzzle-piece"></i></div>
+                    <h2>4. النواقص والوظائف المعززة التي أضيفت للنظام (Gap Analysis & Enterprise Features)</h2>
+                </div>
+                <span class="section-tag">المزايا الجديدة المضافة</span>
+            </div>
+
+            <p>
+                لضمان جاهزية النظام لمنافسة كبرى أنظمة الـ ERP ونقاط البيع في مصر والشرق الأوسط، تم تضمين الخصائص المتقدمة التالية:
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-weight-scale" style="color:var(--brand-blue);"></i> باركود الموازين الإلكترونية</h4>
+                        <span class="badge badge-primary">سوبرماركت ولحوم</span>
+                    </div>
+                    <p>فك وتفكيك الباركود الوزني تلقائياً (الذي يبدأ بـ <code>99</code> أو <code>20</code>)؛ حيث يستخرج كود الصنف، الوزن الصافي، والسعر الإجمالي تلقائياً ويضيفه لسلة المشتريات.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-calendar-times" style="color:var(--brand-amber);"></i> تتبع الباتشات والصلاحيات</h4>
+                        <span class="badge badge-warning">Lot & Expiry</span>
+                    </div>
+                    <p>ربط الواردات برقم تشغيلة وتاريخ صلاحية محدد، مع تنبيهات مسبقة قبل انتهاء الصلاحية بـ 60 و 30 يوماً لمنع الخسائر المخزنية.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-hourglass-half" style="color:var(--brand-emerald);"></i> تقرير أعمار الديون (Debt Aging)</h4>
+                        <span class="badge badge-success">إدارة السيولة</span>
+                    </div>
+                    <p>تصنيف مديونيات العملاء ومستحقات الموردين إلى فترات زمنية (أقل من 30 يوماً، 60 يوماً، 90 يوماً، وأكثر من 120 يوماً) مع مؤشرات مخاطر التحصيل.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-user-secret" style="color:var(--danger);"></i> سجل التدقيق والرقابة (Audit Trail)</h4>
+                        <span class="badge badge-danger">الرقابة الداخلية</span>
+                    </div>
+                    <p>توثيق تلقائي لكافة الإجراءات الحساسة (حذف فواتير، تعديل أسعار، فتح درج النقدية، أو تطبيق خصومات استثنائية) باسم المستخدم ووقت المعاملة الدقيق.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-tags" style="color:var(--purple);"></i> مستويات التسعير المتعددة</h4>
+                        <span class="badge badge-purple">جملة وقطاعي</span>
+                    </div>
+                    <p>دعم سعر بيع قطاعي، سعر بيع جملة، وسعر نصف جملة لكل صنف، مع تطبيقه آلياً حسب نوع العميل المسجل.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4><i class="fas fa-calculator" style="color:var(--brand-cyan);"></i> التقييم المالي للمخزون</h4>
+                        <span class="badge badge-info">Weighted Average</span>
+                    </div>
+                    <p>احتساب التكلفة الفعلية للأصناف بناءً على المتوسط المرجح التلقائي عند كل فاتورة شراء، مما يعطي أرباحاً صافية حقيقية 100%.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. CORE 6 MODULES MATRIX -->
+        <section id="modules-matrix" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-th-large"></i></div>
+                    <h2>5. مصفوفة الموديولات الستة والوظائف التفصيلية (Core 6 Modules Matrix)</h2>
+                </div>
+                <span class="section-tag">الوحدات التشغيلية</span>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الموديول</th>
+                            <th>المسار البرمجي في الهيكل الجديد</th>
+                            <th>الوظائف والخصائص الشاملة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1. نقطة البيع السريعة (Fast POS)</strong></td>
+                            <td><code>app/Services/PosService.php</code><br><code>views/modules/pos/</code></td>
+                            <td>مسح الباركود بسرعة 0s، قارئ باركود الكاميرا <code>html5-qrcode</code>، اختصارات F1-F10، إدارة الورديات والعُهد النقدية، فك باركود الموازين، تعليق الفواتير، والطباعة الحرارية غير المعطلة.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2. المبيعات وعروض الأسعار</strong></td>
+                            <td><code>app/Services/SalesService.php</code><br><code>views/modules/sales/</code></td>
+                            <td>فواتير المبيعات الكبرى النقدية والآجلة، عروض الأسعار القابلة للتحويل لفواتير بنقرة واحدة، مرتجعات المبيعات المربوطة بالفاتورة الأصلية، مستويات التسعير، والحدود الائتمانية للعملاء.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3. المشتريات والموردين</strong></td>
+                            <td><code>app/Services/PurchaseService.php</code><br><code>views/modules/purchases/</code></td>
+                            <td>دورة المشتريات (أمر شراء ⬅ استلام مخزني ⬅ فاتورة شراء)، تحديث متوسط التكلفة آلياً، مرتجعات المشتريات، كشوف حسابات الموردين، وإدارة مواعيد الاستحقاق.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>4. المخازن والباركود والنواقص</strong></td>
+                            <td><code>app/Services/InventoryService.php</code><br><code>views/modules/inventory/</code></td>
+                            <td>بطاقة الصنف الشاملة بهامش الربح، شاشة تنبيهات المخزون الذكية، جرد المخازن اللحظي بدون TRUNCATE، كارت حركة الصنف، التحويلات الآمنة بين المخازن، وطباعة ملصقات الباركود.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>5. الحسابات العامة والمالية (GL)</strong></td>
+                            <td><code>app/Services/AccountingService.php</code><br><code>views/modules/accounting/</code></td>
+                            <td>شجرة الحسابات الهرمية التفاعلية، قيود اليومية العامة المزدوجة مع فاحص اتزان آلي صارم يمنع حفظ القيود غير المتوازنة، كشف الأستاذ العام، سندات المصروفات، وميزان المراجعة وقائمة الدخل.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>6. لوحة القيادة والنسخ والتحكم</strong></td>
+                            <td><code>app/Services/ReportService.php</code><br><code>views/modules/settings/</code></td>
+                            <td>لوحة تحكم حية (Dashboard) بأرباح ومصروفات ورسوم بيانية مسترجعة من الداتابيز، إعدادات المنشأة وضريبة 14%، ومركز النسخ الاحتياطي (SQL Dump و JSON و Google Drive).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 6. EGYPT EDITION PACKAGE -->
+        <section id="egypt-edition" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-flag"></i></div>
+                    <h2>6. حزمة متطلبات وتوافق السوق التجاري المصري (Egypt Edition)</h2>
+                </div>
+                <span class="section-tag">السوق المحلي</span>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4>العملة والرمز الرسمي</h4>
+                        <span class="badge badge-success">ج.م / EGP</span>
+                    </div>
+                    <p>اعتماد الجنيه المصري وتنسيق القروش العشري القياسي (0.00) في كافة واجهات البيع والحسابات والتقارير.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4>ضريبة القيمة المضافة</h4>
+                        <span class="badge badge-primary">VAT 14%</span>
+                    </div>
+                    <p>ضبط النسبة الضريبية الافتراضية على 14% وفق القانون المصري مع إمكانية إعفاء أصناف أو إدراج ضريبة جدول.</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4>منظومة الدفع المصرية</h4>
+                        <span class="badge badge-purple">InstaPay & Wallets</span>
+                    </div>
+                    <p>دعم كامل للدفع النقدي (كاش)، شبكة ميزة والبطاقات البنكية، شبكة إنستاباي (InstaPay IPN)، ومحافظ المحمول (فودافون كاش، أورنج، اتصالات، وي باي).</p>
+                </div>
+
+                <div class="feature-item-card">
+                    <div class="card-head">
+                        <h4>ماسح كاميرا الموبايل</h4>
+                        <span class="badge badge-info">html5-qrcode</span>
+                    </div>
+                    <p>مسح الباركود و QR Code مباشرة عبر كاميرا الهاتف أو التابلت من داخل المتصفح لإضافة المنتجات فوراً لسلة البيع.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. FAST POS ENGINE -->
+        <section id="fast-pos-engine" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-bolt"></i></div>
+                    <h2>7. محرك الكاشير فائق السرعة عبر api.php (Fast POS Engine & Zero Latency)</h2>
+                </div>
+                <span class="section-tag">POS Architecture</span>
+            </div>
+
+            <p>
+                تم فصل حركة الكاشير عن مسارات لوحة التحكم الثقيلة؛ شاشة البيع <code>pos.php</code> تتصل بـ <strong>`api.php`</strong> خفيف وسريع يستدعي <code>PosService</code> مباشرة دون إعادة تحميل أي قوالب:
+            </p>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الزر الوظيفي (Hotkey)</th>
+                            <th>الإجراء المباشر</th>
+                            <th>الفائدة التشغيلية للكاشير</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><kbd>F1</kbd></td><td>دليل الاختصارات السريع</td><td>إظهار بطاقة إرشادية منبثقة بجميع الاختصارات لتدريب الكاشير</td></tr>
+                        <tr><td><kbd>F2</kbd></td><td>التركيز على حقل الباركود</td><td>نقل المؤشر فوراً لمسح الصنف التالي دون استخدام الماوس</td></tr>
+                        <tr><td><kbd>F4</kbd></td><td>الدفع النقدي السريع (Quick Cash)</td><td>إتمام الفاتورة نقداً وحفظها وطباعتها بضغطة زر واحدة</td></tr>
+                        <tr><td><kbd>F6</kbd></td><td>تطبيق خصم الفاتورة</td><td>فتح حقل إدخال نسبة أو قيمة الخصم المباشر على الإجمالي</td></tr>
+                        <tr><td><kbd>F7</kbd></td><td>الدفع الإلكتروني (ميزة / فيزا)</td><td>تحويل طريقة السداد لبطاقات الدفع البنكية أو أجهزة POS</td></tr>
+                        <tr><td><kbd>F8</kbd></td><td>فاتورة بيع جديدة</td><td>تفريغ السلة وبدء عملية بيع لعميل جديد فوراً</td></tr>
+                        <tr><td><kbd>F9</kbd></td><td>تحديد العميل الآجل</td><td>فتح قائمة البحث عن عميل أو تسجيل عميل جديد بسرعة</td></tr>
+                        <tr><td><kbd>Esc</kbd></td><td>إلغاء / إغلاق النوافذ</td><td>إغلاق أي نافذة منبثقة والعودة المباشرة لسلة البيع</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 8. DATABASE SCHEMA & LEDGER -->
+        <section id="database-schema" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-database"></i></div>
+                    <h2>8. نموذج قاعدة البيانات المحدث وجداول الحركات اللحظية (Database & Unified Ledgers)</h2>
+                </div>
+                <span class="section-tag">InnoDB Data Model</span>
+            </div>
+
+            <p>
+                تم تحويل قاعدة البيانات بالكامل إلى محرك <strong>`InnoDB`</strong> وإضافة جداول الحركات اللحظية المفهرسة لمنع البطء نهائياً:
+            </p>
+
+            <pre><code>-- جدول حركات المخزون اللحظية الموحد (Stock Moves Ledger)
+CREATE TABLE IF NOT EXISTS `stock_moves` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `item_id` int(11) NOT NULL,
+  `store_id` int(11) NOT NULL,
+  `move_type` enum('in','out','transfer_in','transfer_out','adjustment') NOT NULL,
+  `reference_type` enum('sale','purchase','return','transfer','opening') NOT NULL,
+  `reference_id` varchar(100) NOT NULL,
+  `quantity` decimal(12,3) NOT NULL,
+  `unit_cost` decimal(12,2) NOT NULL,
+  `balance_after` decimal(12,3) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_item_store` (`item_id`, `store_id`),
+  KEY `idx_ref` (`reference_type`, `reference_id`),
+  KEY `idx_date` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- فهارس قفل التزامن للفواتير السريعة
+ALTER TABLE `sales` ADD INDEX `idx_sales_inv_store` (`invoice_No`, `storeid`);
+ALTER TABLE `items` ADD INDEX `idx_items_barcode` (`barcode`);</code></pre>
+        </section>
+
+        <!-- 9. SECURITY & RBAC -->
+        <section id="security-rbac" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-shield-alt"></i></div>
+                    <h2>9. الأمان، التشفير، وحوكمة الصلاحيات (Security, Cryptography & RBAC)</h2>
+                </div>
+                <span class="section-tag">الأمان والرقابة</span>
+            </div>
+
+            <ul>
+                <li><strong>الاستعلامات المجهزة حصرياً (PDO Prepared Statements):</strong> القضاء التام على ثغرات الحقن (SQLi) في كافة العمليات.</li>
+                <li><strong>تشفير Bcrypt:</strong> حماية كلمات مرور الموظفين بخوارزمية <code>password_hash()</code> القياسية.</li>
+                <li><strong>حماية النماذج ضد CSRF:</strong> توليد رموز أمان مشفرة في كل نموذج وتمريرها آلياً مع مكالمات AJAX.</li>
+                <li><strong>إغلاق ثغرة التخطي (EAR):</strong> إضافة <code>exit();</code> بعد كافة أوامر التوجيه في <code>Auth.php</code>.</li>
+                <li><strong>حوكمة الصلاحيات (RBAC):</strong> منع الكاشير من فتح تقارير الأرباح أو قيود اليومية وإعادته تلقائياً لشاشة البيع.</li>
+                <li><strong>سجل التدقيق (Audit Logging):</strong> توثيق كل حركة حذف أو تعديل أو فتح درج نقدية في جدول <code>audit_logs</code>.</li>
+            </ul>
+        </section>
+
+        <!-- 10. STEP-BY-STEP ROADMAP -->
+        <section id="implementation-roadmap" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-tasks"></i></div>
+                    <h2>10. خارطة الطريق المنهجية لبناء المشروع من الصفر (7 Implementation Phases)</h2>
+                </div>
+                <span class="section-tag">خطة البناء والتنفيذ</span>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="background: #10b981; box-shadow: 0 0 10px #10b981;"></div>
+                    <div class="timeline-content" style="border-right-color: #10b981;">
+                        <div class="phase-title">
+                            <h4>المرحلة 0: بناء هيكل المجلدات والنواة وقاعدة البيانات وهيكل الحماية</h4>
+                            <span class="badge badge-success" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981;">✅ مكتمل 100%</span>
+                        </div>
+                        <p>تأسيس هيكلية المجلدات النظيفة، قاعدة بيانات wamtech_pos_db بمحرك InnoDB، فئات النواة (Database, Security, Auth, Helpers, Logger, View)، حماية الجلسات وتشفير Bcrypt ورموز CSRF، وهوية براند «المبرمج».</p>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="background: #10b981; box-shadow: 0 0 10px #10b981;"></div>
+                    <div class="timeline-content" style="border-right-color: #10b981;">
+                        <div class="phase-title">
+                            <h4>المرحلة 1: مديول إدارة المخازن والأصناف والموازين الإلكترونية</h4>
+                            <span class="badge badge-success" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981;">✅ مكتمل 100%</span>
+                        </div>
+                        <p>إنشاء 8 جداول جديدة، محرك <code>stock_moves</code> اللحظي، فك شفرة باركود الموازين (20/99)، كارت الصنف الشامل، التسويات الجردية السريعة، أذونات التحويل بين المستودعات، وطباعة ملصقات الباركود الحرارية (38×25 و 50×25 و A4).</p>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="background: #f59e0b; box-shadow: 0 0 10px #f59e0b;"></div>
+                    <div class="timeline-content">
+                        <div class="phase-title">
+                            <h4>المرحلة 2: محرك نقطة البيع السريعة (POS) والورديات</h4>
+                            <span class="badge badge-warning" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b;">🔄 المرحلة القادمة</span>
+                        </div>
+                        <p>شاشة الكاشير السريعة pos.php بزمن استجابة 0s، قارئ باركود الكاميرا html5-qrcode، الدفع المتعدد (كاش، ميزة، إنستاباي، محافظ، آجل)، الورديات، وطباعة الإيصال الحراري 80mm.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="phase-title">
+                            <h4>المرحلة 3: المخزون، بطاقة الصنف، وتنبيهات النواقص (Inventory & Barcode)</h4>
+                            <span class="badge badge-success">المستودعات</span>
+                        </div>
+                        <p>بطاقة الصنف الشاملة بهامش الربح، فك باركود الموازين، شاشة تنبيهات المخزون وجرس الإشعارات الحي، وجدول الحركات اللحظية <code>stock_moves</code>.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="phase-title">
+                            <h4>المرحلة 4: محرك نقطة البيع السريعة وحزمة مصر (Fast POS Engine & Egypt Edition)</h4>
+                            <span class="badge badge-primary">نقطة البيع</span>
+                        </div>
+                        <p>شاشة الكاشير السريعة عبر <code>api.php</code>، مسح الباركود بكاميرا الموبايل، اختصارات F1-F10، قفل التزامن <code>FOR UPDATE</code>، والمدفوعات المصرية (ميزة، إنستاباي، محافظ، كاش).</p>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="phase-title">
+                            <h4>المرحلة 5: دورة المبيعات والمشتريات والمرتجعات (Sales, Purchases & Supply Chain)</h4>
+                            <span class="badge badge-purple">الدورة التجارية</span>
+                        </div>
+                        <p>فواتير المبيعات والمشتريات الكبرى، عروض الأسعار، المرتجعات، كشوف حسابات العملاء والموردين بتصدير Excel وطباعة PDF، وتقارير أعمار الديون.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="phase-title">
+                            <h4>المرحلة 6: شجرة الحسابات، قيود اليومية، ولوحة القيادة (GL, Dashboard & Backup)</h4>
+                            <span class="badge badge-info">الإقفال المالي</span>
+                        </div>
+                        <p>شجرة الحسابات التفاعلية، قيود اليومية المزدوجة المتزنة آلياً، ميزان المراجعة وقائمة الدخل، لوحة المؤشرات الحية <code>index.php</code>، ومركز النسخ الاحتياطي السحابي والمحلي.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. QUICKSTART GUIDE -->
+        <section id="developer-quickstart" class="section-block">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <div class="icon"><i class="fas fa-terminal"></i></div>
+                    <h2>11. دليل البدء الفوري والتشغيل للمطور (Developer Quick-Start Guide)</h2>
+                </div>
+                <span class="section-tag">Setup & Go-Live</span>
+            </div>
+
+            <ol>
+                <li><strong>بيئة التشغيل المطلوبة:</strong> خادم WampServer / XAMPP مع <strong>PHP 8.2+</strong> ومحرك <strong>MySQL 8.0+</strong> مع تفعيل الامتدادات: <code>pdo_mysql</code>, <code>openssl</code>, <code>mbstring</code>, <code>gd</code>, <code>curl</code>.</li>
+                <li><strong>استيراد قاعدة البيانات:</strong>
+                    <pre><code>CREATE DATABASE `wamtech_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `wamtech_db`;
+SOURCE d:/wamp/www/myworks/POS/database/wamtech_db.sql;</code></pre>
+                </li>
+                <li><strong>روابط النظام المباشرة:</strong>
+                    <ul>
+                        <li>لوحة التحكم (Dashboard): <code>http://localhost/myworks/POS/index.php</code></li>
+                        <li>شاشة نقطة البيع السريعة (POS): <code>http://localhost/myworks/POS/pos.php</code></li>
+                        <li>شاشة تسجيل الدخول: <code>http://localhost/myworks/POS/login.php</code></li>
+                    </ul>
+                </li>
+            </ol>
+
+            <div class="alert-box primary" style="margin-top: 1.5rem;">
+                <i class="fas fa-check-double"></i>
+                <div>
+                    <strong>جاهزون للتنفيذ الفوري:</strong>
+                    هذه الوثيقة هي المرجع الهندسي النظيف والموحد 100%. كل متطلب ووظيفة وفجوة تم تحديد مكانها ومعيارها البرمجي بدقة تامة.
+                </div>
+            </div>
+        </section>
+
+        <!-- BRAND FOOTER -->
+        <footer style="margin-top: 3.5rem; padding: 2.5rem 1.5rem; border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 0.9rem; background: var(--bg-card); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                <img src="assets/brand/logo-horizontal-dark.png" alt="المبرمج | Almubarmig" style="height: 38px; object-fit: contain;">
+            </div>
+            <p style="font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">
+                هندسة وتطوير برمجيات متقدمة بواسطة: <span style="color: var(--brand-blue); font-weight: 800;">المبرمج | Almubarmig</span> — م/ وئام محمد السوداني
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 0.85rem;">
+                الشعار الرسمي: <em style="color: var(--brand-amber); font-weight: 700;">"من الفكرة إلى نظام يعمل"</em> • خبرة أكثر من 15 عاماً في حلول وتطبيقات الويب السحابية وأنظمة الـ ERP
+            </p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 1.25rem; font-size: 0.82rem; flex-wrap: wrap;">
+                <span><i class="fab fa-whatsapp" style="color: #25D366; margin-left: 4px;"></i>واتساب: <a href="https://wa.me/201002283766" target="_blank" style="color: var(--text-main); text-decoration: none; font-weight: 700;">01002283766</a></span>
+                <span>•</span>
+                <span><i class="fas fa-globe" style="color: var(--brand-blue); margin-left: 4px;"></i>الموقع: <a href="https://almubarmig.com" target="_blank" style="color: var(--brand-blue); text-decoration: none; font-weight: 700;">almubarmig.com</a></span>
+                <span>•</span>
+                <span><i class="fas fa-shield-alt" style="color: var(--brand-emerald); margin-left: 4px;"></i>جميع الحقوق محفوظة © 2026</span>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- BACK TO TOP BUTTON -->
+    <button id="backToTop" title="العودة للأعلى">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- JAVASCRIPT CONTROLLERS -->
+    <script>
+        // Smooth scroll
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const targetId = this.getAttribute('href');
+                if (targetId.startsWith('#')) {
+                    e.preventDefault();
+                    const targetEl = document.querySelector(targetId);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth' });
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                        if (window.innerWidth <= 1024) {
+                            document.getElementById('sidebar').classList.remove('open');
+                        }
+                    }
+                }
+            });
+        });
+
+        // Search Filter
+        const searchInput = document.getElementById('sidebarSearchInput');
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const navItems = document.querySelectorAll('#sidebarNav .nav-item');
+            navItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        });
+
+        // Theme Toggle (Dark/Light)
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const currentTheme = localStorage.getItem('wam_theme') || 'light';
+        
+        if (currentTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> <span>الوضع النهاري</span>';
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('wam_theme', 'light');
+                themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i> <span>الوضع الليلي</span>';
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('wam_theme', 'dark');
+                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> <span>الوضع النهاري</span>';
+            }
+        });
+
+        // Mobile Sidebar Toggle
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        mobileBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // Back to top visibility
+        const backToTopBtn = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+
+            const sections = document.querySelectorAll('.section-block');
+            let currentActive = "";
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 150;
+                if (window.scrollY >= sectionTop) {
+                    currentActive = section.getAttribute('id');
+                }
+            });
+
+            if (currentActive) {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + currentActive) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
