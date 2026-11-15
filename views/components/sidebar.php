@@ -43,6 +43,20 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? 'index.php');
             </a>
         </li>
 
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>quotations.php" class="nav-link <?= ($currentPage === 'quotations.php') ? 'active' : '' ?>">
+                <i class="fas fa-file-signature"></i>
+                <span>عروض أسعار العملاء</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>returns.php" class="nav-link <?= ($currentPage === 'returns.php') ? 'active' : '' ?>">
+                <i class="fas fa-undo-alt"></i>
+                <span>مردودات البيع والشراء</span>
+            </a>
+        </li>
+
         <!-- قسم إدارة المخازن والأصناف (المرحلة 1) -->
         <li class="nav-header">إدارة المخازن والأصناف</li>
 
@@ -81,23 +95,58 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? 'index.php');
             </a>
         </li>
 
-        <!-- قسم العمليات التجارية والتوريد -->
-        <li class="nav-header">المشتريات والتوريد</li>
+        <!-- قسم العمليات التجارية والتوريد (المرحلة 3) -->
+        <li class="nav-header">المشتريات وسلاسل الإمداد</li>
 
         <li class="nav-item">
             <a href="<?= BASE_URL ?>purchases.php" class="nav-link <?= ($currentPage === 'purchases.php') ? 'active' : '' ?>">
                 <i class="fas fa-truck-loading"></i>
-                <span>المشتريات والموردين</span>
+                <span>فواتير المشتريات والتوريد</span>
             </a>
         </li>
 
-        <!-- قسم المالية والحسابات -->
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>suppliers.php" class="nav-link <?= ($currentPage === 'suppliers.php' && ($_GET['action'] ?? '') !== 'aging') ? 'active' : '' ?>">
+                <i class="fas fa-handshake"></i>
+                <span>دليل وكشوف الموردين</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>suppliers.php?action=aging" class="nav-link <?= ($currentPage === 'suppliers.php' && ($_GET['action'] ?? '') === 'aging') ? 'active' : '' ?>">
+                <i class="fas fa-hourglass-half"></i>
+                <span>أعمار ديون الموردين</span>
+            </a>
+        </li>
+
+        <!-- قسم المالية والحسابات (المرحلة 4) -->
         <li class="nav-header">المالية والحسابات العامة</li>
 
         <li class="nav-item">
-            <a href="<?= BASE_URL ?>accounting.php" class="nav-link <?= ($currentPage === 'accounting.php') ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>accounting.php?tab=chart" class="nav-link <?= ($currentPage === 'accounting.php' && (($_GET['tab'] ?? 'chart') === 'chart')) ? 'active' : '' ?>">
+                <i class="fas fa-sitemap"></i>
+                <span>شجرة ودليل الحسابات</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>accounting.php?tab=journal" class="nav-link <?= ($currentPage === 'accounting.php' && (($_GET['tab'] ?? '') === 'journal')) ? 'active' : '' ?>">
+                <i class="fas fa-book"></i>
+                <span>قيود اليومية العامة</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>accounting.php?tab=vouchers" class="nav-link <?= ($currentPage === 'accounting.php' && (($_GET['tab'] ?? '') === 'vouchers')) ? 'active' : '' ?>">
+                <i class="fas fa-money-check-alt"></i>
+                <span>سندات القبض والصرف</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="<?= BASE_URL ?>accounting.php?tab=trial_balance" class="nav-link <?= ($currentPage === 'accounting.php' && in_array(($_GET['tab'] ?? ''), ['trial_balance', 'income_statement'])) ? 'active' : '' ?>">
                 <i class="fas fa-balance-scale"></i>
-                <span>شجرة الحسابات واليومية</span>
+                <span>ميزان المراجعة وقائمة الدخل</span>
             </a>
         </li>
 
