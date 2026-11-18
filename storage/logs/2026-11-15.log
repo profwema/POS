@@ -1,1 +1,2 @@
 [2026-11-15 12:43:40] [ERROR] Database Connection Failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+[2026-11-15 13:48:57] [ERROR] Database Connection Failed: SQLSTATE[HY000] [1049] Unknown database 'wamtech_pos_db'
